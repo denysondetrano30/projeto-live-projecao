@@ -28,6 +28,7 @@ import { _store, appDataPath, config, createStores, getStore, getStoreValue, set
 import { captureSlide, doesMediaExist, getThumbnail, getThumbnailFolderPath, pdfToImage, saveImage } from "../data/thumbnails"
 import { OutputHelper } from "../output/OutputHelper"
 import { pptToPdf } from "../output/ppt/pptToPdf"
+import { projetoLiveConnect, projetoLiveForget, projetoLiveList } from "../projetoLive/obsLink"
 import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
 import { closeServers, startServers, updateServerData } from "../servers"
 import { detectEncoders, setRtmpEncoderSetting } from "../streaming/encoderDetection"
@@ -265,6 +266,9 @@ export const mainResponses: MainResponses = {
         // apply now rather than lying dormant until some unrelated capture event restarts the encode
         CaptureHelper.Lifecycle.updateRtmpState()
     },
+    [Main.PROJETO_LIVE_LIST]: () => projetoLiveList(),
+    [Main.PROJETO_LIVE_CONNECT]: (data) => projetoLiveConnect(data.id),
+    [Main.PROJETO_LIVE_FORGET]: (data) => projetoLiveForget(data.id),
     [Main.FFMPEG_DOWNLOAD]: async () => {
         try {
             await downloadFfmpeg((progress) => {

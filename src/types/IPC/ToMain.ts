@@ -1,6 +1,7 @@
 import type { ICommonTagsResult } from "music-metadata"
 import type { ContentProviderId } from "../../electron/contentProviders/base/types"
 import type { RtmpStatus } from "../Output"
+import type { ProjetoLiveObs, ProjetoLiveObsControl } from "../ProjetoLive"
 import type { TrimmedShows } from "../Show"
 
 export enum ToMain {
@@ -39,7 +40,10 @@ export enum ToMain {
     API_TRIGGER2 = "API_TRIGGER2",
     OPEN_FOLDER2 = "OPEN_FOLDER2",
     OPEN_FILE2 = "OPEN_FILE2",
-    RECEIVE_MIDI2 = "RECEIVE_MIDI2"
+    RECEIVE_MIDI2 = "RECEIVE_MIDI2",
+    // Projeto Live (OBS)
+    PROJETO_LIVE_STATUS = "PROJETO_LIVE_STATUS",
+    PROJETO_LIVE_OBS = "PROJETO_LIVE_OBS"
 }
 export interface ToMainSendPayloads {
     [ToMain.ALERT]: string
@@ -65,6 +69,8 @@ export interface ToMainSendPayloads {
     [ToMain.WEBSOCKET]: "connected"
     [ToMain.AUDIO_METADATA]: { filePath: string; metadata: ICommonTagsResult }
     [ToMain.GET_DYNAMIC_VALUES]: string[]
+    [ToMain.PROJETO_LIVE_STATUS]: ProjetoLiveObs[]
+    [ToMain.PROJETO_LIVE_OBS]: ProjetoLiveObsControl
     ///
     [ToMain.IMPORT2]: { channel: string; data: ({ content: Buffer | string | object; name?: string; extension?: string } | string)[] }
     [ToMain.SHOW2]: { error?: string; err?: NodeJS.ErrnoException; id: string }

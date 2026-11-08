@@ -27,6 +27,7 @@ import { isDraggableAreaVisible, isWithinDisplayBounds, mainWindowInitialize, op
 import { template } from "./utils/menuTemplate"
 import { spellcheck } from "./utils/spellcheck"
 import { loadingOptions, mainOptions } from "./utils/windowOptions"
+import { startProjetoLiveLink, stopProjetoLiveLink } from "./projetoLive/obsLink"
 
 // ----- STARTUP -----
 
@@ -170,6 +171,9 @@ async function startApp() {
     if (RECORD_STARTUP_TIME) console.timeEnd("Initial")
 
     createMain()
+
+    // Projeto Live: acha o OBS na rede e conecta sozinho aos que já foram pareados
+    startProjetoLiveLink()
 
     // prevent display sleeping
     powerSaveBlockerId = powerSaveBlocker.start("prevent-display-sleep")
@@ -394,6 +398,7 @@ process.on("SIGTERM", () => {
 })
 
 function cleanupBeforeQuit() {
+    stopProjetoLiveLink()
     ipcMain.removeAllListeners()
 
     // Remove window listeners and destroy windows if not already destroyed

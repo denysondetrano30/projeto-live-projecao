@@ -15,6 +15,7 @@ import type { Output } from "../Output"
 import type { Folders, Projects } from "../Projects"
 import type { Dictionary, Resolution, Themes } from "../Settings"
 import type { Overlays, Show, Shows, Templates, TrimmedShows } from "../Show"
+import type { ProjetoLiveObs } from "../ProjetoLive"
 import type { ServerData } from "../Socket"
 import type { StageLayouts } from "../Stage"
 import type { Event } from "./../Calendar"
@@ -192,7 +193,11 @@ export enum Main {
     AI_GET_STATUS = "AI_GET_STATUS",
     AI_SETUP = "AI_SETUP",
     AI_SET_KEY = "AI_SET_KEY",
-    AI_LLM_COMPLETE = "AI_LLM_COMPLETE"
+    AI_LLM_COMPLETE = "AI_LLM_COMPLETE",
+    // Projeto Live (OBS)
+    PROJETO_LIVE_LIST = "PROJETO_LIVE_LIST",
+    PROJETO_LIVE_CONNECT = "PROJETO_LIVE_CONNECT",
+    PROJETO_LIVE_FORGET = "PROJETO_LIVE_FORGET"
 }
 
 export interface MainSendPayloads {
@@ -298,6 +303,8 @@ export interface MainSendPayloads {
     // Streaming encoder
     [Main.ENCODER_DETECT]: { force?: boolean } | undefined
     [Main.SET_RTMP_ENCODER]: { outputId: string; encoder: string }
+    [Main.PROJETO_LIVE_CONNECT]: { id: string }
+    [Main.PROJETO_LIVE_FORGET]: { id: string }
     // AI
     [Main.AI_GET_MODELS]: { providerId: AIProviderId }
     [Main.AI_LISTEN_START]: { engine: string; engineOptions: SttEngineOptions }
@@ -416,6 +423,7 @@ export interface MainReturnPayloads {
     [Main.AI_LISTEN_START]: Promise<{ started: boolean; error?: string }>
     [Main.AI_GET_STATUS]: Promise<{ [key: string]: EngineStatus }>
     [Main.AI_SETUP]: Promise<boolean>
+    [Main.PROJETO_LIVE_LIST]: ProjetoLiveObs[]
     [Main.AI_SET_KEY]: Promise<boolean>
     [Main.AI_LLM_COMPLETE]: Promise<{ text: string; error?: string; code?: string; retryAfter?: number }>
 }

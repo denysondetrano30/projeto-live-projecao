@@ -3,7 +3,8 @@
     import type { ContentProviderId } from "../../../../electron/contentProviders/base/types"
     import { Main } from "../../../../types/IPC/Main"
     import { requestMain, sendMain } from "../../../IPC/main"
-    import { activePage, activePopup, activeShow, activeTriggerFunction, cloudSyncData, connections, contentProviderData, disabledServers, maxConnections, notFound, obsData, outputs, popupData, ports, projectTemplates, providerConnections, saved, serverData, special } from "../../../stores"
+    import type { ProjetoLiveObs } from "../../../../types/ProjetoLive"
+    import { activePage, activePopup, activeShow, activeTriggerFunction, cloudSyncData, connections, contentProviderData, disabledServers, maxConnections, notFound, obsData, outputs, projetoLiveObs, popupData, ports, projectTemplates, providerConnections, saved, serverData, special } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import { startRemoteController, stopRemoteController } from "../../../utils/remoteController"
     import { contentProviderSync } from "../../../utils/startup"
@@ -24,7 +25,22 @@
 
     onMount(async () => {
         ip = ((await requestMain(Main.IP)) || ["localhost"])[0]
+        projetoLiveObs.set((await requestMain(Main.PROJETO_LIVE_LIST)) || [])
     })
+
+    // Projeto Live: OBS achados na rede
+    function projetoLiveStatus(obs: ProjetoLiveObs) {
+        if (obs.status === "connected") return obs.control ? "Conectado" : "Conectado (reinicie o OBS uma vez para liberar o controle)"
+        if (obs.status === "connecting") return "Conectando..."
+        if (obs.status === "waiting") return "Confirme no OBS: clique em \"Sim\" na pergunta que apareceu lá"
+        if (obs.status === "denied") return "O OBS não permitiu"
+        if (obs.status === "busy") return "O OBS está respondendo outro pedido; tente de novo"
+        if (obs.status === "offline") return "Fora da rede"
+        return obs.paired ? "Encontrado" : "Encontrado na rede"
+    }
+    function canConnect(obs: ProjetoLiveObs) {
+        return !obs.paired && (obs.status === "found" || obs.status === "denied" || obs.status === "busy")
+    }
 
     // WIP reset in popups
     // function reset() {
@@ -398,6 +414,27 @@
     <MaterialDropdown label="Song origin" options={providerOriginOptions} value={$contentProviderData.onstage?.songOrigin || ""} on:change={(e) => updateProvider("onstage", "songOrigin", e.detail)} />
 {/if}
 
+<!-- Projeto Live: o OBS se anuncia na rede; na primeira vez ele pergunta "Permitir?" -->
+<Title label="Projeto Live (OBS)" icon="record" />
+
+{#if !$projetoLiveObs.length}
+    <p class="projeto-live-empty">Procurando o OBS do Projeto Live na rede...</p>
+{/if}
+{#each $projetoLiveObs as obs (obs.id)}
+    <InputRow>
+        <div class="projeto-live-row">
+            <span class="projeto-live-name">{obs.name}{obs.local ? " (este computador)" : ""}</span>
+            <span class="projeto-live-status" class:connected={obs.status === "connected"}>{projetoLiveStatus(obs)}</span>
+        </div>
+        {#if canConnect(obs)}
+            <MaterialButton style="min-width: 120px;" icon="login" on:click={() => sendMain(Main.PROJETO_LIVE_CONNECT, { id: obs.id })}>Conectar</MaterialButton>
+        {/if}
+        {#if obs.paired}
+            <MaterialButton style="min-width: 120px;" icon="delete" on:click={() => sendMain(Main.PROJETO_LIVE_FORGET, { id: obs.id })}>Esquecer</MaterialButton>
+        {/if}
+    </InputRow>
+{/each}
+
 <!-- OBS Studio Controller -->
 <Title label="OBS Studio" icon="record" />
 
@@ -422,3 +459,29 @@
 {#if $obsData.enabled && obsWasDisabled}
     <Tip value="edit.position: guide_title.drawer > tabs.functions > OBS Studio" top={15} />
 {/if}
+
+<style>
+    .projeto-live-empty {
+        opacity: 0.7;
+        padding: 0.6em 1em;
+    }
+    .projeto-live-row {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 0.4em 1em;
+        gap: 0.2em;
+    }
+    .projeto-live-name {
+        font-weight: 600;
+    }
+    .projeto-live-status {
+        opacity: 0.8;
+        font-size: 0.9em;
+    }
+    .projeto-live-status.connected {
+        color: #3ec46d;
+        opacity: 1;
+    }
+</style>

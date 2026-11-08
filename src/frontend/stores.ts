@@ -1,6 +1,7 @@
 // ----- FreeShow -----
 // Here are all the global app variables
 
+import type { ProjetoLiveObs } from "../types/ProjetoLive"
 import type { Bible } from "json-bible/lib/Bible"
 import type { ICommonTagsResult } from "music-metadata"
 import { type Writable, writable } from "svelte/store"
@@ -408,6 +409,8 @@ export const serverData: Writable<{ [key: string]: ServerData }> = writable({}) 
 export const maxConnections: Writable<number> = writable(10) // 10
 export const contentProviderData: Writable<{ [key in ContentProviderId]?: any }> = writable({}) // {}
 export const providerItemLinks: Writable<{ [key: string]: { showId: string; mode: "online" | "local" | "manual" } }> = writable({}) // {}
+// Projeto Live: OBS achados na rede (lista vinda de src/electron/projetoLive/obsLink.ts)
+export const projetoLiveObs: Writable<ProjetoLiveObs[]> = writable([])
 export const obsData: Writable<{ enabled?: boolean; connected?: boolean; ip?: string; port?: number; password?: string }> = writable({}) // {}
 
 // CLOUD

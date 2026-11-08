@@ -90,6 +90,8 @@ import {
 } from "../stores"
 import { setupCloudSync } from "../utils/cloudSync"
 import { newToast } from "../utils/common"
+import { connectToOBS } from "../utils/obsTalk"
+import { obsData, projetoLiveObs } from "../stores"
 import { translateText } from "../utils/language"
 import { confirmCustom } from "../utils/popup"
 import { getProviderItemLink, setProviderItemLink, syncProviderItemLinks } from "../utils/providerItemLinks"
@@ -244,6 +246,16 @@ export const mainResponses: MainResponses = {
     [ToMain.IMAGES_TO_SHOW]: (data) => createImageShow(data),
     [ToMain.RTMP_STATUS]: (data) => rtmpStatus.update((a) => ({ ...a, [data.outputId]: data.destinations })),
     [ToMain.ICECAST_STATUS]: (data) => icecastStatus.set(data),
+    // Projeto Live: lista de OBS e controle liberado pelo OBS pareado
+    [ToMain.PROJETO_LIVE_STATUS]: (data) => projetoLiveObs.set(data),
+    [ToMain.PROJETO_LIVE_OBS]: (data) => {
+        const current = get(obsData)
+        const same = current.enabled && current.ip === data.host && Number(current.port) === data.port && current.password === data.password
+        if (same) return
+        obsData.update((a) => ({ ...a, enabled: true, ip: data.host, port: data.port, password: data.password }))
+        connectToOBS().catch(() => null)
+        newToast("OBS conectado (Projeto Live)")
+    },
     [ToMain.MEDIA_DOWNLOAD_PROGRESS]: (data) => {
         mediaDownloads.update((downloads) => {
             const newDownloads = new Map(downloads)
