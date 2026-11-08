@@ -1,0 +1,41 @@
+# Projeto Live: compila o app de projeção (base FreeShow) a cada envio e guarda o instalador do
+# Windows como "artifact" da compilação (aba Actions > a compilação > Artifacts).
+name: Projeto Live
+on:
+    push:
+        branches:
+            - "main"
+    workflow_dispatch:
+
+jobs:
+    windows:
+        name: "Windows x64"
+        runs-on: windows-2022
+
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v5
+
+            - name: Install Node.js and NPM
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+
+            - name: Install dependencies
+              run: npm ci
+
+            # Sem assinatura digital e sem publicar: só gera o instalador.
+            - name: Build app
+              run: npm run release:local
+
+            - name: Short commit
+              id: sha
+              shell: bash
+              run: echo "short=${GITHUB_SHA::9}" >> "$GITHUB_OUTPUT"
+
+            - name: Upload installer
+              uses: actions/upload-artifact@v4
+              with:
+                  name: projecao-windows-x64-${{ steps.sha.outputs.short }}
+                  path: dist/*.exe
+                  if-no-files-found: error

@@ -1,8 +1,6 @@
 name: Release
+# Projeto Live: publicação oficial do FreeShow (assinada); só manual, para não rodar a cada envio.
 on:
-  push:
-    branches:
-      - "main"
   workflow_dispatch:
 
 jobs:
