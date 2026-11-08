@@ -197,7 +197,8 @@ export enum Main {
     // Projeto Live (OBS)
     PROJETO_LIVE_LIST = "PROJETO_LIVE_LIST",
     PROJETO_LIVE_CONNECT = "PROJETO_LIVE_CONNECT",
-    PROJETO_LIVE_FORGET = "PROJETO_LIVE_FORGET"
+    PROJETO_LIVE_FORGET = "PROJETO_LIVE_FORGET",
+    PROJETO_LIVE_TEXT = "PROJETO_LIVE_TEXT"
 }
 
 export interface MainSendPayloads {
@@ -305,6 +306,7 @@ export interface MainSendPayloads {
     [Main.SET_RTMP_ENCODER]: { outputId: string; encoder: string }
     [Main.PROJETO_LIVE_CONNECT]: { id: string }
     [Main.PROJETO_LIVE_FORGET]: { id: string }
+    [Main.PROJETO_LIVE_TEXT]: { text: string }
     // AI
     [Main.AI_GET_MODELS]: { providerId: AIProviderId }
     [Main.AI_LISTEN_START]: { engine: string; engineOptions: SttEngineOptions }

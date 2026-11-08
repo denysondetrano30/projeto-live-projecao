@@ -1,4 +1,5 @@
 import { get } from "svelte/store"
+import { startProjetoLiveCaption } from "./projetoLiveCaption"
 import type { ContentProviderId } from "../../electron/contentProviders/base/types"
 import { OUTPUT, STARTUP } from "../../types/Channels"
 import { Main } from "../../types/IPC/Main"
@@ -76,6 +77,8 @@ async function startupMain() {
     setBeforeOutputSend(renderSignatureHook)
     storeSubscriber()
     remoteListen()
+    // Projeto Live: texto do telão vira legenda no OBS
+    startProjetoLiveCaption()
 
     const hasProfiles = Object.keys(get(profiles)).filter((a) => a !== "admin").length > 0
     if (!hasProfiles || get(activeProfile) !== null) checkStartupActions()

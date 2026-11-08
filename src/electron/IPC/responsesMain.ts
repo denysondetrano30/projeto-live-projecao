@@ -28,7 +28,7 @@ import { _store, appDataPath, config, createStores, getStore, getStoreValue, set
 import { captureSlide, doesMediaExist, getThumbnail, getThumbnailFolderPath, pdfToImage, saveImage } from "../data/thumbnails"
 import { OutputHelper } from "../output/OutputHelper"
 import { pptToPdf } from "../output/ppt/pptToPdf"
-import { projetoLiveConnect, projetoLiveForget, projetoLiveList } from "../projetoLive/obsLink"
+import { projetoLiveConnect, projetoLiveForget, projetoLiveList, projetoLiveSetText } from "../projetoLive/obsLink"
 import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
 import { closeServers, startServers, updateServerData } from "../servers"
 import { detectEncoders, setRtmpEncoderSetting } from "../streaming/encoderDetection"
@@ -269,6 +269,7 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_LIST]: () => projetoLiveList(),
     [Main.PROJETO_LIVE_CONNECT]: (data) => projetoLiveConnect(data.id),
     [Main.PROJETO_LIVE_FORGET]: (data) => projetoLiveForget(data.id),
+    [Main.PROJETO_LIVE_TEXT]: (data) => projetoLiveSetText(data.text),
     [Main.FFMPEG_DOWNLOAD]: async () => {
         try {
             await downloadFfmpeg((progress) => {

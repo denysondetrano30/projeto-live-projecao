@@ -10,6 +10,7 @@
 //   OBS      -> projeção: "PAIRED <chave>" (só na primeira vez, se a pessoa permitir no OBS),
 //                         "OK <nome do OBS>", "WS <porta> <senha cifrada>" ou "WS off",
 //                         "UNKNOWN" (chave esquecida no OBS), "DENIED", "BUSY"
+//   projeção -> OBS:      "TEXT <texto em base64>" (texto do telão, para a legenda; "TEXT -" = sem texto)
 //   os dois lados:        "PING" a cada 2 segundos; 6 segundos sem nada = caiu
 //
 // Com "WS", a projeção liga o controle do OBS que o FreeShow já tem (obs-websocket), sem digitar
@@ -57,6 +58,8 @@ const links = new Map<string, Link>()
 const statuses = new Map<string, ProjetoLiveObsStatus>()
 const controlReady = new Map<string, boolean>()
 let saved: Saved = { obs: {} }
+// Texto que está no telão agora (vai para a legenda do OBS).
+let screenText = ""
 
 // ---------------------------------------------------------------------------
 // Chaves guardadas (uma por OBS pareado)
@@ -155,6 +158,11 @@ class Link {
         linkClosed(this.target.id, this, this.connected)
     }
 
+    sendText() {
+        if (!this.connected) return
+        this.send("TEXT " + (screenText ? Buffer.from(screenText, "utf8").toString("base64") : "-"))
+    }
+
     private send(line: string) {
         if (this.socket && !this.socket.destroyed) this.socket.write(line + "\n")
     }
@@ -196,6 +204,7 @@ class Link {
                 }
             }
             setStatus(id, "connected")
+            this.sendText()
         } else if (command === "WS") {
             if (parts[0] === "off") {
                 controlReady.set(id, false)
@@ -287,6 +296,13 @@ export function projetoLiveConnect(id: string) {
     const link = new Link(target)
     links.set(id, link)
     link.open()
+}
+
+// Texto novo no telão: vai para todos os OBS conectados.
+export function projetoLiveSetText(text: string) {
+    // Limite para caber numa linha do OBS (o texto de um slide é bem menor que isso).
+    screenText = (text || "").slice(0, 4000)
+    links.forEach((link) => link.sendText())
 }
 
 // Botão "Esquecer": apaga a chave e desconecta.
