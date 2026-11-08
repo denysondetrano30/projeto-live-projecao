@@ -1,5 +1,7 @@
-# Projeto Live: compila o app de projeção (base FreeShow) a cada envio e guarda o instalador do
-# Windows como "artifact" da compilação (aba Actions > a compilação > Artifacts).
+# Projeto Live: compila o app de projeção (base FreeShow) a cada envio e guarda, como "artifact"
+# da compilação (aba Actions > a compilação > Artifacts):
+# - projecao-portatil-windows-x64-<commit>: pasta pronta para usar sem instalar (abrir FreeShow.exe)
+# - projecao-windows-x64-<commit>: o instalador
 name: Projeto Live
 on:
     push:
@@ -32,6 +34,13 @@ jobs:
               id: sha
               shell: bash
               run: echo "short=${GITHUB_SHA::9}" >> "$GITHUB_OUTPUT"
+
+            - name: Upload portable
+              uses: actions/upload-artifact@v4
+              with:
+                  name: projecao-portatil-windows-x64-${{ steps.sha.outputs.short }}
+                  path: dist/win-unpacked/
+                  if-no-files-found: error
 
             - name: Upload installer
               uses: actions/upload-artifact@v4
