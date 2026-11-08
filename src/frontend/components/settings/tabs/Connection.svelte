@@ -35,11 +35,12 @@
         if (obs.status === "waiting") return "Confirme no OBS: clique em \"Sim\" na pergunta que apareceu lá"
         if (obs.status === "denied") return "O OBS não permitiu"
         if (obs.status === "busy") return "O OBS está respondendo outro pedido; tente de novo"
+        if (obs.status === "failed") return "Não deu para conectar; tente de novo"
         if (obs.status === "offline") return "Fora da rede"
         return obs.paired ? "Encontrado" : "Encontrado na rede"
     }
     function canConnect(obs: ProjetoLiveObs) {
-        return !obs.paired && (obs.status === "found" || obs.status === "denied" || obs.status === "busy")
+        return !obs.paired && (obs.status === "found" || obs.status === "denied" || obs.status === "busy" || obs.status === "failed")
     }
 
     // WIP reset in popups

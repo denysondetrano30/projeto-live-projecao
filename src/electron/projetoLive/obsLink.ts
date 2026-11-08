@@ -82,8 +82,13 @@ function writeSaved() {
     }
 }
 
+// Número curto e fixo deste computador (o número de máquina do FreeShow tem 64 letras).
 function deviceId() {
-    return (getMachineId() || "projecao").replace(/\s+/g, "")
+    return crypto
+        .createHash("sha256")
+        .update(getMachineId() || "projecao")
+        .digest("hex")
+        .slice(0, 32)
 }
 
 function deviceName() {
@@ -223,7 +228,9 @@ function linkClosed(id: string, link: Link, wasConnected: boolean) {
     if (links.get(id) !== link) return
     links.delete(id)
     const status = statuses.get(id)
-    if (status === "connected" || status === "connecting" || status === "waiting") setStatus(id, candidates.has(id) ? "found" : "offline")
+    if (status === "connected") setStatus(id, candidates.has(id) ? "found" : "offline")
+    // Caiu antes de o OBS responder: mostra que não deu, para tentar de novo.
+    else if (status === "connecting" || status === "waiting") setStatus(id, candidates.has(id) ? "failed" : "offline")
     if (!running) return
     // Pareado: tenta de novo sozinho.
     if (saved.obs[id] && (wasConnected || status === "connecting")) {

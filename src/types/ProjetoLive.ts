@@ -1,6 +1,6 @@
 // Projeto Live: OBS encontrados na rede pelo app de projeção (veja src/electron/projetoLive/obsLink.ts).
 
-export type ProjetoLiveObsStatus = "found" | "connecting" | "waiting" | "connected" | "denied" | "busy" | "offline"
+export type ProjetoLiveObsStatus = "found" | "connecting" | "waiting" | "connected" | "denied" | "busy" | "failed" | "offline"
 
 export interface ProjetoLiveObs {
     id: string
