@@ -15,6 +15,7 @@ import { newToast } from "./common"
 import { send } from "./request"
 
 const DEST_ID = "projeto-live-obs"
+const MIRROR_BITRATE_KBPS = 12000
 
 let wanted: ProjetoLiveObsMirror | null = null
 let applying = false
@@ -88,6 +89,10 @@ async function apply() {
     // Som: a saída precisa de um canal próprio no roteamento de áudio (como as saídas de rede do
     // FreeShow), com o som do telão, da gaveta de áudio e das playlists. O alto-falante continua.
     createOutputAudioChannel(outputId)
+
+    // Rede local aguenta bem mais que o padrão do FreeShow (4000 kbps, pensado para a internet):
+    // o telão chega no OBS mais nítido. Só quando ninguém escolheu outro valor.
+    if (!output?.rtmpData?.bitrate) updateOutputRtmpData(outputId, "bitrate", MIRROR_BITRATE_KBPS)
 
     const url = destinationUrl(target)
     const destinations = output?.rtmpData?.destinations || []
