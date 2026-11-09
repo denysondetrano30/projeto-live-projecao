@@ -8,6 +8,7 @@
 import { get } from "svelte/store"
 import { OUTPUT } from "../../types/Channels"
 import type { ProjetoLiveObsMirror } from "../../types/ProjetoLive"
+import { createOutputAudioChannel } from "../audio/routing/audioRoutingInit"
 import { checkFFmpeg, getFirstActiveOutput, updateOutputRtmpData } from "../components/helpers/output"
 import { outputs } from "../stores"
 import { newToast } from "./common"
@@ -83,6 +84,10 @@ async function apply() {
         }
         output = get(outputs)[outputId]
     }
+
+    // Som: a saída precisa de um canal próprio no roteamento de áudio (como as saídas de rede do
+    // FreeShow), com o som do telão, da gaveta de áudio e das playlists. O alto-falante continua.
+    createOutputAudioChannel(outputId)
 
     const url = destinationUrl(target)
     const destinations = output?.rtmpData?.destinations || []
