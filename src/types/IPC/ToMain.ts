@@ -1,7 +1,7 @@
 import type { ICommonTagsResult } from "music-metadata"
 import type { ContentProviderId } from "../../electron/contentProviders/base/types"
 import type { RtmpStatus } from "../Output"
-import type { ProjetoLiveObs, ProjetoLiveObsControl } from "../ProjetoLive"
+import type { ProjetoLiveObs, ProjetoLiveObsControl, ProjetoLiveObsMirror } from "../ProjetoLive"
 import type { TrimmedShows } from "../Show"
 
 export enum ToMain {
@@ -43,7 +43,8 @@ export enum ToMain {
     RECEIVE_MIDI2 = "RECEIVE_MIDI2",
     // Projeto Live (OBS)
     PROJETO_LIVE_STATUS = "PROJETO_LIVE_STATUS",
-    PROJETO_LIVE_OBS = "PROJETO_LIVE_OBS"
+    PROJETO_LIVE_OBS = "PROJETO_LIVE_OBS",
+    PROJETO_LIVE_MIRROR = "PROJETO_LIVE_MIRROR"
 }
 export interface ToMainSendPayloads {
     [ToMain.ALERT]: string
@@ -71,6 +72,7 @@ export interface ToMainSendPayloads {
     [ToMain.GET_DYNAMIC_VALUES]: string[]
     [ToMain.PROJETO_LIVE_STATUS]: ProjetoLiveObs[]
     [ToMain.PROJETO_LIVE_OBS]: ProjetoLiveObsControl
+    [ToMain.PROJETO_LIVE_MIRROR]: ProjetoLiveObsMirror | null
     ///
     [ToMain.IMPORT2]: { channel: string; data: ({ content: Buffer | string | object; name?: string; extension?: string } | string)[] }
     [ToMain.SHOW2]: { error?: string; err?: NodeJS.ErrnoException; id: string }

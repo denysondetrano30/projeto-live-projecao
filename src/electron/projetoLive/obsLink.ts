@@ -10,6 +10,8 @@
 //   OBS      -> projeção: "PAIRED <chave>" (só na primeira vez, se a pessoa permitir no OBS),
 //                         "OK <nome do OBS>", "WS <porta> <senha cifrada>" ou "WS off",
 //                         "UNKNOWN" (chave esquecida no OBS), "DENIED", "BUSY"
+//   OBS      -> projeção: "MIRROR <porta>" (o OBS tem a fonte "Telão (projeção)": mande o telão em
+//                         FLV para tcp://<OBS>:<porta>) ou "MIRROR off"
 //   projeção -> OBS:      "TEXT <texto em base64>" (texto do telão, para a legenda; "TEXT -" = sem texto)
 //   os dois lados:        "PING" a cada 2 segundos; 6 segundos sem nada = caiu
 //
@@ -60,6 +62,8 @@ const controlReady = new Map<string, boolean>()
 let saved: Saved = { obs: {} }
 // Texto que está no telão agora (vai para a legenda do OBS).
 let screenText = ""
+// OBS que pediu o espelho do telão (só um por vez).
+let mirrorOwner: string | null = null
 
 // ---------------------------------------------------------------------------
 // Chaves guardadas (uma por OBS pareado)
@@ -152,6 +156,7 @@ class Link {
     close() {
         if (this.closed) return
         this.closed = true
+        if (mirrorOwner === this.target.id) setMirror(this.target.id, null)
         if (this.pingTimer) clearInterval(this.pingTimer)
         this.socket?.destroy()
         this.socket = null
@@ -217,6 +222,9 @@ class Link {
             controlReady.set(id, true)
             publish()
             sendToMain(ToMain.PROJETO_LIVE_OBS, { host: this.target.local ? "localhost" : this.target.host, port, password })
+        } else if (command === "MIRROR") {
+            const port = Number(parts[0])
+            setMirror(id, parts[0] !== "off" && port > 0 ? { host: this.target.local ? "127.0.0.1" : this.target.host, port } : null)
         } else if (command === "UNKNOWN") {
             // O OBS esqueceu este computador: na próxima vez pede permissão de novo.
             delete saved.obs[id]
@@ -296,6 +304,12 @@ export function projetoLiveConnect(id: string) {
     const link = new Link(target)
     links.set(id, link)
     link.open()
+}
+
+function setMirror(id: string, target: { host: string; port: number } | null) {
+    if (!target && mirrorOwner !== id) return
+    mirrorOwner = target ? id : null
+    sendToMain(ToMain.PROJETO_LIVE_MIRROR, target)
 }
 
 // Texto novo no telão: vai para todos os OBS conectados.

@@ -19,3 +19,9 @@ export interface ProjetoLiveObsControl {
     port: number
     password: string
 }
+
+// Para onde mandar o espelho do telão (fonte "Telão (projeção)" do OBS).
+export interface ProjetoLiveObsMirror {
+    host: string
+    port: number
+}

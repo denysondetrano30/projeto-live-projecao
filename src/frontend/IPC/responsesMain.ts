@@ -91,6 +91,7 @@ import {
 import { setupCloudSync } from "../utils/cloudSync"
 import { newToast } from "../utils/common"
 import { connectToOBS } from "../utils/obsTalk"
+import { setProjetoLiveMirror } from "../utils/projetoLiveMirror"
 import { obsData, projetoLiveObs } from "../stores"
 import { translateText } from "../utils/language"
 import { confirmCustom } from "../utils/popup"
@@ -248,6 +249,7 @@ export const mainResponses: MainResponses = {
     [ToMain.ICECAST_STATUS]: (data) => icecastStatus.set(data),
     // Projeto Live: lista de OBS e controle liberado pelo OBS pareado
     [ToMain.PROJETO_LIVE_STATUS]: (data) => projetoLiveObs.set(data),
+    [ToMain.PROJETO_LIVE_MIRROR]: (data) => setProjetoLiveMirror(data),
     [ToMain.PROJETO_LIVE_OBS]: (data) => {
         const current = get(obsData)
         const same = current.enabled && current.ip === data.host && Number(current.port) === data.port && current.password === data.password
