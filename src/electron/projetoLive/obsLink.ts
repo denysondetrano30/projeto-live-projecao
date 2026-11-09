@@ -301,7 +301,8 @@ export function projetoLiveConnect(id: string) {
 // Texto novo no telão: vai para todos os OBS conectados.
 export function projetoLiveSetText(text: string) {
     // Limite para caber numa linha do OBS (o texto de um slide é bem menor que isso).
-    screenText = (text || "").slice(0, 4000)
+    // NFC: letra acentuada como um caractere só ("é"), e não "e" + acento solto, que o OBS desenha torto.
+    screenText = (text || "").normalize("NFC").slice(0, 4000)
     links.forEach((link) => link.sendText())
 }
 
