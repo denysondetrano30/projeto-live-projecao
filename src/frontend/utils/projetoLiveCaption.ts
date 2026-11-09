@@ -13,8 +13,16 @@ import { outputs, showsCache } from "../stores"
 let lastText: string | null = null
 let timer: ReturnType<typeof setTimeout> | null = null
 
+// O FreeShow guarda o texto dos slides como HTML ("n&atilde;o", "<br>", "&amp;"):
+// a legenda precisa do texto puro ("não").
+const htmlParser = new DOMParser()
+function plainText(html: string) {
+    const withBreaks = html.replace(/<br\s*\/?>/gi, "\n")
+    return htmlParser.parseFromString(withBreaks, "text/html").documentElement.textContent || ""
+}
+
 function textOf(items: Item[] | undefined) {
-    return getTextLines({ items: items || [] }).join("\n")
+    return plainText(getTextLines({ items: items || [] }).join("\n"))
 }
 
 function currentText(): string {
