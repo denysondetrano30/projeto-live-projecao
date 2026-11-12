@@ -28,6 +28,7 @@ import { _store, appDataPath, config, createStores, getStore, getStoreValue, set
 import { captureSlide, doesMediaExist, getThumbnail, getThumbnailFolderPath, pdfToImage, saveImage } from "../data/thumbnails"
 import { OutputHelper } from "../output/OutputHelper"
 import { pptToPdf } from "../output/ppt/pptToPdf"
+import { projetoLiveCultosLoad, projetoLiveCultosSave, projetoLiveDriveDownload, projetoLiveFilesExist } from "../projetoLive/cultos"
 import { projetoLiveConnect, projetoLiveForget, projetoLiveList, projetoLiveSetText } from "../projetoLive/obsLink"
 import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
 import { closeServers, startServers, updateServerData } from "../servers"
@@ -270,6 +271,10 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_CONNECT]: (data) => projetoLiveConnect(data.id),
     [Main.PROJETO_LIVE_FORGET]: (data) => projetoLiveForget(data.id),
     [Main.PROJETO_LIVE_TEXT]: (data) => projetoLiveSetText(data.text),
+    [Main.PROJETO_LIVE_CULTOS_LOAD]: () => projetoLiveCultosLoad(),
+    [Main.PROJETO_LIVE_CULTOS_SAVE]: (data) => projetoLiveCultosSave(data.state),
+    [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: async (data) => await projetoLiveDriveDownload(data),
+    [Main.PROJETO_LIVE_FILES_EXIST]: (data) => projetoLiveFilesExist(data.paths),
     [Main.FFMPEG_DOWNLOAD]: async () => {
         try {
             await downloadFfmpeg((progress) => {

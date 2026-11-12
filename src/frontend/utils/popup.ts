@@ -69,6 +69,7 @@ import NowPlaying from "../components/main/popups/NowPlaying.svelte"
 import OutputSelector from "../components/main/popups/OutputSelector.svelte"
 import OutputSetup from "../components/main/popups/OutputSetup.svelte"
 import PcoServicePicker from "../components/main/popups/PcoServicePicker.svelte"
+import ProjetoLiveCultos from "../components/main/popups/ProjetoLiveCultos.svelte"
 import RegexManager from "../components/main/popups/RegexManager.svelte"
 import Rename from "../components/main/popups/Rename.svelte"
 import ResetAll from "../components/main/popups/ResetAll.svelte"
@@ -182,6 +183,7 @@ export const popups: { [key in Popups]: ComponentType } = {
     template_info: TemplateInfo,
     cleaning_utility: CleaningUtility,
     pco_picker: PcoServicePicker,
+    projeto_live_cultos: ProjetoLiveCultos,
     sync_folders: SyncFolders,
     node_options: NodeOptions,
     ai_model_manager: AiModelManager,

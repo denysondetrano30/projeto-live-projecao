@@ -6,6 +6,7 @@ import type { SyncProviderId } from "../../electron/cloud/syncManager"
 import type { ContentFile, ContentLibraryCategory, ContentProviderId, MediaLicense } from "../../electron/contentProviders/base/types"
 import type { PCOFolderTreeNode } from "../../electron/contentProviders/planningCenter/request"
 import type { _store } from "../../electron/data/store"
+import type { DriveDownloadResult } from "../../electron/projetoLive/cultos"
 import type { EncoderDetection } from "../../electron/streaming/encoderDetection"
 import type { TimecodeMode } from "../../electron/timecode/timecode"
 import type { AIProviderId, AiSetupOptions, EngineStatus } from "../ai/Ai"
@@ -198,7 +199,12 @@ export enum Main {
     PROJETO_LIVE_LIST = "PROJETO_LIVE_LIST",
     PROJETO_LIVE_CONNECT = "PROJETO_LIVE_CONNECT",
     PROJETO_LIVE_FORGET = "PROJETO_LIVE_FORGET",
-    PROJETO_LIVE_TEXT = "PROJETO_LIVE_TEXT"
+    PROJETO_LIVE_TEXT = "PROJETO_LIVE_TEXT",
+    // Projeto Live (cultos do app do Diretor)
+    PROJETO_LIVE_CULTOS_LOAD = "PROJETO_LIVE_CULTOS_LOAD",
+    PROJETO_LIVE_CULTOS_SAVE = "PROJETO_LIVE_CULTOS_SAVE",
+    PROJETO_LIVE_DRIVE_DOWNLOAD = "PROJETO_LIVE_DRIVE_DOWNLOAD",
+    PROJETO_LIVE_FILES_EXIST = "PROJETO_LIVE_FILES_EXIST"
 }
 
 export interface MainSendPayloads {
@@ -307,6 +313,9 @@ export interface MainSendPayloads {
     [Main.PROJETO_LIVE_CONNECT]: { id: string }
     [Main.PROJETO_LIVE_FORGET]: { id: string }
     [Main.PROJETO_LIVE_TEXT]: { text: string }
+    [Main.PROJETO_LIVE_CULTOS_SAVE]: { state: any }
+    [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: { cultoId: string; driveId: string }
+    [Main.PROJETO_LIVE_FILES_EXIST]: { paths: string[] }
     // AI
     [Main.AI_GET_MODELS]: { providerId: AIProviderId }
     [Main.AI_LISTEN_START]: { engine: string; engineOptions: SttEngineOptions }
@@ -426,6 +435,9 @@ export interface MainReturnPayloads {
     [Main.AI_GET_STATUS]: Promise<{ [key: string]: EngineStatus }>
     [Main.AI_SETUP]: Promise<boolean>
     [Main.PROJETO_LIVE_LIST]: ProjetoLiveObs[]
+    [Main.PROJETO_LIVE_CULTOS_LOAD]: any
+    [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: Promise<DriveDownloadResult>
+    [Main.PROJETO_LIVE_FILES_EXIST]: boolean[]
     [Main.AI_SET_KEY]: Promise<boolean>
     [Main.AI_LLM_COMPLETE]: Promise<{ text: string; error?: string; code?: string; retryAfter?: number }>
 }

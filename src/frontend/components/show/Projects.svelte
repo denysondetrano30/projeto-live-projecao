@@ -568,6 +568,10 @@
                         </div>
                     </MaterialButton>
 
+                    <div class="group-spacer" />
+                    <!-- Projeto Live: cultos que chegam do app do Diretor -->
+                    <MaterialButton variant="outlined" icon="list" title="Cultos do Diretor" on:click={() => activePopup.set("projeto_live_cultos")} white>Cultos do Diretor</MaterialButton>
+
                     {#if $providerConnections.planningcenter}
                         <div class="group-spacer" />
                         <MaterialButton variant="outlined" icon="list" title="Planning Center" on:click={openPcoPicker} white>Planning Center</MaterialButton>

@@ -486,6 +486,7 @@ export type Popups =
     | "template_info"
     | "cleaning_utility"
     | "pco_picker"
+    | "projeto_live_cultos"
     | "sync_folders"
     | "node_options"
     | "ai_model_manager"

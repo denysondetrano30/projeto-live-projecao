@@ -62,6 +62,8 @@
                                         <T id="about.new_update" />: <span style="color: var(--secondary);">v{$popupData.latestVersion}</span>
                                     {:else if popupId === "pco_picker"}
                                         Planning Center
+                                    {:else if popupId === "projeto_live_cultos"}
+                                        Cultos do Diretor
                                     {:else if popupId === "audio_effect" && $popupData?.effect}
                                         <T id={EFFECTS_LIST.find((a) => a.id === $popupData.effect)?.label || "popup.audio_effect"} />
                                     {:else}
