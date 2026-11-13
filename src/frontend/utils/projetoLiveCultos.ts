@@ -263,23 +263,23 @@ export function plOpenVersion(cultoId: string, versao: number) {
         if (!isMedia(item)) {
             if (!(item.letra || "").trim()) {
                 const existing = item.titulo ? libraryShow(item.titulo) : null
-                if (existing) items.push({ id: existing, type: "show", notes })
-                else items.push({ id: uid(5), type: "section", name: title + " (sem letra e não está na biblioteca)", notes })
+                if (existing) items.push({ id: existing, type: "show", notes, plItemId: item.id } as any)
+                else items.push({ id: uid(5), type: "section", name: title + " (sem letra e não está na biblioteca)", notes, plItemId: item.id } as any)
                 return
             }
             const { id, show } = convertText({ name: title, text: item.letra, noFormatting: true, returnData: true, open: false })
             show.name = checkName(show.name, id)
             newShows.push({ id, show })
-            items.push({ id, type: "show", notes })
+            items.push({ id, type: "show", notes, plItemId: item.id } as any)
             return
         }
 
         const file = entry.arquivos[item.id]
         if (file?.ok && file.path) {
-            items.push({ id: file.path, name: title, type: item.tipo === "video" ? "video" : "image", notes })
+            items.push({ id: file.path, name: title, type: item.tipo === "video" ? "video" : "image", notes, plItemId: item.id } as any)
         } else {
             const why = file?.error ? ERROR_LABEL[file.error] : "ainda não baixou"
-            items.push({ id: uid(5), type: "section", name: "FALTA ARQUIVO: " + title, notes: notes + " · " + why })
+            items.push({ id: uid(5), type: "section", name: "FALTA ARQUIVO: " + title, notes: notes + " · " + why, plItemId: item.id } as any)
         }
     })
 

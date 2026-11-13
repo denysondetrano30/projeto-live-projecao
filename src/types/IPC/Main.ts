@@ -207,7 +207,11 @@ export enum Main {
     PROJETO_LIVE_FILES_EXIST = "PROJETO_LIVE_FILES_EXIST",
     PROJETO_LIVE_FIREBASE_READY = "PROJETO_LIVE_FIREBASE_READY",
     PROJETO_LIVE_FIREBASE_SIGNIN = "PROJETO_LIVE_FIREBASE_SIGNIN",
-    PROJETO_LIVE_FIREBASE_CULTOS = "PROJETO_LIVE_FIREBASE_CULTOS"
+    PROJETO_LIVE_FIREBASE_CULTOS = "PROJETO_LIVE_FIREBASE_CULTOS",
+    PROJETO_LIVE_LIVE_NOW = "PROJETO_LIVE_LIVE_NOW",
+    PROJETO_LIVE_LIVE_EVENTS = "PROJETO_LIVE_LIVE_EVENTS",
+    PROJETO_LIVE_LIVE_ADD = "PROJETO_LIVE_LIVE_ADD",
+    PROJETO_LIVE_LIVE_PATCH = "PROJETO_LIVE_LIVE_PATCH"
 }
 
 export interface MainSendPayloads {
@@ -321,6 +325,10 @@ export interface MainSendPayloads {
     [Main.PROJETO_LIVE_FILES_EXIST]: { paths: string[] }
     [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: { email: string; password: string }
     [Main.PROJETO_LIVE_FIREBASE_CULTOS]: { uid: string; refreshToken: string }
+    [Main.PROJETO_LIVE_LIVE_NOW]: { uid: string; refreshToken: string; cultoId: string; agora: any }
+    [Main.PROJETO_LIVE_LIVE_EVENTS]: { uid: string; refreshToken: string; cultoId: string; since: string }
+    [Main.PROJETO_LIVE_LIVE_ADD]: { uid: string; refreshToken: string; cultoId: string; evento: any }
+    [Main.PROJETO_LIVE_LIVE_PATCH]: { uid: string; refreshToken: string; cultoId: string; id: string; fields: any }
     // AI
     [Main.AI_GET_MODELS]: { providerId: AIProviderId }
     [Main.AI_LISTEN_START]: { engine: string; engineOptions: SttEngineOptions }
@@ -446,6 +454,10 @@ export interface MainReturnPayloads {
     [Main.PROJETO_LIVE_FIREBASE_READY]: boolean
     [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: Promise<any>
     [Main.PROJETO_LIVE_FIREBASE_CULTOS]: Promise<any>
+    [Main.PROJETO_LIVE_LIVE_NOW]: Promise<any>
+    [Main.PROJETO_LIVE_LIVE_EVENTS]: Promise<any>
+    [Main.PROJETO_LIVE_LIVE_ADD]: Promise<any>
+    [Main.PROJETO_LIVE_LIVE_PATCH]: Promise<any>
     [Main.AI_SET_KEY]: Promise<boolean>
     [Main.AI_LLM_COMPLETE]: Promise<{ text: string; error?: string; code?: string; retryAfter?: number }>
 }

@@ -16,6 +16,7 @@
     import Recorder from "./components/main/Recorder.svelte"
     import StatusIndicator from "./components/main/StatusIndicator.svelte"
     import Toast from "./components/main/Toast.svelte"
+    import ProjetoLiveAoVivo from "./components/main/ProjetoLiveAoVivo.svelte"
     import TooltipManager from "./components/main/TooltipManager.svelte"
     import QuickSearch from "./components/quicksearch/QuickSearch.svelte"
     import Center from "./components/system/Center.svelte"
@@ -87,6 +88,7 @@
             <Popup />
             <QuickSearch />
             <Toast />
+            <ProjetoLiveAoVivo />
             <StatusIndicator />
             <Recorder />
             <Guide />
