@@ -14,8 +14,8 @@
 // Web). Estes dados não são senha: qualquer página do Firebase os mostra; quem protege os dados
 // são o login e as regras do Firestore (firestore.rules no repositório do app do Diretor).
 export const PL_FIREBASE = {
-    apiKey: "",
-    projectId: ""
+    apiKey: "AIzaSyBubqovhUfM_HFrlGfFhBygVg2FjMi5DD0",
+    projectId: "projeto-live-e7ccb"
 }
 
 export function plFirebaseReady() {
