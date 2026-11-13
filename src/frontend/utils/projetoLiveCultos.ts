@@ -71,6 +71,8 @@ export interface PLCultoLocal {
 
 export interface PLCultosState {
     cultos: { [cultoId: string]: PLCultoLocal }
+    // Conta do Projeto Live (Firebase): só o e-mail, o id e o login que dura; nunca a senha.
+    account?: { email: string; uid: string; refreshToken: string } | null
 }
 
 export const DESTINO_LABEL: { [d in PLDestino]: string } = {
@@ -139,11 +141,16 @@ export function missingFiles(culto: PLCultoLocal, versao: number) {
     return entry.payload.itens.filter((item) => isMedia(item) && !entry.arquivos[item.id]?.ok)
 }
 
-// Recebe uma versão. Devolve um texto curto para mostrar ao operador.
+// Recebe uma versão colada (plano B, sem internet no app do Diretor).
 export async function plReceive(text: string): Promise<{ ok: boolean; message: string }> {
     await plCultosLoad()
     const payload = parseCulto(text)
     if (!payload) return { ok: false, message: "Isso não parece um culto copiado do app do Diretor." }
+    return plReceivePayload(payload)
+}
+
+// Recebe uma versão (colada ou buscada na conta). Devolve um texto curto para o operador.
+export async function plReceivePayload(payload: PLCultoVersao): Promise<{ ok: boolean; message: string }> {
 
     let isNew = false
     plCultos.update((state) => {
@@ -317,4 +324,93 @@ export function plForget(cultoId: string) {
         return state
     })
     save()
+}
+
+/* ------------------------------------------------------------------------- */
+/* Conta do Projeto Live (Firebase): busca os cultos publicados sozinha       */
+
+export const FIREBASE_ERROR: { [code: string]: string } = {
+    not_configured: "A conta do Projeto Live ainda não foi configurada neste programa.",
+    wrong_password: "E-mail ou senha errados.",
+    no_user: "Não existe conta com esse e-mail.",
+    network: "Sem internet agora. Os cultos já baixados continuam funcionando.",
+    expired: "O login venceu. Entre de novo.",
+    other: "O Firebase recusou o pedido."
+}
+
+export async function plFirebaseReady(): Promise<boolean> {
+    return !!(await requestMain(Main.PROJETO_LIVE_FIREBASE_READY))
+}
+
+export async function plSignIn(email: string, password: string): Promise<{ ok: boolean; message: string }> {
+    await plCultosLoad()
+    const result = await requestMain(Main.PROJETO_LIVE_FIREBASE_SIGNIN, { email: email.trim(), password }, undefined, 30000)
+    if (!result?.ok) return { ok: false, message: FIREBASE_ERROR[result?.error || "network"] || FIREBASE_ERROR.other }
+    plCultos.update((state) => {
+        state.account = { email: result.email, uid: result.uid, refreshToken: result.refreshToken }
+        return state
+    })
+    save()
+    return plFetch()
+}
+
+export function plSignOut() {
+    plCultos.update((state) => {
+        state.account = null
+        return state
+    })
+    save()
+}
+
+function daysAgo(days: number) {
+    const date = new Date()
+    date.setDate(date.getDate() - days)
+    return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0")
+}
+
+// Busca os cultos publicados da conta (da última semana para frente) e recebe as versões novas.
+let fetching = false
+export async function plFetch(): Promise<{ ok: boolean; message: string }> {
+    await plCultosLoad()
+    const account = get(plCultos).account
+    if (!account) return { ok: false, message: "" }
+    if (fetching) return { ok: true, message: "" }
+    fetching = true
+    try {
+        const result = await requestMain(Main.PROJETO_LIVE_FIREBASE_CULTOS, { uid: account.uid, refreshToken: account.refreshToken }, undefined, 30000)
+        if (!result?.ok) {
+            if (result?.error === "expired") plSignOut()
+            return { ok: false, message: FIREBASE_ERROR[result?.error || "network"] || FIREBASE_ERROR.other }
+        }
+        if (result.refreshToken && result.refreshToken !== account.refreshToken) {
+            plCultos.update((state) => {
+                if (state.account) state.account.refreshToken = result.refreshToken
+                return state
+            })
+            save()
+        }
+
+        const from = daysAgo(7)
+        let received = 0
+        for (const doc of result.cultos as any[]) {
+            const last = doc?.ultima
+            if (!last?.retrato || !(last.n > 0) || (last.retrato.data || "") < from) continue
+            if (get(plCultos).cultos[doc.id]?.versoes[last.n]) continue
+            const payload: PLCultoVersao = {
+                formato: PL_FORMAT,
+                cultoId: doc.id,
+                nome: last.retrato.nome,
+                data: last.retrato.data,
+                hora: last.retrato.hora,
+                versao: last.n,
+                publicadaEm: last.em,
+                itens: last.retrato.itens || []
+            }
+            await plReceivePayload(payload)
+            received++
+        }
+        return { ok: true, message: received ? (received === 1 ? "1 versão nova recebida." : received + " versões novas recebidas.") : "Tudo em dia." }
+    } finally {
+        fetching = false
+    }
 }

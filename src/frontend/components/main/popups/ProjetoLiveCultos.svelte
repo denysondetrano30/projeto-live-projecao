@@ -3,7 +3,7 @@
     // versão nova para trocar e a conferência antes do culto (veja utils/projetoLiveCultos.ts).
     import { onMount } from "svelte"
     import { activePopup } from "../../../stores"
-    import { ERROR_LABEL, isMedia, latestVersion, missingFiles, plCultos, plCultosLoad, plDownload, plDownloading, plForget, plMarkTested, plOpenVersion, plReceive, plShowProject, type PLCultoLocal } from "../../../utils/projetoLiveCultos"
+    import { ERROR_LABEL, isMedia, plFetch, plFirebaseReady, plSignIn, plSignOut, latestVersion, missingFiles, plCultos, plCultosLoad, plDownload, plDownloading, plForget, plMarkTested, plOpenVersion, plReceive, plShowProject, type PLCultoLocal } from "../../../utils/projetoLiveCultos"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
 
     let pasting = false
@@ -14,9 +14,35 @@
     // cultoId -> as três caixinhas da conferência
     let checks: { [cultoId: string]: boolean[] } = {}
 
-    onMount(() => {
-        plCultosLoad()
+    // Conta do Projeto Live (Firebase): com ela os cultos chegam sozinhos; sem ela, colar o texto.
+    let online = false
+    let email = ""
+    let password = ""
+
+    onMount(async () => {
+        await plCultosLoad()
+        online = await plFirebaseReady()
+        if (online && $plCultos.account) refresh()
     })
+
+    async function refresh() {
+        busy = true
+        const result = await plFetch()
+        busy = false
+        if (result.message) {
+            message = result.message
+            messageOk = result.ok
+        }
+    }
+
+    async function signIn() {
+        busy = true
+        const result = await plSignIn(email, password)
+        busy = false
+        password = ""
+        message = result.message
+        messageOk = result.ok
+    }
 
     const DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"]
     function when(culto: PLCultoLocal) {
@@ -77,10 +103,29 @@
 </script>
 
 <div class="wrap">
-    <div class="top">
-        <p class="hint">Enquanto o app do Diretor não está ligado à internet, ele copia o culto em "Copiar para a Projeção". Cole aqui.</p>
-        <MaterialButton variant="contained" icon="paste" title="Colar culto do Diretor" on:click={pasteFromDirector} disabled={busy}>Colar culto do Diretor</MaterialButton>
-    </div>
+    {#if online && $plCultos.account}
+        <div class="top">
+            <p class="hint">Conta: {$plCultos.account.email}. Os cultos publicados chegam ao abrir esta tela.</p>
+            <MaterialButton variant="contained" icon="refresh" title="Buscar agora" on:click={refresh} disabled={busy}>{busy ? "Buscando…" : "Buscar agora"}</MaterialButton>
+            <MaterialButton icon="logout" title="Sair da conta" on:click={plSignOut} />
+        </div>
+    {:else if online}
+        <form class="top" on:submit|preventDefault={signIn}>
+            <p class="hint">Entre com a conta do Projeto Live para receber os cultos sozinho.</p>
+            <input class="field" type="email" placeholder="E-mail" bind:value={email} autocomplete="username" />
+            <input class="field" type="password" placeholder="Senha" bind:value={password} autocomplete="current-password" />
+            <MaterialButton variant="contained" icon="check" title="Entrar" on:click={signIn} disabled={busy || !email || !password}>Entrar</MaterialButton>
+        </form>
+    {:else}
+        <div class="top">
+            <p class="hint">Enquanto o app do Diretor não está ligado à internet, ele copia o culto em "Copiar para a Projeção". Cole aqui.</p>
+            <MaterialButton variant="contained" icon="paste" title="Colar culto do Diretor" on:click={pasteFromDirector} disabled={busy}>Colar culto do Diretor</MaterialButton>
+        </div>
+    {/if}
+
+    {#if online && !pasting}
+        <button class="linkish" on:click={pasteFromDirector}>Sem internet no app do Diretor? Colar o texto copiado</button>
+    {/if}
 
     {#if pasting}
         <div class="paste">
@@ -214,6 +259,30 @@
         padding: 8px;
         font-family: inherit;
         resize: vertical;
+    }
+    .field {
+        background-color: var(--primary-darker);
+        color: var(--text);
+        border: 1px solid var(--primary-lighter);
+        border-radius: 6px;
+        padding: 8px 10px;
+        font-family: inherit;
+        width: 190px;
+    }
+    .linkish {
+        align-self: flex-start;
+        background: none;
+        border: none;
+        color: var(--text);
+        opacity: 0.55;
+        font-size: 0.8em;
+        text-decoration: underline;
+        cursor: pointer;
+        padding: 0;
+        font-family: inherit;
+    }
+    .linkish:hover {
+        opacity: 0.85;
     }
     .message {
         font-size: 0.9em;

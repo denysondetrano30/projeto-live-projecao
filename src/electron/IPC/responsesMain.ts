@@ -28,6 +28,7 @@ import { _store, appDataPath, config, createStores, getStore, getStoreValue, set
 import { captureSlide, doesMediaExist, getThumbnail, getThumbnailFolderPath, pdfToImage, saveImage } from "../data/thumbnails"
 import { OutputHelper } from "../output/OutputHelper"
 import { pptToPdf } from "../output/ppt/pptToPdf"
+import { plFirebaseCultos, plFirebaseReady, plFirebaseSignIn } from "../projetoLive/firebase"
 import { projetoLiveCultosLoad, projetoLiveCultosSave, projetoLiveDriveDownload, projetoLiveFilesExist } from "../projetoLive/cultos"
 import { projetoLiveConnect, projetoLiveForget, projetoLiveList, projetoLiveSetText } from "../projetoLive/obsLink"
 import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
@@ -275,6 +276,9 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_CULTOS_SAVE]: (data) => projetoLiveCultosSave(data.state),
     [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: async (data) => await projetoLiveDriveDownload(data),
     [Main.PROJETO_LIVE_FILES_EXIST]: (data) => projetoLiveFilesExist(data.paths),
+    [Main.PROJETO_LIVE_FIREBASE_READY]: () => plFirebaseReady(),
+    [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: async (data) => await plFirebaseSignIn(data),
+    [Main.PROJETO_LIVE_FIREBASE_CULTOS]: async (data) => await plFirebaseCultos(data),
     [Main.FFMPEG_DOWNLOAD]: async () => {
         try {
             await downloadFfmpeg((progress) => {

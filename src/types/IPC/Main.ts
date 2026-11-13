@@ -204,7 +204,10 @@ export enum Main {
     PROJETO_LIVE_CULTOS_LOAD = "PROJETO_LIVE_CULTOS_LOAD",
     PROJETO_LIVE_CULTOS_SAVE = "PROJETO_LIVE_CULTOS_SAVE",
     PROJETO_LIVE_DRIVE_DOWNLOAD = "PROJETO_LIVE_DRIVE_DOWNLOAD",
-    PROJETO_LIVE_FILES_EXIST = "PROJETO_LIVE_FILES_EXIST"
+    PROJETO_LIVE_FILES_EXIST = "PROJETO_LIVE_FILES_EXIST",
+    PROJETO_LIVE_FIREBASE_READY = "PROJETO_LIVE_FIREBASE_READY",
+    PROJETO_LIVE_FIREBASE_SIGNIN = "PROJETO_LIVE_FIREBASE_SIGNIN",
+    PROJETO_LIVE_FIREBASE_CULTOS = "PROJETO_LIVE_FIREBASE_CULTOS"
 }
 
 export interface MainSendPayloads {
@@ -316,6 +319,8 @@ export interface MainSendPayloads {
     [Main.PROJETO_LIVE_CULTOS_SAVE]: { state: any }
     [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: { cultoId: string; driveId: string }
     [Main.PROJETO_LIVE_FILES_EXIST]: { paths: string[] }
+    [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: { email: string; password: string }
+    [Main.PROJETO_LIVE_FIREBASE_CULTOS]: { uid: string; refreshToken: string }
     // AI
     [Main.AI_GET_MODELS]: { providerId: AIProviderId }
     [Main.AI_LISTEN_START]: { engine: string; engineOptions: SttEngineOptions }
@@ -438,6 +443,9 @@ export interface MainReturnPayloads {
     [Main.PROJETO_LIVE_CULTOS_LOAD]: any
     [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: Promise<DriveDownloadResult>
     [Main.PROJETO_LIVE_FILES_EXIST]: boolean[]
+    [Main.PROJETO_LIVE_FIREBASE_READY]: boolean
+    [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: Promise<any>
+    [Main.PROJETO_LIVE_FIREBASE_CULTOS]: Promise<any>
     [Main.AI_SET_KEY]: Promise<boolean>
     [Main.AI_LLM_COMPLETE]: Promise<{ text: string; error?: string; code?: string; retryAfter?: number }>
 }
