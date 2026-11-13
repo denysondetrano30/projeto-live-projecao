@@ -21,7 +21,7 @@ import { history } from "../components/helpers/history"
 import { checkName } from "../components/helpers/show"
 import { convertText } from "../converters/txt"
 import { requestMain, sendMain } from "../IPC/main"
-import { activeProject, projects } from "../stores"
+import { activeProject, projects, shows } from "../stores"
 
 export const PL_FORMAT = "projeto-live-culto"
 
@@ -222,6 +222,24 @@ function shortDate(data: string) {
     return parts.length === 3 ? `${parts[2]}/${parts[1]}` : ""
 }
 
+// Nome para comparar: sem acento, sem diferença de maiúscula e de espaços.
+function sameName(name: string) {
+    return (name || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/\s+/g, " ")
+        .trim()
+}
+
+// Música sem letra no roteiro: usa o show de mesmo nome que já está na biblioteca (o primeiro que achar).
+function libraryShow(title: string): string | null {
+    const wanted = sameName(title)
+    if (!wanted) return null
+    const found = Object.entries(get(shows)).filter(([, show]: [string, any]) => !show?.private && sameName(show?.name) === wanted)
+    return found.length ? found[0][0] : null
+}
+
 // Monta o Projeto do FreeShow com a versão e passa a usar essa versão.
 export function plOpenVersion(cultoId: string, versao: number) {
     const culto = get(plCultos).cultos[cultoId]
@@ -237,7 +255,9 @@ export function plOpenVersion(cultoId: string, versao: number) {
 
         if (!isMedia(item)) {
             if (!(item.letra || "").trim()) {
-                items.push({ id: uid(5), type: "section", name: title + " (sem letra)", notes })
+                const existing = item.titulo ? libraryShow(item.titulo) : null
+                if (existing) items.push({ id: existing, type: "show", notes })
+                else items.push({ id: uid(5), type: "section", name: title + " (sem letra e não está na biblioteca)", notes })
                 return
             }
             const { id, show } = convertText({ name: title, text: item.letra, noFormatting: true, returnData: true, open: false })
