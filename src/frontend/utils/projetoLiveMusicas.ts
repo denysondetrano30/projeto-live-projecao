@@ -17,7 +17,7 @@ import { checkName } from "../components/helpers/show"
 import { convertText } from "../converters/txt"
 import { requestMain } from "../IPC/main"
 import { shows } from "../stores"
-import { plCultos, plCultosSave } from "./projetoLiveCultos"
+import { plCifraTexto, plCultos, plCultosSave } from "./projetoLiveCultos"
 
 const EVERY_MS = 2 * 60 * 1000
 let timer: ReturnType<typeof setInterval> | null = null
@@ -79,11 +79,19 @@ async function receive(account: { uid: string; refreshToken: string }) {
     for (const musica of result.musicas as any[]) {
         const docs = state().docs
         const known = Object.entries(docs).find(([, docId]) => docId === musica.id)?.[0]
+        const cifra = String(musica.cifra || "").trim()
         if (known && all[known]) {
+            // Música que já existe: se o diretor mandou a cifra, ela ganha os acordes (mesmo nome).
+            if (cifra) {
+                const { show } = convertText({ name: all[known].name, text: plCifraTexto(cifra), noFormatting: true, returnData: true, open: false })
+                show.name = all[known].name
+                if (musica.artista) show.meta = { ...(show.meta || {}), artist: musica.artista }
+                history({ id: "SHOWS", newData: { data: [{ id: known, show }], replace: true } })
+            }
             done.push({ docId: musica.id, fields: { pendente: false, showId: known } })
             continue
         }
-        const letra = String(musica.letra || "").trim()
+        const letra = cifra ? plCifraTexto(cifra) : String(musica.letra || "").trim()
         if (!letra) {
             done.push({ docId: musica.id, fields: { pendente: false } })
             continue

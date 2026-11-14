@@ -39,6 +39,9 @@ export interface PLItem {
     // Música escolhida no banco de músicas da conta (documento e, se veio da Projeção, a música dela).
     musicaId?: string
     showId?: string
+    // Cifra colada (acordes em cima da letra, como no Cifra Club): vira a música com os acordes
+    // para o retorno de palco; o telão e a live mostram só a letra.
+    cifra?: string
 }
 
 // O que o app do Diretor manda (uma versão publicada).
@@ -255,6 +258,28 @@ function libraryShow(title: string): string | null {
     return found.length ? found[0][0] : null
 }
 
+// Cifra copiada de sites como o Cifra Club: tira o que não é música (tom, capotraste, afinação,
+// tablatura, "Parte 1 de 3"). O conversor de texto do FreeShow põe cada acorde na sílaba certa.
+export function plCifraTexto(cifra: string) {
+    return cifra
+        .replace(/\r/g, "")
+        .split("\n")
+        .filter((line) => {
+            const t = line.trim()
+            if (/^(tom|capotraste|afina[cç][aã]o)\s*:/i.test(t)) return false
+            if (/^[EADGBe]\s*\|[-\d|hpbr/\\~x\s]*$/.test(t)) return false
+            if (/^\[?tab\b.*\]?$/i.test(t)) return false
+            if (/^parte\s+\d+\s+de\s+\d+$/i.test(t)) return false
+            // "[Intro] F#m E D": parte só de instrumento (acordes sem letra) não vira slide.
+            const label = t.match(/^\[[^\]]+\]\s+(.+)$/)
+            if (label && /^[\sA-G#b0-9mMajinsudg()/|+*.-]+$/.test(label[1])) return false
+            return true
+        })
+        .join("\n")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim()
+}
+
 function bankShow(item: PLItem): string | null {
     const all = get(shows)
     if (item.showId && all[item.showId]) return item.showId
@@ -278,15 +303,20 @@ export function plOpenVersion(cultoId: string, versao: number) {
         const notes = DESTINO_LABEL[item.destino] + (item.obs ? " · " + item.obs : "")
 
         if (!isMedia(item)) {
-            if (!(item.letra || "").trim()) {
-                // Escolhida no banco de músicas: vai direto na música certa da biblioteca.
-                const fromBank = bankShow(item)
+            const source = (item.cifra || "").trim() ? plCifraTexto(item.cifra || "") : item.letra || ""
+            // Escolhida no banco de músicas: vai direto na música certa da biblioteca.
+            const fromBank = bankShow(item)
+            if (fromBank && item.musicaId) {
+                items.push({ id: fromBank, type: "show", notes, plItemId: item.id } as any)
+                return
+            }
+            if (!source.trim()) {
                 const existing = fromBank || (item.titulo ? libraryShow(item.titulo) : null)
                 if (existing) items.push({ id: existing, type: "show", notes, plItemId: item.id } as any)
                 else items.push({ id: uid(5), type: "section", name: title + " (sem letra e não está na biblioteca)", notes, plItemId: item.id } as any)
                 return
             }
-            const { id, show } = convertText({ name: title, text: item.letra, noFormatting: true, returnData: true, open: false })
+            const { id, show } = convertText({ name: title, text: source, noFormatting: true, returnData: true, open: false })
             show.name = checkName(show.name, id)
             newShows.push({ id, show })
             // Música nova que o diretor também mandou para o banco: esta passa a ser a dela na
