@@ -17,7 +17,8 @@ import { checkName } from "../components/helpers/show"
 import { convertText } from "../converters/txt"
 import { requestMain } from "../IPC/main"
 import { shows } from "../stores"
-import { plCifraTexto, plCultos, plCultosSave } from "./projetoLiveCultos"
+import { plCifraShow } from "./projetoLiveCifra"
+import { plCultos, plCultosSave } from "./projetoLiveCultos"
 
 const EVERY_MS = 2 * 60 * 1000
 let timer: ReturnType<typeof setInterval> | null = null
@@ -83,7 +84,7 @@ async function receive(account: { uid: string; refreshToken: string }) {
         if (known && all[known]) {
             // Música que já existe: se o diretor mandou a cifra, ela ganha os acordes (mesmo nome).
             if (cifra) {
-                const { show } = convertText({ name: all[known].name, text: plCifraTexto(cifra), noFormatting: true, returnData: true, open: false })
+                const { show } = plCifraShow(all[known].name, cifra)
                 show.name = all[known].name
                 if (musica.artista) show.meta = { ...(show.meta || {}), artist: musica.artista }
                 history({ id: "SHOWS", newData: { data: [{ id: known, show }], replace: true } })
@@ -91,12 +92,12 @@ async function receive(account: { uid: string; refreshToken: string }) {
             done.push({ docId: musica.id, fields: { pendente: false, showId: known } })
             continue
         }
-        const letra = cifra ? plCifraTexto(cifra) : String(musica.letra || "").trim()
-        if (!letra) {
+        const letra = String(musica.letra || "").trim()
+        if (!letra && !cifra) {
             done.push({ docId: musica.id, fields: { pendente: false } })
             continue
         }
-        const { id, show } = convertText({ name: musica.titulo || "Música", text: letra, noFormatting: true, returnData: true, open: false })
+        const { id, show } = cifra ? plCifraShow(musica.titulo || "Música", cifra) : convertText({ name: musica.titulo || "Música", text: letra, noFormatting: true, returnData: true, open: false })
         show.name = checkName(show.name, id)
         if (musica.artista) show.meta = { ...(show.meta || {}), artist: musica.artista }
         newShows.push({ id, show })

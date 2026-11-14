@@ -20,6 +20,7 @@ import type { Show } from "../../types/Show"
 import { history } from "../components/helpers/history"
 import { checkName } from "../components/helpers/show"
 import { convertText } from "../converters/txt"
+import { plCifraShow } from "./projetoLiveCifra"
 import { requestMain, sendMain } from "../IPC/main"
 import { activeProject, projects, shows } from "../stores"
 
@@ -258,28 +259,6 @@ function libraryShow(title: string): string | null {
     return found.length ? found[0][0] : null
 }
 
-// Cifra copiada de sites como o Cifra Club: tira o que não é música (tom, capotraste, afinação,
-// tablatura, "Parte 1 de 3"). O conversor de texto do FreeShow põe cada acorde na sílaba certa.
-export function plCifraTexto(cifra: string) {
-    return cifra
-        .replace(/\r/g, "")
-        .split("\n")
-        .filter((line) => {
-            const t = line.trim()
-            if (/^(tom|capotraste|afina[cç][aã]o)\s*:/i.test(t)) return false
-            if (/^[EADGBe]\s*\|[-\d|hpbr/\\~x\s]*$/.test(t)) return false
-            if (/^\[?tab\b.*\]?$/i.test(t)) return false
-            if (/^parte\s+\d+\s+de\s+\d+$/i.test(t)) return false
-            // "[Intro] F#m E D": parte só de instrumento (acordes sem letra) não vira slide.
-            const label = t.match(/^\[[^\]]+\]\s+(.+)$/)
-            if (label && /^[\sA-G#b0-9mMajinsudg()/|+*.-]+$/.test(label[1])) return false
-            return true
-        })
-        .join("\n")
-        .replace(/\n{3,}/g, "\n\n")
-        .trim()
-}
-
 function bankShow(item: PLItem): string | null {
     const all = get(shows)
     if (item.showId && all[item.showId]) return item.showId
@@ -303,11 +282,33 @@ export function plOpenVersion(cultoId: string, versao: number) {
         const notes = DESTINO_LABEL[item.destino] + (item.obs ? " · " + item.obs : "")
 
         if (!isMedia(item)) {
-            const source = (item.cifra || "").trim() ? plCifraTexto(item.cifra || "") : item.letra || ""
+            const cifra = (item.cifra || "").trim()
+            const source = item.letra || ""
             // Escolhida no banco de músicas: vai direto na música certa da biblioteca.
             const fromBank = bankShow(item)
             if (fromBank && item.musicaId) {
+                // Com cifra: a música da biblioteca ganha os acordes agora (mesmo id e nome).
+                if (cifra) {
+                    const current = get(shows)[fromBank]
+                    const { show } = plCifraShow(current?.name || item.titulo || "Música", cifra)
+                    show.name = current?.name || show.name
+                    history({ id: "SHOWS", newData: { data: [{ id: fromBank, show }], replace: true } })
+                }
                 items.push({ id: fromBank, type: "show", notes, plItemId: item.id } as any)
+                return
+            }
+            if (cifra) {
+                const { id, show } = plCifraShow(title, cifra)
+                show.name = checkName(show.name, id)
+                newShows.push({ id, show })
+                if (item.musicaId) {
+                    plCultos.update((state) => {
+                        state.musicas = state.musicas || { hashes: {}, docs: {} }
+                        state.musicas.docs[id] = item.musicaId!
+                        return state
+                    })
+                }
+                items.push({ id, type: "show", notes, plItemId: item.id } as any)
                 return
             }
             if (!source.trim()) {
