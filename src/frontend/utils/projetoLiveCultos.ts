@@ -289,6 +289,15 @@ export function plOpenVersion(cultoId: string, versao: number) {
             const { id, show } = convertText({ name: title, text: item.letra, noFormatting: true, returnData: true, open: false })
             show.name = checkName(show.name, id)
             newShows.push({ id, show })
+            // Música nova que o diretor também mandou para o banco: esta passa a ser a dela na
+            // biblioteca (o banco de músicas não cria outra igual).
+            if (item.musicaId) {
+                plCultos.update((state) => {
+                    state.musicas = state.musicas || { hashes: {}, docs: {} }
+                    state.musicas.docs[id] = item.musicaId!
+                    return state
+                })
+            }
             items.push({ id, type: "show", notes, plItemId: item.id } as any)
             return
         }
