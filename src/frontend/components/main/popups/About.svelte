@@ -1,8 +1,7 @@
 <script lang="ts">
-    import { activePopup, version } from "../../../stores"
+    import { version } from "../../../stores"
     import T from "../../helpers/T.svelte"
     import Link from "../../inputs/Link.svelte"
-    import MaterialButton from "../../inputs/MaterialButton.svelte"
 
     const assets: { name: string; url: string; title?: string }[] = [
         { name: "CMG Sans (Custom font)", url: "https://www.churchmotiongraphics.com/cmg-sans/" },
@@ -30,9 +29,7 @@
 
     <p style="font-size: 0.8em;margin-top: 2px;">
         <span style="opacity: 0.8;">v{$version}</span>
-        <MaterialButton variant="outlined" style="margin-left: 5px;display: inline-flex;min-height: 0;padding: 0 5px;vertical-align: baseline;" on:click={() => activePopup.set("update_manager")} white>
-            <T id="about.check_updates" />
-        </MaterialButton>
+        <!-- Projeto Live: atualizações vêm pelo instalador do Projeto Live, não pelo FreeShow. -->
     </p>
 
     <!-- <p>

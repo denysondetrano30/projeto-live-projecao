@@ -7,7 +7,13 @@ interface UpdateData {
     hasUpdate: boolean
 }
 
+// Projeto Live: a Projeção é uma versão própria do FreeShow e se atualiza pelo instalador do Projeto
+// Live. O aviso do FreeShow original oferecia baixar o FreeShow comum, que apagaria as funções do
+// Projeto Live; por isso a busca de versões novas fica desligada.
+const PROJETO_LIVE_NO_UPDATES = true
+
 export async function getUpdateData(currentVersion: string, includeBeta: boolean): Promise<UpdateData> {
+    if (PROJETO_LIVE_NO_UPDATES) return { latestVersion: currentVersion, changelog: "", hasUpdate: false }
     const response = await fetch("https://api.github.com/repos/ChurchApps/freeshow/releases")
     const data = await response.json()
 
@@ -27,6 +33,7 @@ export async function getUpdateData(currentVersion: string, includeBeta: boolean
 }
 
 export function checkForUpdates(currentVersion: string) {
+    if (PROJETO_LIVE_NO_UPDATES) return
     if (get(isDev) || get(alertUpdates) === false) return
     const includeBeta = currentVersion.includes("-beta") || get(special).betaVersionAlert
 

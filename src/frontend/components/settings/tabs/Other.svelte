@@ -68,10 +68,7 @@
     }
 </script>
 
-<MaterialButton variant="outlined" style="width: 100%;margin-bottom: 20px;" icon="loop" on:click={() => activePopup.set("update_manager")}>
-    <T id="about.check_updates" />
-    <!-- <T id="popup.update_manager" /> -->
-</MaterialButton>
+<!-- Projeto Live: sem "Procurar atualizações" (atualiza pelo instalador do Projeto Live). -->
 
 <MaterialToggleSwitch label="settings.popup_before_close" checked={$special.showClosePopup || false} defaultValue={false} on:change={(e) => updateSpecial(e.detail, "showClosePopup")} />
 
