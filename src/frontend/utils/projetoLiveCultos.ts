@@ -36,6 +36,9 @@ export interface PLItem {
     letra?: string
     link?: string
     obs?: string
+    // Música escolhida no banco de músicas da conta (documento e, se veio da Projeção, a música dela).
+    musicaId?: string
+    showId?: string
 }
 
 // O que o app do Diretor manda (uma versão publicada).
@@ -73,6 +76,8 @@ export interface PLCultosState {
     cultos: { [cultoId: string]: PLCultoLocal }
     // Conta do Projeto Live (Firebase): só o e-mail, o id e o login que dura; nunca a senha.
     account?: { email: string; uid: string; refreshToken: string } | null
+    // Banco de músicas da conta: o que já subiu (hash por música) e o documento de cada música.
+    musicas?: { hashes: { [showId: string]: string }; docs: { [showId: string]: string } }
 }
 
 export const DESTINO_LABEL: { [d in PLDestino]: string } = {
@@ -103,6 +108,10 @@ export async function plCultosLoad() {
 
 function save() {
     sendMain(Main.PROJETO_LIVE_CULTOS_SAVE, { state: get(plCultos) })
+}
+
+export function plCultosSave() {
+    save()
 }
 
 // Mesmo jeito de ler o link que o app do Diretor usa.
@@ -151,7 +160,6 @@ export async function plReceive(text: string): Promise<{ ok: boolean; message: s
 
 // Recebe uma versão (colada ou buscada na conta). Devolve um texto curto para o operador.
 export async function plReceivePayload(payload: PLCultoVersao): Promise<{ ok: boolean; message: string }> {
-
     let isNew = false
     plCultos.update((state) => {
         const culto = state.cultos[payload.cultoId] || { nome: payload.nome, data: payload.data, hora: payload.hora, versoes: {}, emUso: null, projetos: {}, testado: null }
@@ -247,6 +255,15 @@ function libraryShow(title: string): string | null {
     return found.length ? found[0][0] : null
 }
 
+function bankShow(item: PLItem): string | null {
+    const all = get(shows)
+    if (item.showId && all[item.showId]) return item.showId
+    if (!item.musicaId) return null
+    const docs = get(plCultos).musicas?.docs || {}
+    const found = Object.entries(docs).find(([, docId]) => docId === item.musicaId)
+    return found && all[found[0]] ? found[0] : null
+}
+
 // Monta o Projeto do FreeShow com a versão e passa a usar essa versão.
 export function plOpenVersion(cultoId: string, versao: number) {
     const culto = get(plCultos).cultos[cultoId]
@@ -262,7 +279,9 @@ export function plOpenVersion(cultoId: string, versao: number) {
 
         if (!isMedia(item)) {
             if (!(item.letra || "").trim()) {
-                const existing = item.titulo ? libraryShow(item.titulo) : null
+                // Escolhida no banco de músicas: vai direto na música certa da biblioteca.
+                const fromBank = bankShow(item)
+                const existing = fromBank || (item.titulo ? libraryShow(item.titulo) : null)
                 if (existing) items.push({ id: existing, type: "show", notes, plItemId: item.id } as any)
                 else items.push({ id: uid(5), type: "section", name: title + " (sem letra e não está na biblioteca)", notes, plItemId: item.id } as any)
                 return
@@ -357,6 +376,8 @@ export async function plSignIn(email: string, password: string): Promise<{ ok: b
 export function plSignOut() {
     plCultos.update((state) => {
         state.account = null
+        // Outra conta pode entrar depois: o banco de músicas sobe de novo do zero para ela.
+        state.musicas = undefined
         return state
     })
     save()

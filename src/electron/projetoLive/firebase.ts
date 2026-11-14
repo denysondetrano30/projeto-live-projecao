@@ -121,7 +121,9 @@ export async function plFirebaseCultos(data: { uid: string; refreshToken: string
             .filter((row: any) => row.document)
             .map((row: any) => {
                 const fields = plain({ mapValue: { fields: row.document.fields || {} } })
-                fields.id = String(row.document.name || "").split("/").pop()
+                fields.id = String(row.document.name || "")
+                    .split("/")
+                    .pop()
                 return fields
             })
         return { ok: true, refreshToken: auth.refreshToken, cultos }
@@ -216,7 +218,9 @@ export async function plLiveEvents(data: { uid: string; refreshToken: string; cu
             .filter((row: any) => row.document)
             .map((row: any) => {
                 const fields = plain({ mapValue: { fields: row.document.fields || {} } })
-                fields.id = String(row.document.name || "").split("/").pop()
+                fields.id = String(row.document.name || "")
+                    .split("/")
+                    .pop()
                 return fields
             })
         return { ok: true, eventos }
@@ -243,6 +247,55 @@ export async function plLivePatchEvent(data: { uid: string; refreshToken: string
     try {
         const { status, answer } = await patchDoc(`aoVivo/${encodeURIComponent(data.cultoId)}/eventos/${encodeURIComponent(data.id)}`, auth.token, data.fields)
         return status === 200 ? { ok: true } : failFrom(status, answer)
+    } catch (err) {
+        return { ok: false, error: "network", detail: String(err) }
+    }
+}
+
+/* ---- Banco de músicas da igreja (musicas/<id>) ----
+ * { owner, titulo, artista, capa, letra, showId, origem: "projecao"|"diretor", pendente, apagada,
+ *   atualizadoEm }
+ * A Projeção sobe a biblioteca (só o que mudou, em lotes) e baixa as cadastradas pelo diretor
+ * ("pendente": true), que viram música na biblioteca sozinhas. */
+
+// Grava vários documentos de uma vez (cada um só com os campos dados).
+export async function plMusicasUpload(data: { uid: string; refreshToken: string; songs: { docId: string; fields: any }[] }): Promise<{ ok: true; refreshToken: string } | Fail> {
+    const auth = await authed(data)
+    if (!auth.ok) return auth
+    const base = `projects/${PL_FIREBASE.projectId}/databases/(default)/documents/musicas/`
+    for (let start = 0; start < data.songs.length; start += 200) {
+        const writes = data.songs.slice(start, start + 200).map((song) => ({
+            update: { name: base + song.docId, fields: typed({ ...song.fields, owner: data.uid }).mapValue.fields },
+            updateMask: { fieldPaths: [...Object.keys(song.fields), "owner"] }
+        }))
+        try {
+            const url = `https://firestore.googleapis.com/v1/projects/${PL_FIREBASE.projectId}/databases/(default)/documents:commit`
+            const { status, answer } = await request("POST", url, auth.token, { writes })
+            if (status !== 200) return failFrom(status, answer)
+        } catch (err) {
+            return { ok: false, error: "network", detail: String(err) }
+        }
+    }
+    return { ok: true, refreshToken: auth.refreshToken }
+}
+
+// As músicas que o diretor cadastrou e a Projeção ainda não pegou.
+export async function plMusicasPending(data: { uid: string; refreshToken: string }): Promise<{ ok: true; refreshToken: string; musicas: any[] } | Fail> {
+    const auth = await authed(data)
+    if (!auth.ok) return auth
+    const equal = (field: string, value: any) => ({ fieldFilter: { field: { fieldPath: field }, op: "EQUAL", value: typed(value) } })
+    const body = {
+        structuredQuery: {
+            from: [{ collectionId: "musicas" }],
+            where: { compositeFilter: { op: "AND", filters: [equal("owner", data.uid), equal("pendente", true)] } },
+            limit: 100
+        }
+    }
+    try {
+        const { status, answer } = await request("POST", documentsUrl("").replace(/\/$/, "") + ":runQuery", auth.token, body)
+        if (status !== 200) return failFrom(status, answer)
+        const musicas = (Array.isArray(answer) ? answer : []).filter((row: any) => row.document).map((row: any) => ({ id: String(row.document.name).split("/").pop(), ...plain({ mapValue: { fields: row.document.fields || {} } }) }))
+        return { ok: true, refreshToken: auth.refreshToken, musicas }
     } catch (err) {
         return { ok: false, error: "network", detail: String(err) }
     }

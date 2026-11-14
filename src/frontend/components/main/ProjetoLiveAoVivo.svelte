@@ -2,6 +2,7 @@
     // Projeto Live: recados e sugestões do diretor no canto da tela (bloco 6).
     import { onMount } from "svelte"
     import { plCultosLoad } from "../../utils/projetoLiveCultos"
+    import { plMusicasStart } from "../../utils/projetoLiveMusicas"
     import { plLiveDiscard, plLiveDismiss, plLiveInsert, plLiveRecados, plLiveReply, plLiveStart, plLiveSugestoes } from "../../utils/projetoLiveAoVivo"
 
     const PRONTAS = ["OK", "Pronto", "Agora não"]
@@ -12,6 +13,7 @@
     onMount(async () => {
         await plCultosLoad()
         plLiveStart()
+        plMusicasStart()
     })
 
     function send(id: string) {
