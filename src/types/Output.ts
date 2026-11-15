@@ -5,6 +5,22 @@ export interface Outputs {
     [key: string]: Output
 }
 
+export interface PLForma {
+    id: string
+    tipo: "ret" | "circ"
+    x: number // frações da tela (0 a 1)
+    y: number
+    w: number
+    h: number
+    raio?: number // cantos: fração do menor lado (0 a 0.5)
+}
+export interface PLMascara {
+    id: string
+    nome: string
+    formas: PLForma[]
+    png?: string
+}
+
 export interface Output {
     id?: string
     hideFromPreview?: boolean
@@ -34,6 +50,8 @@ export interface Output {
     invisible?: boolean
     taskbar?: boolean
     style?: string
+    mascaras?: PLMascara[] // Projeto Live: máscaras com nome (painel de LED)
+    mascaraAtiva?: string
     show?: any
     out?: OutData
 }

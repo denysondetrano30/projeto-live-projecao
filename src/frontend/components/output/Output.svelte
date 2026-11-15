@@ -27,6 +27,7 @@
     import SlideContent from "./layers/SlideContent.svelte"
     import RepaintTick from "./RepaintTick.svelte"
     import Window from "./Window.svelte"
+    import ProjetoLiveMascara from "./layers/ProjetoLiveMascara.svelte"
 
     export let outputId = ""
     export let style = ""
@@ -219,6 +220,7 @@
     // slide styling
     // currentSlide?.settings?.resolution
     $: resolution = getResolution(null, { currentOutput, currentStyle }, false, outputId, styleId)
+    $: plMascara = currentOutput?.mascaraAtiva ? (currentOutput.mascaras || []).find((m) => m.id === currentOutput.mascaraAtiva) : null
     $: transitions = getOutputTransitions(slideData, currentStyle.transition, $transitionData, mirror && !preview)
     $: slideFilter = getSlideFilter(slideData)
 
@@ -472,6 +474,11 @@
         {:else}
             <p class="attributionString" transition:custom={textTransition}>{actualSlide.attributionString.slice(0, 135)}</p>
         {/if}
+    {/if}
+
+    <!-- Projeto Live: máscara do painel de LED (por saída) -->
+    {#if plMascara}
+        <ProjetoLiveMascara mascara={plMascara} width={resolution.width} height={resolution.height} />
     {/if}
 
     <!-- draw -->
