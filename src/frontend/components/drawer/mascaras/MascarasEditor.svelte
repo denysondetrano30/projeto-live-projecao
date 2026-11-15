@@ -88,7 +88,7 @@
             <input class="nome" value={m.nome} on:change={(e) => m && mudarMascara(oid, m.id, (k) => (k.nome = e.currentTarget.value.trim() || k.nome))} aria-label="Nome da máscara" />
             <button on:click={() => addForma("ret")}>+ Retângulo</button>
             <button on:click={() => addForma("circ")}>+ Círculo</button>
-            <select value={m.camada || "fundo"} on:change={(e) => m && mudarMascara(oid, m.id, (k) => (k.camada = e.currentTarget.value as any))} title="Quais camadas a máscara recorta">
+            <select value={m.camada || "fundo"} on:change={(e) => m && mudarMascara(oid, m.id, (k) => (k.camada = e.currentTarget.value))} title="Quais camadas a máscara recorta">
                 <option value="fundo">Recorta só o fundo (letra por cima)</option>
                 <option value="letra">Recorta fundo e letra</option>
                 <option value="tudo">Recorta tudo (até sobreposições)</option>
