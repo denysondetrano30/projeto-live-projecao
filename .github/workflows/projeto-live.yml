@@ -2,6 +2,10 @@
 # da compilação (aba Actions > a compilação > Artifacts):
 # - projecao-portatil-windows-x64-<commit>: pasta pronta para usar sem instalar (abrir FreeShow.exe)
 # - projecao-windows-x64-<commit>: o instalador
+# - projecao-mac-<commit>: os .dmg do Mac (chip Apple e Intel); também publicados em Releases >
+#   "teste" com nome fixo (link direto, sem login):
+#   https://github.com/denysondetrano30/projeto-live-projecao/releases/download/teste/ProjetoLive-Projecao-Mac-chip-Apple.dmg
+#   https://github.com/denysondetrano30/projeto-live-projecao/releases/download/teste/ProjetoLive-Projecao-Mac-Intel.dmg
 name: Projeto Live
 on:
     push:
@@ -48,3 +52,54 @@ jobs:
                   name: projecao-windows-x64-${{ steps.sha.outputs.short }}
                   path: dist/*.exe
                   if-no-files-found: error
+
+    mac:
+        name: "Mac (chip Apple e Intel)"
+        runs-on: macos-14
+        permissions:
+            contents: write
+
+        steps:
+            - name: Check out Git repository
+              uses: actions/checkout@v5
+
+            - name: Install Node.js and NPM
+              uses: actions/setup-node@v5
+              with:
+                  node-version: 22
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build app
+              run: |
+                  npm run build
+                  npx electron-builder --config config/building/electron-builder.mac.yaml --publish never
+                  node scripts/cleanBuilds.js
+
+            - name: Short commit
+              id: sha
+              run: echo "short=${GITHUB_SHA::9}" >> "$GITHUB_OUTPUT"
+
+            - name: Upload dmg
+              uses: actions/upload-artifact@v4
+              with:
+                  name: projecao-mac-${{ steps.sha.outputs.short }}
+                  path: dist/*.dmg
+                  if-no-files-found: error
+
+            - name: Publica em Releases > teste (link fixo)
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  set -e
+                  ls dist
+                  cp "$(ls dist/*arm64*.dmg | head -1)" ProjetoLive-Projecao-Mac-chip-Apple.dmg
+                  cp "$(ls dist/*.dmg | grep -v arm64 | head -1)" ProjetoLive-Projecao-Mac-Intel.dmg
+                  notes="Projeção do Projeto Live para Mac (compilação ${{ steps.sha.outputs.short }}). Sem assinatura da Apple: na primeira vez, Ajustes do Sistema › Privacidade e Segurança › Abrir mesmo assim."
+                  if ! gh release view teste >/dev/null 2>&1; then
+                    gh release create teste --prerelease --target main --title "Versão de teste" --notes "$notes"
+                  else
+                    gh release edit teste --notes "$notes"
+                  fi
+                  gh release upload teste ProjetoLive-Projecao-Mac-chip-Apple.dmg ProjetoLive-Projecao-Mac-Intel.dmg --clobber

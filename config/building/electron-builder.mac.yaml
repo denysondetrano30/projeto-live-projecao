@@ -1,0 +1,14 @@
+# Projeto Live: a Projeção para Mac, sem a assinatura paga da Apple.
+# Assinatura "ad hoc" (identity "-"): o Mac com chip Apple só abre apps assinados; sem conta de
+# desenvolvedor da Apple, a primeira abertura pede "Abrir mesmo assim" em Ajustes › Privacidade e
+# Segurança. Só o .dmg (o .zip não é usado).
+extends: config/building/electron-builder.yaml
+
+mac:
+    identity: "-"
+    hardenedRuntime: false
+    target:
+        - target: dmg
+          arch:
+              - x64
+              - arm64
