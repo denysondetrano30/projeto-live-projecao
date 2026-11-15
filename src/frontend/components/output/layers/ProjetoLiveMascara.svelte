@@ -45,7 +45,6 @@
         position: absolute;
         inset: 0;
         pointer-events: none;
-        z-index: 9999;
     }
     .mascara.editor {
         opacity: 0.75;

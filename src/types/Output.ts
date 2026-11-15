@@ -19,6 +19,7 @@ export interface PLMascara {
     nome: string
     formas: PLForma[]
     png?: string
+    camada?: "fundo" | "letra" | "tudo" // até onde corta (padrão: só o fundo; a letra fica por cima)
 }
 
 export interface Output {

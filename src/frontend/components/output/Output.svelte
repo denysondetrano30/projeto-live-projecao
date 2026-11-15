@@ -221,6 +221,7 @@
     // currentSlide?.settings?.resolution
     $: resolution = getResolution(null, { currentOutput, currentStyle }, false, outputId, styleId)
     $: plMascara = currentOutput?.mascaraAtiva ? (currentOutput.mascaras || []).find((m) => m.id === currentOutput.mascaraAtiva) : null
+    $: plCamada = plMascara?.camada || "fundo"
     $: transitions = getOutputTransitions(slideData, currentStyle.transition, $transitionData, mirror && !preview)
     $: slideFilter = getSlideFilter(slideData)
 
@@ -433,6 +434,11 @@
         <EffectOutput ids={effectsUnderSlide} transition={transitions.overlay} {mirror} />
     {/if}
 
+    <!-- Projeto Live: máscara só no fundo (a letra e as sobreposições ficam por cima) -->
+    {#if plMascara && plCamada === "fundo"}
+        <ProjetoLiveMascara mascara={plMascara} width={resolution.width} height={resolution.height} />
+    {/if}
+
     <!-- "underlays" -->
     {#if overlaysActive}
         <!-- && outUnderlays?.length -->
@@ -457,6 +463,11 @@
         <Overlay overlay={{ items: currentMetadataItems }} isClearing={isMetadataClearing || isSlideClearing} {outputId} transition={actualTextTransition} styleIdOverride={styleIdOverride || sceneStyleId} />
     {/if}
 
+    <!-- Projeto Live: máscara no fundo e na letra (sobreposições por cima) -->
+    {#if plMascara && plCamada === "letra"}
+        <ProjetoLiveMascara mascara={plMascara} width={resolution.width} height={resolution.height} />
+    {/if}
+
     <!-- effects -->
     {#if effectsOverSlide && layers.includes("overlays")}
         <EffectOutput ids={effectsOverSlide} transition={transitions.overlay} {mirror} />
@@ -477,7 +488,7 @@
     {/if}
 
     <!-- Projeto Live: máscara do painel de LED (por saída) -->
-    {#if plMascara}
+    {#if plMascara && plCamada === "tudo"}
         <ProjetoLiveMascara mascara={plMascara} width={resolution.width} height={resolution.height} />
     {/if}
 
