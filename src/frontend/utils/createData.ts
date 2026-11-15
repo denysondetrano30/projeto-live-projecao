@@ -1032,14 +1032,15 @@ function getDefaultScriptureTemplates() {
         items: [
             {
                 // textFit: "shrinkToFit",
-                style: "top: 30px;left: 30px;width: 1860px;height: 865px;background-color: rgb(0 0 0 / 0.4);border-radius: 20px;padding: 25px;",
+                // Projeto Live: sem a caixa escura atrás do texto (fica direto sobre o vídeo de fundo) e sem o nome da tradução
+                style: "top: 30px;left: 30px;width: 1860px;height: 865px;padding: 25px;",
                 align: "",
                 lines: [
                     {
                         align: "text-align: left;",
                         text: [
-                            { value: "{scripture_number} ", style: "font-size: 40px;color: rgb(255 255 255 / 0.6);" },
-                            { value: "{scripture_text}", style: "font-size: 80px;" }
+                            { value: "{scripture_number} ", style: "font-size: 40px;color: rgb(255 255 255 / 0.6);text-shadow: 2px 2px 8px rgb(0 0 0 / 0.5);" },
+                            { value: "{scripture_text}", style: "font-size: 80px;text-shadow: 2px 2px 8px rgb(0 0 0 / 0.5);" }
                         ]
                     }
                 ]
@@ -1047,10 +1048,7 @@ function getDefaultScriptureTemplates() {
             {
                 style: "top: 900px;left: 30px;width: 1860px;height: 150px;",
                 align: "",
-                lines: [
-                    { align: "", text: [{ value: "{scripture_reference}", style: "font-size: 55px;color: rgb(255 255 255 / 0.8);" }] },
-                    { align: "", text: [{ value: "{scripture_name}", style: "font-size: 40px;color: rgb(255 255 255 / 0.7);" }] }
-                ]
+                lines: [{ align: "", text: [{ value: "{scripture_reference}", style: "font-size: 55px;color: rgb(255 255 255 / 0.8);text-shadow: 2px 2px 8px rgb(0 0 0 / 0.5);" }] }]
             }
         ]
     }
