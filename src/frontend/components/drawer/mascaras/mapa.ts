@@ -150,6 +150,9 @@ export function aplicarJuncao(j: Juncao) {
             const antes = o.mapa?.juncao ? o.mapa.estiloAntes : o.style || ""
             o.mapa = { ...(o.mapa || {}), ...porSaida[id], estiloAntes: antes }
             o.style = ESTILO_JUNCAO
+            // todas as saídas da junção recebem o mesmo conteúdo (no FreeShow, só as "ativas" recebem)
+            o.enabled = true
+            o.active = true
         })
         return a
     })

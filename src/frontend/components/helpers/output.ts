@@ -876,11 +876,14 @@ export function getOutputResolution(outputId: string, _updater = get(outputs), s
     const cropping = currentOutput?.cropping || currentStyle?.cropping
     const cropKey = cropping ? `${cropping.top || 0}_${cropping.right || 0}_${cropping.bottom || 0}_${cropping.left || 0}` : ""
     const styleRatioKey = styleRatioVal ? `${styleRatioVal.width}x${styleRatioVal.height}_${styleRatioVal.outputResolutionAsRatio ? 1 : 0}_${cropKey}` : ""
-    const cacheKey = `${outputId}_${scaled}_${effectiveStyleId}_${styleRatioKey}_${currentOutput?.bounds?.width || 0}_${currentOutput?.bounds?.height || 0}`
+    // Projeto Live: com mapeamento (região), a escala vem do tamanho da imagem inteira, não da janela
+    const plRegiao = currentOutput?.mapa?.regiao
+    const plBounds = currentOutput?.bounds?.width && plRegiao && plRegiao.w > 0 && plRegiao.h > 0 && (plRegiao.w < 1 || plRegiao.h < 1) ? { ...currentOutput.bounds, width: currentOutput.bounds.width / plRegiao.w, height: currentOutput.bounds.height / plRegiao.h } : currentOutput?.bounds
+    const cacheKey = `${outputId}_${scaled}_${effectiveStyleId}_${styleRatioKey}_${plBounds?.width || 0}_${plBounds?.height || 0}`
     const cached = outputResolutionCache.get(cacheKey)
     if (cached) return { ...cached }
 
-    const outputRes = clone(currentOutput?.bounds?.width ? currentOutput.bounds : DEFAULT_BOUNDS)
+    const outputRes = clone(plBounds?.width ? plBounds : DEFAULT_BOUNDS)
 
     const styleRatio = getResolution(null, null, false, outputId, styleIdOverride)
     const styleAspectRatio = styleRatio.width / styleRatio.height
