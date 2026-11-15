@@ -5,7 +5,7 @@
     import { outputs } from "../../../stores"
     import { imageExtensions } from "../../../values/extensions"
     import MaterialFilePicker from "../../inputs/MaterialFilePicker.svelte"
-    import { mudarForma, mudarMascara, plMascaraUI, resolucao, saidasDeTela } from "../mascaras/mascaras"
+    import { cantosDe, mudarForma, mudarMascara, plMascaraUI, resolucao, saidasDeTela } from "../mascaras/mascaras"
 
     $: saida = saidasDeTela($outputs).find((s) => s.id === $plMascaraUI.outputId)
     $: m = ((saida?.o.mascaras || []) as PLMascara[]).find((k) => k.id === $plMascaraUI.editId) || null
@@ -20,6 +20,49 @@
         mudarForma(oid, m.id, f.id, (k) => (k[campo] = Math.max(0, Math.min(1, v / total))))
     }
     const emPx = (v: number, total: number) => Math.round(v * total)
+
+    // cantos (igual ao Photoshop: cadeado liga os quatro)
+    const NOMES = ["Sup. esquerdo", "Sup. direito", "Inf. esquerdo", "Inf. direito"]
+    const ORDEM = [0, 1, 3, 2] // na grade: sup. esq., sup. dir., inf. esq., inf. dir.
+    $: lado = f ? Math.min(f.w * W, f.h * H) : 1
+    $: cantos = f ? cantosDe(f) : [0, 0, 0, 0]
+    function trocarCadeado() {
+        if (!m || !f) return
+        const atuais = cantosDe(f)
+        mudarForma(oid, m.id, f.id, (k) => {
+            if (k.cantosSoltos) {
+                k.cantosSoltos = false
+                k.raio = Math.max(...atuais)
+            } else {
+                k.cantosSoltos = true
+                k.cantos = [...atuais]
+            }
+        })
+    }
+    function canto(i: number, frac: number) {
+        if (!m || !f) return
+        const v = Math.max(0, Math.min(0.5, frac))
+        mudarForma(oid, m.id, f.id, (k) => {
+            if (!k.cantosSoltos) k.raio = v
+            else {
+                k.cantos = [...cantosDe(k)]
+                k.cantos[i] = v
+            }
+        })
+    }
+    function cantoPx(i: number, valor: string) {
+        const v = Number(valor)
+        if (!isNaN(v)) canto(i, v / lado)
+    }
+    function atalho(qual: "cima" | "baixo" | "esq" | "dir") {
+        if (!m || !f) return
+        const r = Math.max(...cantosDe(f)) || 0.1
+        const mapa = { cima: [r, r, 0, 0], baixo: [0, 0, r, r], esq: [r, 0, 0, r], dir: [0, r, r, 0] }
+        mudarForma(oid, m.id, f.id, (k) => {
+            k.cantosSoltos = true
+            k.cantos = mapa[qual]
+        })
+    }
     function duplicar() {
         if (!m || !f) return
         const id = uid()
@@ -47,7 +90,36 @@
             </div>
             <p class="dica">Em pixels da saída ({W}×{H}). Setas do teclado movem 1 px (Shift: 10 px).</p>
             {#if f.tipo === "ret"}
-                <label class="raio">Cantos arredondados <input type="range" min="0" max="0.5" step="0.01" value={f.raio || 0} on:input={(e) => m && f && mudarForma(oid, m.id, f.id, (k) => (k.raio = Number(e.currentTarget.value)))} /></label>
+                <div class="cantosTopo">
+                    <span class="titulo2">Cantos arredondados</span>
+                    <button class="cadeado" class:aberto={f.cantosSoltos} title={f.cantosSoltos ? "Cada canto separado (clique para ligar os quatro)" : "Os quatro cantos juntos (clique para soltar)"} on:click={trocarCadeado}>
+                        {f.cantosSoltos ? "🔓 Separados" : "🔗 Juntos"}
+                    </button>
+                </div>
+                {#if !f.cantosSoltos}
+                    <div class="linhaCanto">
+                        <input type="range" min="0" max="0.5" step="0.005" value={cantos[0]} on:input={(e) => canto(0, Number(e.currentTarget.value))} />
+                        <input type="number" value={Math.round(cantos[0] * lado)} on:change={(e) => cantoPx(0, e.currentTarget.value)} />
+                    </div>
+                {:else}
+                    <div class="grade">
+                        {#each ORDEM as i}
+                            <label>{NOMES[ORDEM.indexOf(i)]}
+                                <div class="linhaCanto">
+                                    <input type="range" min="0" max="0.5" step="0.005" value={cantos[i]} on:input={(e) => canto(i, Number(e.currentTarget.value))} />
+                                    <input type="number" value={Math.round(cantos[i] * lado)} on:change={(e) => cantoPx(i, e.currentTarget.value)} />
+                                </div>
+                            </label>
+                        {/each}
+                    </div>
+                {/if}
+                <div class="atalhos">
+                    <span class="dica">Só os de:</span>
+                    <button on:click={() => atalho("cima")}>cima</button>
+                    <button on:click={() => atalho("baixo")}>baixo</button>
+                    <button on:click={() => atalho("esq")}>esquerda</button>
+                    <button on:click={() => atalho("dir")}>direita</button>
+                </div>
             {/if}
             <div class="botoes">
                 <button on:click={duplicar}>Duplicar forma</button>
@@ -101,6 +173,45 @@
         font-size: 1.05em;
         width: 100%;
         box-sizing: border-box;
+    }
+    .cantosTopo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 6px;
+    }
+    .titulo2 {
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+    .cadeado {
+        width: auto;
+    }
+    .cadeado.aberto {
+        border-color: var(--secondary);
+    }
+    .linhaCanto {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+    }
+    .linhaCanto input[type="range"] {
+        flex: 1;
+        min-width: 0;
+    }
+    .linhaCanto input[type="number"] {
+        width: 64px;
+        flex: none;
+    }
+    .atalhos {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .atalhos button {
+        width: auto;
+        padding: 3px 8px;
     }
     .botoes {
         display: flex;

@@ -49,6 +49,19 @@ export function ativarMascara(outputId: string, id: string) {
     })
 }
 
+// cantos de uma forma: [sup. esq., sup. dir., inf. dir., inf. esq.] em fração do menor lado
+export function cantosDe(f: PLForma): number[] {
+    if (f.cantosSoltos && f.cantos?.length === 4) return f.cantos
+    const r = f.raio || 0
+    return [r, r, r, r]
+}
+// caminho SVG de um retângulo com cada canto arredondado do seu jeito
+export function caminhoRet(x: number, y: number, w: number, h: number, cantos: number[]) {
+    const lado = Math.min(w, h)
+    const [a, b, c, d] = cantos.map((v) => Math.max(0, Math.min(0.5, v || 0)) * lado)
+    return `M${x + a},${y} H${x + w - b} A${b},${b} 0 0 1 ${x + w},${y + b} V${y + h - c} A${c},${c} 0 0 1 ${x + w - c},${y + h} H${x + d} A${d},${d} 0 0 1 ${x},${y + h - d} V${y + a} A${a},${a} 0 0 1 ${x + a},${y} Z`
+}
+
 export function resolucao(o: Output | undefined) {
     return { W: o?.forcedResolution?.width || o?.bounds?.width || 1920, H: o?.forcedResolution?.height || o?.bounds?.height || 1080 }
 }

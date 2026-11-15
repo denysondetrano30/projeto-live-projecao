@@ -13,6 +13,8 @@ export interface PLForma {
     w: number
     h: number
     raio?: number // cantos: fração do menor lado (0 a 0.5)
+    cantos?: number[] // cada canto separado [sup. esq., sup. dir., inf. dir., inf. esq.] (mesma escala do raio)
+    cantosSoltos?: boolean // true = cada canto com seu valor (cadeado aberto)
 }
 export interface PLMascara {
     id: string
