@@ -1,6 +1,6 @@
 <script lang="ts">
     // Projeto Live: centro da aba Mapeamento › Projetores (assistente de junção e ajuste dos 4 cantos)
-    import { outputs } from "../../../stores"
+    import { activePage, outputs, settingsTab } from "../../../stores"
     import { aplicarJuncao, calcularJuncao, CANTOS_ZERO, desfazerJuncao, mudarMapa, tamanhoProjetor } from "./mapa"
     import type { Juncao } from "./mapa"
     import { plMascaraUI, saidasDeTela } from "./mascaras"
@@ -54,6 +54,12 @@
         const r = aplicarJuncao(j)
         if (r) aplicado = `Junção aplicada: imagem inteira de ${r.CW} × ${r.CH} px.`
     }
+
+    function abrirSaidas() {
+        settingsTab.set("display_settings")
+        activePage.set("settings")
+    }
+    $: faltam = j.colunas * j.linhas - saidas.length
 
     // ---- 4 cantos ----
     $: cantos = saida?.o.mapa?.cantos?.length === 4 ? saida.o.mapa.cantos : CANTOS_ZERO
@@ -122,6 +128,13 @@
                     <label>Sobreposição em cima/embaixo (px) <input type="number" min="0" value={j.sobreV} on:change={(e) => (j = { ...j, sobreV: Math.max(0, +e.currentTarget.value || 0) })} /></label>
                 {/if}
             </div>
+
+            {#if faltam > 0}
+                <div class="falta">
+                    <span>Cada quadrinho é uma <b>saída</b> da Projeção (não a tela do computador). Para essa grade faltam <b>{faltam}</b> saída{faltam === 1 ? "" : "s"}: crie no <b>+</b> e escolha em qual tela cada uma aparece.</span>
+                    <button on:click={abrirSaidas}>Criar saídas</button>
+                </div>
+            {/if}
 
             <div class="celulas" style="grid-template-columns: repeat({j.colunas}, minmax(0, 1fr));">
                 {#each j.celulas as id, i}
@@ -329,6 +342,19 @@
         background: #fff;
         border: 2px solid #000;
         cursor: grab;
+    }
+    .falta {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        background: rgb(242 184 75 / 0.12);
+        border: 1px solid rgb(242 184 75 / 0.5);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 0.9em;
+    }
+    .falta span {
+        flex: 1;
     }
     .muted {
         opacity: 0.65;
