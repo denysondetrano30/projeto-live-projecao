@@ -60,6 +60,12 @@
         activePage.set("settings")
     }
     $: faltam = j.colunas * j.linhas - saidas.length
+    const tam = (id: string) => {
+        const b = $outputs[id]?.bounds
+        return b ? `${Math.round(b.width)}×${Math.round(b.height)}` : ""
+    }
+    $: tamanhos = [...new Set(idsGrade.map((id) => tam(id)))].filter(Boolean)
+    $: diferentes = tamanhos.length > 1
 
     // ---- 4 cantos ----
     $: cantos = saida?.o.mapa?.cantos?.length === 4 ? saida.o.mapa.cantos : CANTOS_ZERO
@@ -138,14 +144,24 @@
 
             <div class="celulas" style="grid-template-columns: repeat({j.colunas}, minmax(0, 1fr));">
                 {#each j.celulas as id, i}
-                    <select value={id} on:change={(e) => escolher(i, e.currentTarget.value)}>
-                        <option value="">— vazio —</option>
-                        {#each saidas as s}
-                            <option value={s.id}>{s.nome}</option>
-                        {/each}
-                    </select>
+                    <div class="cel">
+                        <select value={id} on:change={(e) => escolher(i, e.currentTarget.value)}>
+                            <option value="">— vazio —</option>
+                            {#each saidas as s}
+                                <option value={s.id}>{s.nome}</option>
+                            {/each}
+                        </select>
+                        {#if id}<span class="tam" class:ruim={diferentes}>janela {tam(id)}</span>{/if}
+                    </div>
                 {/each}
             </div>
+
+            {#if diferentes}
+                <div class="falta">
+                    <span>As janelas têm tamanhos diferentes ({tamanhos.join(", ")}). Na junção todos os projetores precisam ter o mesmo tamanho: ajuste em Configurações › Saídas › Tela de saída › Mudar valores de saída e depois clique em Atualizar junção.</span>
+                    <button on:click={abrirSaidas}>Abrir Saídas</button>
+                </div>
+            {/if}
 
             <div class="area">
                 <div class="quadro" style="aspect-ratio: {previa.CW} / {previa.CH};">
@@ -342,6 +358,20 @@
         background: #fff;
         border: 2px solid #000;
         cursor: grab;
+    }
+    .cel {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    .tam {
+        font-size: 0.75em;
+        opacity: 0.6;
+        padding-left: 4px;
+    }
+    .tam.ruim {
+        color: #f2b84b;
+        opacity: 1;
     }
     .falta {
         display: flex;
