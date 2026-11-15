@@ -7,7 +7,9 @@ export interface Outputs {
 
 export interface PLForma {
     id: string
-    tipo: "ret" | "circ"
+    tipo: "ret" | "circ" | "img"
+    src?: string // tipo "img": caminho do PNG (desenhado por cima, sem deformar)
+    ar?: number // tipo "img": largura/altura da imagem em pixels
     x: number // frações da tela (0 a 1)
     y: number
     w: number

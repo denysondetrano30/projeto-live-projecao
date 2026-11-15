@@ -5,6 +5,7 @@
     import { outputs } from "../../../stores"
     import { imageExtensions } from "../../../values/extensions"
     import MaterialFilePicker from "../../inputs/MaterialFilePicker.svelte"
+    import { encodeFilePath } from "../../helpers/media"
     import { cantosDe, mudarForma, mudarMascara, plMascaraUI, resolucao, saidasDeTela } from "../mascaras/mascaras"
 
     $: saida = saidasDeTela($outputs).find((s) => s.id === $plMascaraUI.outputId)
@@ -17,7 +18,14 @@
         const v = Number(valor)
         if (!m || !f || isNaN(v)) return
         const total = campo === "x" || campo === "w" ? W : H
-        mudarForma(oid, m.id, f.id, (k) => (k[campo] = Math.max(0, Math.min(1, v / total))))
+        mudarForma(oid, m.id, f.id, (k) => {
+            k[campo] = Math.max(0, Math.min(1, v / total))
+            // imagem: largura e altura andam juntas (sem deformar)
+            if (k.tipo === "img" && k.ar) {
+                if (campo === "w") k.h = (k.w * W) / (k.ar * H)
+                if (campo === "h") k.w = (k.h * H * k.ar) / W
+            }
+        })
     }
     const emPx = (v: number, total: number) => Math.round(v * total)
 
@@ -70,6 +78,31 @@
         mudarMascara(oid, m.id, (k) => k.formas.push(c))
         plMascaraUI.update((u) => ({ ...u, formaId: id }))
     }
+    // PNG vira uma peça: entra centralizada, ocupando até 60% da tela, na proporção da imagem
+    let novaImagem: string | undefined = undefined
+    function adicionarImagem(caminho: string) {
+        if (!m || !caminho) return
+        const mid = m.id
+        const img = new Image()
+        img.onload = () => {
+            const ar = img.naturalWidth / img.naturalHeight || 1
+            let w = 0.6
+            let h = (w * W) / (ar * H)
+            if (h > 0.6) {
+                h = 0.6
+                w = (h * H * ar) / W
+            }
+            const id = uid()
+            mudarMascara(oid, mid, (k) => {
+                k.formas.push({ id, tipo: "img", src: caminho, ar, x: (1 - w) / 2, y: (1 - h) / 2, w, h })
+                delete k.png
+            })
+            plMascaraUI.update((u) => ({ ...u, formaId: id }))
+            novaImagem = undefined
+        }
+        img.src = encodeFilePath(caminho)
+    }
+
     function apagar() {
         if (!m || !f) return
         const id = f.id
@@ -81,14 +114,14 @@
 <div class="info">
     {#if m}
         {#if f}
-            <div class="titulo">{f.tipo === "circ" ? "Círculo" : "Retângulo"}</div>
+            <div class="titulo">{f.tipo === "circ" ? "Círculo" : f.tipo === "img" ? "Imagem" : "Retângulo"}</div>
             <div class="grade">
                 <label>X <input type="number" value={emPx(f.x, W)} on:change={(e) => px("x", e.currentTarget.value)} /></label>
                 <label>Y <input type="number" value={emPx(f.y, H)} on:change={(e) => px("y", e.currentTarget.value)} /></label>
                 <label>Largura <input type="number" value={emPx(f.w, W)} on:change={(e) => px("w", e.currentTarget.value)} /></label>
                 <label>Altura <input type="number" value={emPx(f.h, H)} on:change={(e) => px("h", e.currentTarget.value)} /></label>
             </div>
-            <p class="dica">Em pixels da saída ({W}×{H}). Setas do teclado movem 1 px (Shift: 10 px).</p>
+            <p class="dica">Em pixels da saída ({W}×{H}). Setas do teclado movem 1 px (Shift: 10 px).{f.tipo === "img" ? " Largura e altura andam juntas para não deformar." : ""}</p>
             {#if f.tipo === "ret"}
                 <div class="cantosTopo">
                     <span class="titulo2">Cantos arredondados</span>
@@ -129,18 +162,19 @@
             <p class="dica">Clique numa forma para ver as medidas. Arraste para mover; o quadradinho branco muda o tamanho.</p>
         {/if}
 
-        <div class="titulo" style="margin-top: 14px;">PNG (opcional)</div>
-        <MaterialFilePicker label="Imagem da máscara" value={m.png} filter={{ name: "Imagem", extensions: imageExtensions }} on:change={(e) => m && mudarMascara(oid, m.id, (k) => (e.detail ? (k.png = e.detail) : delete k.png))} allowEmpty />
+        <div class="titulo" style="margin-top: 14px;">Imagem (PNG)</div>
+        <MaterialFilePicker label="Adicionar imagem" value={novaImagem} filter={{ name: "Imagem", extensions: imageExtensions }} on:change={(e) => adicionarImagem(e.detail)} allowEmpty />
+        <p class="dica">Entra como uma peça: arraste, mude o tamanho pelo quadradinho (sem deformar). Fica por cima; o transparente do PNG deixa ver o que está atrás.</p>
         {#if m.png}
-            <label>Ajuste da imagem
+            <label>Imagem antiga (tela inteira)
                 <select value={m.pngAjuste || "contain"} on:change={(e) => m && mudarMascara(oid, m.id, (k) => (k.pngAjuste = e.currentTarget.value))}>
                     <option value="contain">Caber na tela (sem esticar)</option>
                     <option value="cover">Preencher a tela (corta as sobras)</option>
                     <option value="fill">Esticar até as bordas</option>
                 </select>
             </label>
+            <button on:click={() => m?.png && adicionarImagem(m.png)}>Transformar em peça ajustável</button>
         {/if}
-        <p class="dica">Preto esconde, transparente mostra. Pode usar junto com as formas.</p>
     {/if}
 </div>
 

@@ -14,6 +14,8 @@
     const maskId = "plmask" + Math.random().toString(36).slice(2, 8)
 
     $: formas = mascara?.formas || []
+    $: buracos = formas.filter((f) => f.tipo !== "img")
+    $: imagens = formas.filter((f) => f.tipo === "img" && f.src)
 </script>
 
 {#if mascara && (formas.length || mascara.png)}
@@ -23,7 +25,7 @@
                 <defs>
                     <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" {width} {height}>
                         <rect x="0" y="0" {width} {height} fill="white" />
-                        {#each formas as f}
+                        {#each buracos as f}
                             {#if f.tipo === "circ"}
                                 <ellipse cx={(f.x + f.w / 2) * width} cy={(f.y + f.h / 2) * height} rx={(f.w / 2) * width} ry={(f.h / 2) * height} fill="black" />
                             {:else}
@@ -32,7 +34,12 @@
                         {/each}
                     </mask>
                 </defs>
-                <rect x="0" y="0" {width} {height} fill="black" mask="url(#{maskId})" />
+                {#if buracos.length}
+                    <rect x="0" y="0" {width} {height} fill="black" mask="url(#{maskId})" />
+                {/if}
+                {#each imagens as f}
+                    <image href={encodeFilePath(f.src || "")} x={f.x * width} y={f.y * height} width={f.w * width} height={f.h * height} preserveAspectRatio="xMidYMid meet" />
+                {/each}
             </svg>
         {/if}
         {#if mascara.png}

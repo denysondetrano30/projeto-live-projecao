@@ -48,6 +48,14 @@
             if (arrasto?.modo === "mover") {
                 k.x = aj(Math.max(0, Math.min(1 - o.w, o.x + dx)))
                 k.y = aj(Math.max(0, Math.min(1 - o.h, o.y + dy)))
+            } else if (o.tipo === "img" && o.ar) {
+                // imagem: muda o tamanho sem deformar (vale o lado que mais mexeu)
+                const porLarg = Math.max(0.02, o.w + dx)
+                const porAlt = Math.max(0.02, o.h + dy) * ((H * o.ar) / W)
+                let w = Math.abs(dx) * W >= Math.abs(dy) * H ? porLarg : porAlt
+                w = Math.min(w, 1 - o.x, ((1 - o.y) * H * o.ar) / W)
+                k.w = aj(w)
+                k.h = aj((w * W) / (o.ar * H))
             } else {
                 k.w = aj(Math.max(0.02, Math.min(1 - o.x, o.w + dx)))
                 k.h = aj(Math.max(0.02, Math.min(1 - o.y, o.h + dy)))
