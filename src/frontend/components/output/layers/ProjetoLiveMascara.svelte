@@ -36,7 +36,7 @@
             </svg>
         {/if}
         {#if mascara.png}
-            <img src={encodeFilePath(mascara.png)} alt="" draggable="false" />
+            <img src={encodeFilePath(mascara.png)} alt="" draggable="false" style="object-fit: {mascara.pngAjuste || 'contain'};" />
         {/if}
     </div>
 {/if}
@@ -56,8 +56,5 @@
         inset: 0;
         width: 100%;
         height: 100%;
-    }
-    img {
-        object-fit: fill;
     }
 </style>

@@ -131,6 +131,15 @@
 
         <div class="titulo" style="margin-top: 14px;">PNG (opcional)</div>
         <MaterialFilePicker label="Imagem da máscara" value={m.png} filter={{ name: "Imagem", extensions: imageExtensions }} on:change={(e) => m && mudarMascara(oid, m.id, (k) => (e.detail ? (k.png = e.detail) : delete k.png))} allowEmpty />
+        {#if m.png}
+            <label>Ajuste da imagem
+                <select value={m.pngAjuste || "contain"} on:change={(e) => m && mudarMascara(oid, m.id, (k) => (k.pngAjuste = e.currentTarget.value))}>
+                    <option value="contain">Caber na tela (sem esticar)</option>
+                    <option value="cover">Preencher a tela (corta as sobras)</option>
+                    <option value="fill">Esticar até as bordas</option>
+                </select>
+            </label>
+        {/if}
         <p class="dica">Preto esconde, transparente mostra. Pode usar junto com as formas.</p>
     {/if}
 </div>
@@ -163,6 +172,7 @@
         opacity: 0.9;
     }
     input[type="number"],
+    select,
     button {
         background: var(--primary-darker);
         color: var(--text);

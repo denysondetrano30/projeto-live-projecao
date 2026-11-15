@@ -21,6 +21,7 @@ export interface PLMascara {
     nome: string
     formas: PLForma[]
     png?: string
+    pngAjuste?: "contain" | "cover" | "fill" // padrão: contain (cabe sem esticar)
     camada?: "fundo" | "letra" | "tudo" // até onde corta (padrão: só o fundo; a letra fica por cima)
 }
 
