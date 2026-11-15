@@ -6,7 +6,7 @@ import { uid } from "uid"
 import type { Output, PLForma, PLMascara } from "../../../../types/Output"
 import { outputs } from "../../../stores"
 
-export const plMascaraUI = writable({ outputId: "", editId: "", formaId: "" })
+export const plMascaraUI = writable({ outputId: "", editId: "", formaId: "", modo: "mascaras" as "mascaras" | "projetores" })
 
 export function saidasDeTela(lista = get(outputs)) {
     return Object.entries(lista)

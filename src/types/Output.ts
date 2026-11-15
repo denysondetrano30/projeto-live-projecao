@@ -27,6 +27,16 @@ export interface PLMascara {
     camada?: "fundo" | "letra" | "tudo" // até onde corta (padrão: só o fundo; a letra fica por cima)
 }
 
+export interface PLMapa {
+    regiao?: { x: number; y: number; w: number; h: number } // pedaço da imagem que esta saída mostra (frações)
+    bordas?: { esq?: number; dir?: number; cima?: number; baixo?: number } // largura da fusão (fração da janela)
+    gama?: number // padrão 2.2
+    cantos?: { x: number; y: number }[] // deslocamento de cada canto (sup.esq, sup.dir, inf.dir, inf.esq), fração da janela
+    grade?: boolean // grade de teste para alinhar
+    juncao?: boolean // criado pelo assistente de junção
+    estiloAntes?: string // estilo que a saída usava antes da junção
+}
+
 export interface Output {
     id?: string
     hideFromPreview?: boolean
@@ -58,6 +68,7 @@ export interface Output {
     style?: string
     mascaras?: PLMascara[] // Projeto Live: máscaras com nome (painel de LED)
     mascaraAtiva?: string
+    mapa?: PLMapa // Projeto Live: mapeamento de projetores (região, fusão de bordas, 4 cantos)
     show?: any
     out?: OutData
 }

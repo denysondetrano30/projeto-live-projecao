@@ -10,6 +10,8 @@
     import CalendarInfo from "./CalendarInfo.svelte"
     import FunctionsInfo from "./FunctionsInfo.svelte"
     import MascarasInfo from "./MascarasInfo.svelte"
+    import ProjetoresInfo from "./ProjetoresInfo.svelte"
+    import { plMascaraUI } from "../mascaras/mascaras"
     import MediaInfo from "./MediaInfo.svelte"
     import ScriptureInfo from "./ScriptureInfo.svelte"
     import ShowInfo from "./ShowInfo.svelte"
@@ -40,7 +42,11 @@
     {:else if !$forceClock && id === "functions"}
         <FunctionsInfo />
     {:else if !$forceClock && id === "masks"}
-        <MascarasInfo />
+        {#if $plMascaraUI.modo === "projetores"}
+            <ProjetoresInfo />
+        {:else}
+            <MascarasInfo />
+        {/if}
     {:else}
         <Center>
             <Clock seconds />

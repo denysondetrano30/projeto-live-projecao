@@ -12,6 +12,7 @@
     import { StreamCanvasRenderer } from "./components/drawer/live/streamCanvas"
     import { hideDisplay } from "./utils/common"
     import { send } from "./utils/request"
+    import { gradienteFusao, mapaAtivo, matrizCantos } from "./components/drawer/mascaras/mapa"
 
     $: outputId = Object.keys($outputs)[0]
 
@@ -117,6 +118,16 @@
         }
     })
     $: if (outputId && $currentWindow === "output") queueCheck()
+
+    // Projeto Live: mapeamento de projetores (só na janela do projetor; as prévias mostram a imagem inteira)
+    $: mapa = $currentWindow === "output" ? $outputs[outputId]?.mapa : null
+    $: comMapa = mapaAtivo(mapa) && !$outputs[outputId]?.stageOutput
+    $: regiao = mapa?.regiao && mapa.regiao.w > 0 && mapa.regiao.h > 0 ? mapa.regiao : { x: 0, y: 0, w: 1, h: 1 }
+    $: vw = width / regiao.w
+    $: vh = height / regiao.h
+    $: gama = mapa?.gama || 2.2
+    $: bordas = mapa?.bordas || {}
+    $: pin = matrizCantos(width, height, mapa?.cantos || [])
 </script>
 
 <div
@@ -142,6 +153,29 @@
         <canvas class="presentCanvas" bind:this={presentCanvas}></canvas>
     {:else if $outputs[outputId]?.stageOutput}
         <StageLayout {outputId} stageId={$outputs[outputId].stageOutput} edit={false} />
+    {:else if loaded && comMapa}
+        <div class="plPin" style={pin ? `transform: ${pin};` : ""}>
+            <div class="plCanvas" style="width: {vw}px; height: {vh}px; left: {-regiao.x * vw}px; top: {-regiao.y * vh}px; flex-direction: {getStyleResolution(resolution, vw, vh, 'fit').includes('width') ? 'row' : 'column'};">
+                <Output {outputId} style={getStyleResolution(resolution, vw, vh, "fit")} />
+                {#if mapa?.grade}
+                    <svg class="plGrade" viewBox="0 0 {resolution.width} {resolution.height}" preserveAspectRatio="none">
+                        {#each Array(17) as _, i}
+                            <line x1={(i / 16) * resolution.width} y1="0" x2={(i / 16) * resolution.width} y2={resolution.height} />
+                        {/each}
+                        {#each Array(10) as _, i}
+                            <line x1="0" y1={(i / 9) * resolution.height} x2={resolution.width} y2={(i / 9) * resolution.height} />
+                        {/each}
+                        <circle cx={resolution.width / 2} cy={resolution.height / 2} r={Math.min(resolution.width, resolution.height) * 0.45} />
+                        <line class="diag" x1="0" y1="0" x2={resolution.width} y2={resolution.height} />
+                        <line class="diag" x1={resolution.width} y1="0" x2="0" y2={resolution.height} />
+                    </svg>
+                {/if}
+            </div>
+            {#if bordas.esq}<div class="plFusao" style="left: 0; top: 0; bottom: 0; width: {bordas.esq * 100}%; background: {gradienteFusao('to right', gama)};" />{/if}
+            {#if bordas.dir}<div class="plFusao" style="right: 0; top: 0; bottom: 0; width: {bordas.dir * 100}%; background: {gradienteFusao('to left', gama)};" />{/if}
+            {#if bordas.cima}<div class="plFusao" style="left: 0; right: 0; top: 0; height: {bordas.cima * 100}%; background: {gradienteFusao('to bottom', gama)};" />{/if}
+            {#if bordas.baixo}<div class="plFusao" style="left: 0; right: 0; bottom: 0; height: {bordas.baixo * 100}%; background: {gradienteFusao('to top', gama)};" />{/if}
+        </div>
     {:else if loaded}
         <Output {outputId} style={getStyleResolution(resolution, width, height, "fit")} />
     {/if}
@@ -156,6 +190,44 @@
 </div>
 
 <style>
+    .plPin {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        background: black;
+        transform-origin: 0 0;
+    }
+    .plCanvas {
+        position: absolute;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    .plGrade {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10;
+    }
+    .plGrade line,
+    .plGrade circle {
+        stroke: #fff;
+        stroke-width: 3;
+        fill: none;
+        vector-effect: non-scaling-stroke;
+    }
+    .plGrade .diag {
+        stroke: #ff3b3b;
+    }
+    .plFusao {
+        position: absolute;
+        pointer-events: none;
+        z-index: 20;
+    }
+
     .presentCanvas {
         width: 100%;
         height: 100%;

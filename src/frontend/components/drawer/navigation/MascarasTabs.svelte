@@ -3,6 +3,7 @@
     import type { PLMascara } from "../../../../types/Output"
     import { outputs } from "../../../stores"
     import { ativarMascara, mudarSaida, novaMascara, plMascaraUI, saidasDeTela } from "../mascaras/mascaras"
+    import { mapaAtivo } from "../mascaras/mapa"
 
     $: saidas = saidasDeTela($outputs)
     $: if (!saidas.find((s) => s.id === $plMascaraUI.outputId) && saidas[0]) plMascaraUI.update((u) => ({ ...u, outputId: saidas[0].id, editId: "", formaId: "" }))
@@ -24,9 +25,24 @@
 </script>
 
 <div class="nav">
+    <div class="modos">
+        <button class:on={$plMascaraUI.modo !== "projetores"} on:click={() => plMascaraUI.update((u) => ({ ...u, modo: "mascaras" }))}>Máscaras</button>
+        <button class:on={$plMascaraUI.modo === "projetores"} on:click={() => plMascaraUI.update((u) => ({ ...u, modo: "projetores" }))}>Projetores</button>
+    </div>
+
+    {#if $plMascaraUI.modo === "projetores"}
+        <label for="plSaidaP">Saídas (projetores)</label>
+        {#each saidas as s2 (s2.id)}
+            <button class="item" class:editando={s2.id === $plMascaraUI.outputId} on:click={() => plMascaraUI.update((u) => ({ ...u, outputId: s2.id }))}>
+                <span class="nome">{s2.nome}</span>
+                {#if s2.o.mapa?.juncao}<span class="tag">junção</span>{:else if mapaAtivo(s2.o.mapa)}<span class="tag">ajustada</span>{/if}
+            </button>
+        {/each}
+        <p class="dica">Clique numa saída para o ajuste fino (cantos, bordas, região). A junção monta tudo de uma vez.</p>
+    {:else}
     {#if saidas.length > 1}
         <label for="plSaida">Saída</label>
-        <select id="plSaida" value={$plMascaraUI.outputId} on:change={(e) => plMascaraUI.set({ outputId: e.currentTarget.value, editId: "", formaId: "" })}>
+        <select id="plSaida" value={$plMascaraUI.outputId} on:change={(e) => plMascaraUI.update((u) => ({ ...u, outputId: e.currentTarget.value, editId: "", formaId: "" }))}>
             {#each saidas as s}
                 <option value={s.id}>{s.nome}</option>
             {/each}
@@ -47,6 +63,7 @@
         {/each}
         <button class="nova" on:click={() => novaMascara(saida.id)}>+ Nova máscara</button>
         <p class="dica">A bolinha acesa é a máscara que está no telão agora. Clique no nome para editar.</p>
+    {/if}
     {/if}
 </div>
 
@@ -120,6 +137,32 @@
         background: var(--secondary);
         border-color: var(--secondary);
         opacity: 1;
+    }
+    .modos {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 8px;
+        background: var(--primary-darker);
+        border-radius: 8px;
+        padding: 3px;
+    }
+    .modos button {
+        flex: 1;
+        text-align: center;
+        padding: 6px;
+        border-radius: 6px;
+    }
+    .modos button.on {
+        background: var(--secondary);
+        color: var(--secondary-text);
+        font-weight: 600;
+    }
+    .tag {
+        font-size: 0.75em;
+        opacity: 0.7;
+        border: 1px solid var(--primary-lighter);
+        border-radius: 8px;
+        padding: 0 6px;
     }
     .nova {
         margin-top: 6px;
