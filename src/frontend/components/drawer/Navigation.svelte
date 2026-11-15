@@ -8,8 +8,9 @@
     import ScriptureTabs from "./navigation/ScriptureTabs.svelte"
     import ShowsTabs from "./navigation/ShowsTabs.svelte"
     import TemplatesTabs from "./navigation/TemplatesTabs.svelte"
+    import MascarasTabs from "./navigation/MascarasTabs.svelte"
 
-    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers"
+    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers" | "masks"
 </script>
 
 <div class="main">
@@ -20,6 +21,8 @@
             <CalendarTabs />
         {:else if id === "functions"}
             <FunctionsTabs />
+        {:else if id === "masks"}
+            <MascarasTabs />
         {:else}
             <DropArea id="navigation" selectChildren>
                 {#if id === "shows"}

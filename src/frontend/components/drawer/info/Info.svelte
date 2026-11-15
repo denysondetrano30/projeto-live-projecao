@@ -9,6 +9,7 @@
     import AudioInfo from "./AudioInfo.svelte"
     import CalendarInfo from "./CalendarInfo.svelte"
     import FunctionsInfo from "./FunctionsInfo.svelte"
+    import MascarasInfo from "./MascarasInfo.svelte"
     import MediaInfo from "./MediaInfo.svelte"
     import ScriptureInfo from "./ScriptureInfo.svelte"
     import ShowInfo from "./ShowInfo.svelte"
@@ -38,6 +39,8 @@
         <CalendarInfo {optionsOpen} />
     {:else if !$forceClock && id === "functions"}
         <FunctionsInfo />
+    {:else if !$forceClock && id === "masks"}
+        <MascarasInfo />
     {:else}
         <Center>
             <Clock seconds />

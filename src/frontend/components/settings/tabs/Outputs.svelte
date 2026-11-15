@@ -16,7 +16,6 @@
     import { hasStreamableDestination } from "../../helpers/rtmpDestinations"
     import InputRow from "../../input/InputRow.svelte"
     import Title from "../../input/Title.svelte"
-    import ProjetoLiveMascaras from "./ProjetoLiveMascaras.svelte"
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import MaterialCheckbox from "../../inputs/MaterialCheckbox.svelte"
     import MaterialDropdown from "../../inputs/MaterialDropdown.svelte"
@@ -386,10 +385,6 @@
 
     <MaterialPopupButton label="settings.output_screen" value={outputLabel} name={outputLabel} icon={currentOutput?.boundsLocked ? "locked" : "screen"} popupId="choose_screen" />
     <MaterialToggleSwitch label="settings.always_on_top" checked={currentOutput?.alwaysOnTop !== false} defaultValue={true} on:change={(e) => updateOutput("alwaysOnTop", e.detail)} />
-{/if}
-
-{#if !stageId && currentOutput?.id}
-    <ProjetoLiveMascaras outputId={currentOutput.id} />
 {/if}
 
 {#if currentOutput?.blackmagic}

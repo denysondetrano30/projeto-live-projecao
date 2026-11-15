@@ -15,6 +15,7 @@
     import Templates from "./pages/Templates.svelte"
     import Variables from "./pages/Variables.svelte"
     import Timers from "./timers/Timers.svelte"
+    import MascarasEditor from "./mascaras/MascarasEditor.svelte"
 
     export let id: string
     export let searchValue: string
@@ -65,6 +66,8 @@
         <Scripture {active} bind:searchValue />
     {:else if id === "calendar"}
         <Calendar {active} {searchValue} />
+    {:else if id === "masks"}
+        <MascarasEditor />
     {:else if id === "functions"}
         {#if active === "actions"}
             <Actions {searchValue} />

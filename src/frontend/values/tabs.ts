@@ -12,7 +12,10 @@ export const drawerTabs = {
     scripture: { name: "tabs.scripture", icon: "scripture", title: "" },
     calendar: { name: "tabs.calendar", icon: "calendar", title: "" },
 
-    functions: { name: "tabs.functions", icon: "functions", title: "" }
+    functions: { name: "tabs.functions", icon: "functions", title: "" },
+
+    // Projeto Live: máscaras dos painéis de LED
+    masks: { name: "tabs.masks", icon: "pl_mascara", title: "" }
 }
 
 // export const drawerTabs = {
