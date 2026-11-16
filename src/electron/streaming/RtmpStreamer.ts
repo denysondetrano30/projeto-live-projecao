@@ -88,6 +88,9 @@ interface StreamInstance {
     relays: Map<string, RelayInstance>
     videoTimeout?: NodeJS.Timeout
     audioInterval?: NodeJS.Timeout
+    /** Projeto Live: amostras de som já entregues e quando o relógio do som começou (preenchimento com silêncio) */
+    plAudioFrames?: number
+    plAudioStart?: number
     lastAudioTime: number
     lastFrame: Buffer | null
     /** returns the borrowed lastFrame to its owner once the engine no longer references it */
@@ -300,6 +303,18 @@ export class RtmpStreamer {
         streamer.inputSize = inputSize
         streamer.encoderStartedAt = Date.now()
         streamer.lastAudioTime = Date.now()
+
+        // Projeto Live: o som precisa correr junto com o relógio. A imagem entra com o horário real e o
+        // som conta amostras; se o som começa depois ou para (nada tocando), o FFmpeg segura a imagem
+        // esperando o som "alcançar" e isso vira atraso fixo (medido: 3 s de som faltando = 3 s de
+        // atraso). Então os buracos são preenchidos com silêncio, no ritmo do relógio.
+        if (streamer.audioInterval) clearInterval(streamer.audioInterval)
+        streamer.audioInterval = undefined
+        if (config.enableAudio) {
+            streamer.plAudioFrames = 0
+            streamer.plAudioStart = Date.now()
+            streamer.audioInterval = setInterval(() => this.plFillSilence(streamer), 20)
+        }
 
         encoder.stdin?.on("error", () => {}) // suppress writes racing teardown
         ;(encoder.stdio[3] as any)?.on("error", () => {})
@@ -671,6 +686,24 @@ export class RtmpStreamer {
         }
     }
 
+    /** Projeto Live: escreve silêncio quando o som ficou para trás do relógio (buraco > 100 ms) */
+    private static plFillSilence(streamer: StreamInstance) {
+        const audioStream = streamer.encoder?.stdio[3] as any
+        if (!audioStream || audioStream.destroyed || streamer.plAudioStart === undefined) return
+        const rate = streamer.sampleRate || SAMPLE_RATE
+        const expected = ((Date.now() - streamer.plAudioStart) / 1000) * rate
+        const missing = Math.floor(expected - (streamer.plAudioFrames || 0))
+        if (missing < rate * 0.1) return
+        const frames = Math.min(missing, rate)
+        try {
+            audioStream.write(Buffer.alloc(frames * 4))
+            streamer.plAudioFrames = (streamer.plAudioFrames || 0) + frames
+            streamer.hasReceivedFirstAudio = true
+        } catch {
+            // the encoder is going away
+        }
+    }
+
     static updateAudio(outputId: string | undefined, buffer: Buffer, _sampleRate = 48000) {
         const writeToStreamer = (streamer: StreamInstance) => {
             if (!streamer || !streamer.config.enableAudio) return
@@ -679,6 +712,15 @@ export class RtmpStreamer {
             if (!audioStream || audioStream.destroyed) return
 
             if (!streamer.hasReceivedFirstAudio) streamer.hasReceivedFirstAudio = true
+
+            // Projeto Live: som real chegando depois de um silêncio já preenchido deixa o som à frente
+            // do relógio; acima de 250 ms à frente o pedaço é descartado para voltar ao ritmo
+            if (streamer.plAudioStart !== undefined) {
+                const rate = streamer.sampleRate || SAMPLE_RATE
+                const expected = ((Date.now() - streamer.plAudioStart) / 1000) * rate
+                if ((streamer.plAudioFrames || 0) > expected + rate * 0.25) return
+                streamer.plAudioFrames = (streamer.plAudioFrames || 0) + Math.floor(buffer.length / 4)
+            }
 
             try {
                 // an output turned off keeps streaming, silent
