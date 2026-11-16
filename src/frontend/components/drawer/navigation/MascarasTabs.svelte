@@ -36,6 +36,7 @@
             <button class="item" class:editando={s2.id === $plMascaraUI.outputId} on:click={() => plMascaraUI.update((u) => ({ ...u, outputId: s2.id }))}>
                 <span class="nome">{s2.nome}</span>
                 {#if s2.o.mapa?.juncao}<span class="tag">junção</span>{:else if mapaAtivo(s2.o.mapa)}<span class="tag">ajustada</span>{/if}
+                {#if s2.o.mascaraAtiva}<span class="tag aviso" title="Esta saída está com uma máscara ligada (recorta a imagem)">máscara</span>{/if}
             </button>
         {/each}
         <p class="dica">Clique numa saída para o ajuste fino (cantos, bordas, região). A junção monta tudo de uma vez.</p>
@@ -163,6 +164,11 @@
         border: 1px solid var(--primary-lighter);
         border-radius: 8px;
         padding: 0 6px;
+    }
+    .tag.aviso {
+        color: #f2b84b;
+        border-color: #f2b84b;
+        opacity: 1;
     }
     .nova {
         margin-top: 6px;
