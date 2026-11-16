@@ -16,7 +16,7 @@ export const JUNCAO = "__juncao"
 
 export function saidasDeTela(lista = get(outputs)) {
     return Object.entries(lista)
-        .filter(([, o]) => o && !o.stageOutput)
+        .filter(([id, o]) => o && !o.stageOutput && id !== "pl_transmissao")
         .map(([id, o]) => ({ id, nome: o.name || "Saída", o: o as Output }))
 }
 

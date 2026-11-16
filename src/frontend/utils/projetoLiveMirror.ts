@@ -9,13 +9,64 @@ import { get } from "svelte/store"
 import { OUTPUT } from "../../types/Channels"
 import type { ProjetoLiveObsMirror } from "../../types/ProjetoLive"
 import { createOutputAudioChannel } from "../audio/routing/audioRoutingInit"
-import { checkFFmpeg, getFirstActiveOutput, updateOutputRtmpData } from "../components/helpers/output"
-import { outputs } from "../stores"
+import { checkFFmpeg, defaultOutput, getFirstActiveOutput, updateOutputRtmpData } from "../components/helpers/output"
+import { clone } from "../components/helpers/array"
+import { ESTILO_JUNCAO } from "../components/drawer/mascaras/mapa"
+import { outputs, styles } from "../stores"
 import { newToast } from "./common"
 import { send } from "./request"
 
 const DEST_ID = "projeto-live-obs"
 const MIRROR_BITRATE_KBPS = 12000
+
+// Com junção de projetores, cada projetor mostra só um pedaço; o OBS recebe uma saída escondida que
+// mostra a imagem inteira (sem divisão, fusão nem cantos), com 1920 de largura na proporção da junção.
+// No OBS a fonte "Telão" encaixa a imagem no 16:9 com faixas.
+export const SAIDA_TRANSMISSAO = "pl_transmissao"
+
+function temJuncao() {
+    return Object.values(get(outputs)).some((o) => o?.mapa?.juncao)
+}
+
+function tamanhoTransmissao() {
+    const ar = get(styles)[ESTILO_JUNCAO]?.aspectRatio
+    const w = 1920
+    const h = ar?.width && ar?.height ? Math.max(2, Math.round((w * ar.height) / ar.width / 2) * 2) : 1080
+    return { x: 0, y: 0, width: w, height: h }
+}
+
+// garante (ou tira) a saída escondida; devolve true se ela precisou ser criada/recriada agora
+function arrumarSaidaTransmissao(): boolean {
+    const atual = get(outputs)[SAIDA_TRANSMISSAO]
+    if (!temJuncao()) {
+        if (atual) {
+            send(OUTPUT, ["REMOVE"], { id: SAIDA_TRANSMISSAO })
+            outputs.update((a) => {
+                delete a[SAIDA_TRANSMISSAO]
+                return a
+            })
+        }
+        return false
+    }
+    const b = tamanhoTransmissao()
+    if (atual && atual.bounds?.width === b.width && atual.bounds?.height === b.height && atual.style === ESTILO_JUNCAO) return false
+    outputs.update((a) => {
+        a[SAIDA_TRANSMISSAO] = { ...clone(defaultOutput), ...(a[SAIDA_TRANSMISSAO] || {}), name: "Transmissão (junção)", enabled: true, active: true, invisible: true, style: ESTILO_JUNCAO, bounds: b, rtmp: true } as any
+        delete (a[SAIDA_TRANSMISSAO] as any).mapa
+        return a
+    })
+    send(OUTPUT, ["CREATE"], { ...get(outputs)[SAIDA_TRANSMISSAO], id: SAIDA_TRANSMISSAO })
+    return true
+}
+
+// chamado quando a junção é aplicada, mudada ou desfeita
+export function atualizarEspelhoJuncao() {
+    if (!wanted) {
+        arrumarSaidaTransmissao()
+        return
+    }
+    run()
+}
 
 let wanted: ProjetoLiveObsMirror | null = null
 let applying = false
@@ -44,8 +95,13 @@ async function apply() {
         return
     }
 
-    const outputId = getFirstActiveOutput()?.id
+    const recriada = arrumarSaidaTransmissao()
+    const outputId = temJuncao() ? SAIDA_TRANSMISSAO : getFirstActiveOutput()?.id
     if (!outputId) return
+    if (recriada) {
+        await new Promise((resolve) => setTimeout(resolve, 2500))
+        if (wanted !== target) return
+    }
 
     // O envio usa o FFmpeg; o FreeShow pergunta antes de baixar (uma vez só).
     if (!ffmpegAsked) {

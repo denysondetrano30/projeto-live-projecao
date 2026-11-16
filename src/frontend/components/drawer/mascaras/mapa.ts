@@ -157,7 +157,13 @@ export function aplicarJuncao(j: Juncao) {
         })
         return a
     })
+    avisarEspelho()
     return { CW, CH }
+}
+
+// o OBS recebe a imagem inteira por uma saída escondida (utils/projetoLiveMirror.ts)
+function avisarEspelho() {
+    import("../../../utils/projetoLiveMirror").then((m) => m.atualizarEspelhoJuncao()).catch(() => {})
 }
 
 function desfazerSaida(o: any) {
@@ -178,6 +184,7 @@ export function desfazerJuncao() {
         })
         return a
     })
+    avisarEspelho()
 }
 
 export function mudarMapa(outputId: string, f: (m: PLMapa) => void) {

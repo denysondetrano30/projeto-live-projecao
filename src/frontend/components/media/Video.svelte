@@ -1,7 +1,7 @@
 <script lang="ts">
     import { createEventDispatcher, onDestroy, onMount } from "svelte"
     import type { MediaStyle } from "../../../types/Main"
-    import { currentWindow, media, playingVideoState, renderGroups } from "../../stores"
+    import { currentWindow, media, outputs, playingVideoState, renderGroups } from "../../stores"
     import { findGroupRendererId, getMirrorVideo, MirrorCloneDrawer, MirrorRegistration, mirrorRegistryTick, mirrorVideoKey } from "./video/mirrorVideoRegistry"
     import { enableSubtitle, encodeFilePath, isVideoSupported } from "../helpers/media"
     import { SoftLoopSync } from "./video/softLoop"
@@ -67,7 +67,7 @@
                     clockNow += (Math.max(0, Date.now() - data.at) / 1000) * targetPlaybackRate
                     if (data.loop && data.duration > 0) clockNow %= data.duration
                 }
-                syncVideoToAudio(video, clockNow, lastSyncedTime, isSoftLoop, targetPlaybackRate, isFading, data.paused)
+                syncVideoToAudio(video, clockNow, lastSyncedTime, isSoftLoop, targetPlaybackRate, isFading, data.paused, !!(outputId && $outputs[outputId]?.mapa?.juncao))
                 if (clockNow !== undefined) lastSyncedTime = clockNow
 
                 if (!isFading && videoData.loop !== data.loop) videoData.loop = data.loop

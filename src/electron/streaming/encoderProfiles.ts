@@ -182,6 +182,13 @@ export function buildEncoderCommand(opts: EncoderCommandOptions): string[] {
 
 /** Relay process: forward the encoded FLV stream straight to one RTMP/RTMPS destination without re-encoding. */
 export function buildRelayCommand(url: string): string[] {
+    // Projeto Live: o espelho para o OBS (tcp:// na rede local) não pode analisar o começo do fluxo:
+    // o padrão do FFmpeg lê até 5 MB antes de repassar (~3 s a 12 Mbps), e o OBS toca no ritmo do
+    // relógio, então essa folga virava atraso fixo. Lê o mínimo e repassa cada pacote na hora.
+    if (url.startsWith("tcp://")) {
+        // (medido: "-fflags nobuffer" aqui PIORA — prende ~2,5 s; o que zera é o flush de cada pacote)
+        return ["-hide_banner", "-loglevel", "warning", "-probesize", "32768", "-analyzeduration", "0", "-f", "flv", "-i", "pipe:0", "-c", "copy", "-flush_packets", "1", "-f", "flv", "-flvflags", "no_sequence_end", url]
+    }
     return ["-hide_banner", "-loglevel", "warning", "-f", "flv", "-i", "pipe:0", "-c", "copy", "-f", "flv", "-flvflags", "no_sequence_end", url]
 }
 

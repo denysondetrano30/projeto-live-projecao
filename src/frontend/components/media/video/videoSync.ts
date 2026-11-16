@@ -51,7 +51,9 @@ export function clampPlaybackRate(rate: number): number {
  * - 500ms post-seek cooldown ensures smooth playback without repeated drift seeks.
  * - Smooth rate nudge with hysteresis for small continuous drift (80ms deadband).
  */
-export function syncVideoToAudio(vid: HTMLVideoElement | null, targetTime: number | undefined, lastSyncedTime: number | null, isSoftLoop = false, targetPlaybackRate = 1, isFadingOut = false, shouldBePaused?: boolean): void {
+// Projeto Live: apertado = saídas da junção de projetores; as metades da imagem ficam lado a lado,
+// então o vídeo pula direto para o tempo certo em vez de alcançar devagar acelerando
+export function syncVideoToAudio(vid: HTMLVideoElement | null, targetTime: number | undefined, lastSyncedTime: number | null, isSoftLoop = false, targetPlaybackRate = 1, isFadingOut = false, shouldBePaused?: boolean, apertado = false): void {
     if (!vid || targetTime === undefined) return
     // If the video should be playing but got paused (e.g. after a decoder stall or interrupted seek), resume it
     if (shouldBePaused === false && vid.paused && !isFadingOut && !vid.error && vid.readyState >= 2) {
@@ -96,7 +98,7 @@ export function syncVideoToAudio(vid: HTMLVideoElement | null, targetTime: numbe
     if (lastSyncedTime === null || lastSyncedTime === undefined || !prevRecord) {
         lastSyncRecords.set(vid, { targetTime, timestamp: now, isNudging: false })
         lastSeekTimestamps.set(vid, now)
-        if (wrapDiff > 0.5 && targetTime > 1.0) {
+        if (apertado ? wrapDiff > 0.08 : wrapDiff > 0.5 && targetTime > 1.0) {
             if (!vid.paused) pendingSeeks.set(vid, now)
             vid.currentTime = targetTime
         }
@@ -114,9 +116,9 @@ export function syncVideoToAudio(vid: HTMLVideoElement | null, targetTime: numbe
     // a seek restarts if another lands before it, so the measured seek time is added to the cooldown
     const seekCooldownMs = 500 + (seekLatencyEMA.get(vid) ?? 0) * 1000
     const inSeekCooldown = now - (lastSeekTimestamps.get(vid) || 0) < seekCooldownMs
-    const driftThreshold = Math.max(0.4, 0.8 * rate)
+    const driftThreshold = apertado ? 0.15 : Math.max(0.4, 0.8 * rate)
     const driftCount = !inSeekCooldown && wrapDiff > driftThreshold ? (prevRecord.driftCount ?? 0) + 1 : 0
-    const shouldHardSeek = (isExplicitSeek && wrapDiff > 0.05) || (vid.paused && wrapDiff > 0.05) || driftCount >= 3 || (!inSeekCooldown && wrapDiff > 5)
+    const shouldHardSeek = (isExplicitSeek && wrapDiff > 0.05) || (vid.paused && wrapDiff > 0.05) || driftCount >= (apertado ? 1 : 3) || (!inSeekCooldown && wrapDiff > 5)
 
     if (shouldHardSeek) {
         lastSeekTimestamps.set(vid, now)
