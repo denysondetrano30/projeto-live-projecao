@@ -15,7 +15,8 @@ export const drawerTabs = {
     functions: { name: "tabs.functions", icon: "functions", title: "" },
 
     // Projeto Live: máscaras dos painéis de LED
-    masks: { name: "tabs.masks", icon: "pl_mascara", title: "" }
+    masks: { name: "tabs.masks", icon: "pl_mascara", title: "" },
+    projectors: { name: "tabs.projectors", icon: "pl_projetor", title: "" }
 }
 
 // export const drawerTabs = {

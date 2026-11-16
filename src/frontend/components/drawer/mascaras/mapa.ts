@@ -135,7 +135,8 @@ export function aplicarJuncao(j: Juncao) {
     const base = lista[ids[0]]?.style
     styles.update((a) => {
         const antigo = base && base !== ESTILO_JUNCAO && a[base] ? clone(a[base]) : { name: "" }
-        a[ESTILO_JUNCAO] = { ...antigo, name: "Junção de projetores", aspectRatio: { width: CW, height: CH, outputResolutionAsRatio: true } }
+        const atual: any = a[ESTILO_JUNCAO] || {}
+        a[ESTILO_JUNCAO] = { ...antigo, name: "Junção de projetores", aspectRatio: { width: CW, height: CH, outputResolutionAsRatio: true }, ...(atual.mascaras ? { mascaras: atual.mascaras, mascaraAtiva: atual.mascaraAtiva } : {}) } as any
         return a
     })
 

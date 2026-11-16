@@ -23,6 +23,8 @@ export interface Styles {
     volume?: number
     resolution?: Resolution // pre 1.3.9
     aspectRatio?: AspectRatio
+    mascaras?: any[] // Projeto Live: máscaras da junção de projetores (estilo pl_juncao)
+    mascaraAtiva?: string
     cropping?: Cropping // pre 1.3.3
     lines?: number
     showAsFaded?: boolean

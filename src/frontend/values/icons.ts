@@ -253,6 +253,7 @@ const icons: { [key: string]: string } = {
     // live
     record: '<path d="M24 24H0V0h24v24z" fill="none"/><circle cx="12" cy="12" r="8"/>',
     camera: '<path d="M0 0h24v24H0z" fill="none"/><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>',
+    pl_projetor: '<path d="M0 0h24v24H0z" fill="none"/><path d="M3 8h18a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1v1.5h-2V17H6v1.5H4V17H3a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1zm12 1.5a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM5 10.5v1.5h4v-1.5H5z"/>',
     pl_mascara: '<path d="M0 0h24v24H0z" fill="none"/><path d="M4 5h4a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm6.5-1h3a1.5 1.5 0 0 1 1.5 1.5v13a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 18.5v-13A1.5 1.5 0 0 1 10.5 4zM16 5h4a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/>',
     screen: '<path d="M0 0h24v24H0z" fill="none"/><path d="M21 2H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h7v2H8v2h8v-2h-2v-2h7c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H3V4h18v12z"/>',
     input: '<path d="M0 0h24v24H0z" fill="none"/><path d="M21 3.01H3c-1.1 0-2 .9-2 2V9h2V4.99h18v14.03H3V15H1v4.01c0 1.1.9 1.98 2 1.98h18c1.1 0 2-.88 2-1.98v-14c0-1.11-.9-2-2-2zM11 16l4-4-4-4v3H1v2h10v3z"/>',

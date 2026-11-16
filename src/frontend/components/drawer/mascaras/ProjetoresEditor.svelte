@@ -3,10 +3,10 @@
     import { activePage, outputs, settingsTab } from "../../../stores"
     import { aplicarJuncao, calcularJuncao, CANTOS_ZERO, desfazerJuncao, mudarMapa, tamanhoProjetor } from "./mapa"
     import type { Juncao } from "./mapa"
-    import { plMascaraUI, saidasDeTela } from "./mascaras"
+    import { plProjetorUI, saidasDeTela } from "./mascaras"
 
     $: saidas = saidasDeTela($outputs)
-    $: saida = saidas.find((s) => s.id === $plMascaraUI.outputId)
+    $: saida = saidas.find((s) => s.id === $plProjetorUI.outputId)
     $: temJuncao = saidas.some((s) => s.o.mapa?.juncao)
 
     let vista: "juncao" | "cantos" = "juncao"

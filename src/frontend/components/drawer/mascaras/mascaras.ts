@@ -4,9 +4,15 @@
 import { get, writable } from "svelte/store"
 import { uid } from "uid"
 import type { Output, PLForma, PLMascara } from "../../../../types/Output"
-import { outputs } from "../../../stores"
+import { outputs, styles } from "../../../stores"
+import { ESTILO_JUNCAO } from "./mapa"
 
-export const plMascaraUI = writable({ outputId: "", editId: "", formaId: "", modo: "mascaras" as "mascaras" | "projetores" })
+export const plMascaraUI = writable({ outputId: "", editId: "", formaId: "" })
+export const plProjetorUI = writable({ outputId: "" })
+
+// a junção de projetores aparece nas Máscaras como UMA tela (a imagem inteira); as máscaras dela
+// ficam no estilo da junção (styles[pl_juncao].mascaras / mascaraAtiva) e valem para todos os projetores
+export const JUNCAO = "__juncao"
 
 export function saidasDeTela(lista = get(outputs)) {
     return Object.entries(lista)
@@ -14,7 +20,29 @@ export function saidasDeTela(lista = get(outputs)) {
         .map(([id, o]) => ({ id, nome: o.name || "Saída", o: o as Output }))
 }
 
+// telas para as Máscaras: saídas comuns + a junção como uma tela só (os projetores dela não aparecem soltos)
+export function telasDeMascara(lista = get(outputs), estilos: any = get(styles)) {
+    const todas = saidasDeTela(lista)
+    const comuns = todas.filter((s) => !s.o.mapa?.juncao)
+    const naJuncao = todas.filter((s) => s.o.mapa?.juncao)
+    const st = estilos?.[ESTILO_JUNCAO]
+    if (!naJuncao.length || !st) return comuns
+    const ar = st.aspectRatio || { width: 1920, height: 1080 }
+    const juncao = { id: JUNCAO, nome: `Junção de projetores (${naJuncao.map((s) => s.nome).join(" + ")})`, o: { name: "Junção", mascaras: st.mascaras || [], mascaraAtiva: st.mascaraAtiva, forcedResolution: { width: ar.width, height: ar.height } } as any as Output }
+    return [juncao, ...comuns]
+}
+
 export function mudarSaida(outputId: string, f: (o: any) => void) {
+    if (outputId === JUNCAO) {
+        styles.update((a: any) => {
+            const st = a[ESTILO_JUNCAO]
+            if (!st) return a
+            if (!st.mascaras) st.mascaras = []
+            f(st)
+            return a
+        })
+        return
+    }
     outputs.update((a: any) => {
         const o = a[outputId]
         if (!o) return a

@@ -2,9 +2,9 @@
     // Projeto Live: lado direito da aba Mapeamento › Projetores (bordas, gama e região da saída escolhida)
     import { outputs } from "../../../stores"
     import { mudarMapa } from "../mascaras/mapa"
-    import { plMascaraUI, saidasDeTela } from "../mascaras/mascaras"
+    import { plProjetorUI, saidasDeTela } from "../mascaras/mascaras"
 
-    $: saida = saidasDeTela($outputs).find((s) => s.id === $plMascaraUI.outputId)
+    $: saida = saidasDeTela($outputs).find((s) => s.id === $plProjetorUI.outputId)
     $: mapa = saida?.o.mapa || {}
     $: bw = saida?.o.bounds?.width || 1920
     $: bh = saida?.o.bounds?.height || 1080

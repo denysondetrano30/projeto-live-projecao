@@ -2,11 +2,11 @@
     // Projeto Live: centro da aba Máscaras (quadro para desenhar as formas)
     import { uid } from "uid"
     import type { PLForma, PLMascara } from "../../../../types/Output"
-    import { outputs } from "../../../stores"
+    import { outputs, styles } from "../../../stores"
     import ProjetoLiveMascara from "../../output/layers/ProjetoLiveMascara.svelte"
-    import { ativarMascara, mudarForma, mudarMascara, novaMascara, plMascaraUI, resolucao, saidasDeTela } from "./mascaras"
+    import { ativarMascara, mudarForma, mudarMascara, novaMascara, plMascaraUI, resolucao, telasDeMascara } from "./mascaras"
 
-    $: saida = saidasDeTela($outputs).find((s) => s.id === $plMascaraUI.outputId)
+    $: saida = telasDeMascara($outputs, $styles).find((s) => s.id === $plMascaraUI.outputId)
     $: m = ((saida?.o.mascaras || []) as PLMascara[]).find((k) => k.id === $plMascaraUI.editId) || null
     $: emUso = !!m && saida?.o.mascaraAtiva === m.id
     $: ({ W, H } = resolucao(saida?.o))

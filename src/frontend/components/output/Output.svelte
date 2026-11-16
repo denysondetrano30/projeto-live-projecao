@@ -220,7 +220,9 @@
     // slide styling
     // currentSlide?.settings?.resolution
     $: resolution = getResolution(null, { currentOutput, currentStyle }, false, outputId, styleId)
-    $: plMascara = currentOutput?.mascaraAtiva ? (currentOutput.mascaras || []).find((m) => m.id === currentOutput.mascaraAtiva) : null
+    // na junção vale a máscara da junção (guardada no estilo), e não a de cada projetor
+    $: plEstiloJuncao = currentOutput?.mapa?.juncao ? $styles["pl_juncao"] : null
+    $: plMascara = plEstiloJuncao ? (plEstiloJuncao.mascaraAtiva ? (plEstiloJuncao.mascaras || []).find((m) => m.id === plEstiloJuncao.mascaraAtiva) : null) : currentOutput?.mascaraAtiva ? (currentOutput.mascaras || []).find((m) => m.id === currentOutput.mascaraAtiva) : null
     $: plCamada = plMascara?.camada || "fundo"
     $: transitions = getOutputTransitions(slideData, currentStyle.transition, $transitionData, mirror && !preview)
     $: slideFilter = getSlideFilter(slideData)

@@ -17,7 +17,6 @@
     import Timers from "./timers/Timers.svelte"
     import MascarasEditor from "./mascaras/MascarasEditor.svelte"
     import ProjetoresEditor from "./mascaras/ProjetoresEditor.svelte"
-    import { plMascaraUI } from "./mascaras/mascaras"
 
     export let id: string
     export let searchValue: string
@@ -69,11 +68,9 @@
     {:else if id === "calendar"}
         <Calendar {active} {searchValue} />
     {:else if id === "masks"}
-        {#if $plMascaraUI.modo === "projetores"}
-            <ProjetoresEditor />
-        {:else}
-            <MascarasEditor />
-        {/if}
+        <MascarasEditor />
+    {:else if id === "projectors"}
+        <ProjetoresEditor />
     {:else if id === "functions"}
         {#if active === "actions"}
             <Actions {searchValue} />

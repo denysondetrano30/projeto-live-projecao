@@ -9,8 +9,9 @@
     import ShowsTabs from "./navigation/ShowsTabs.svelte"
     import TemplatesTabs from "./navigation/TemplatesTabs.svelte"
     import MascarasTabs from "./navigation/MascarasTabs.svelte"
+    import ProjetoresTabs from "./navigation/ProjetoresTabs.svelte"
 
-    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers" | "masks"
+    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers" | "masks" | "projectors"
 </script>
 
 <div class="main">
@@ -23,6 +24,8 @@
             <FunctionsTabs />
         {:else if id === "masks"}
             <MascarasTabs />
+        {:else if id === "projectors"}
+            <ProjetoresTabs />
         {:else}
             <DropArea id="navigation" selectChildren>
                 {#if id === "shows"}

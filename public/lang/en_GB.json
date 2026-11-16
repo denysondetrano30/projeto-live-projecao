@@ -420,7 +420,8 @@
         "change_folder": "Choose another location"
     },
     "tabs": {
-        "masks": "Mapping",
+        "masks": "Masks",
+        "projectors": "Projectors",
         "shows": "Shows",
         "shows_info": "A show is made up of slides; it can be a song, presentation, media, scripture, and more.",
         "media": "Media",

@@ -2,13 +2,13 @@
     // Projeto Live: lado direito da aba Máscaras (medidas da forma selecionada e PNG)
     import { uid } from "uid"
     import type { PLMascara } from "../../../../types/Output"
-    import { outputs } from "../../../stores"
+    import { outputs, styles } from "../../../stores"
     import { imageExtensions } from "../../../values/extensions"
     import MaterialFilePicker from "../../inputs/MaterialFilePicker.svelte"
     import { encodeFilePath } from "../../helpers/media"
-    import { cantosDe, mudarForma, mudarMascara, plMascaraUI, resolucao, saidasDeTela } from "../mascaras/mascaras"
+    import { cantosDe, mudarForma, mudarMascara, plMascaraUI, resolucao, telasDeMascara } from "../mascaras/mascaras"
 
-    $: saida = saidasDeTela($outputs).find((s) => s.id === $plMascaraUI.outputId)
+    $: saida = telasDeMascara($outputs, $styles).find((s) => s.id === $plMascaraUI.outputId)
     $: m = ((saida?.o.mascaras || []) as PLMascara[]).find((k) => k.id === $plMascaraUI.editId) || null
     $: f = m?.formas.find((k) => k.id === $plMascaraUI.formaId) || null
     $: ({ W, H } = resolucao(saida?.o))

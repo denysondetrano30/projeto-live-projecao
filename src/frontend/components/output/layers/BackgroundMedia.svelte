@@ -34,7 +34,7 @@
     $: fadeOnly = [transition?.in?.type || transition?.type, transition?.out?.type || transition?.type].every((t) => !t || t === "fade" || t === "none")
     // Projeto Live: com mapeamento ou máscara o vídeo precisa ser desenhado na própria página (o atalho
     // de composição por baixo ignora a região da junção e o recorte da máscara)
-    $: plMapeada = !!outputId && (mapaAtivo($outputs[outputId]?.mapa) || !!$outputs[outputId]?.mascaraAtiva)
+    $: plMapeada = !!outputId && (mapaAtivo($outputs[outputId]?.mapa) || !!$outputs[outputId]?.mascaraAtiva || !!$outputs[outputId]?.mapa?.juncao)
     $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada
 
     let mediaStyle: MediaStyle = {}
