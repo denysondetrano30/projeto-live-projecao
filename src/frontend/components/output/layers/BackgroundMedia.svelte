@@ -13,6 +13,7 @@
     import Window from "../Window.svelte"
     import Media from "./Media.svelte"
     import { mediaLayersEnabled } from "./mediaLayers"
+    import { mapaAtivo } from "../../drawer/mascaras/mapa"
 
     export let outputId = ""
 
@@ -31,7 +32,10 @@
 
     // the worker can composite it only when the page changes nothing but its opacity
     $: fadeOnly = [transition?.in?.type || transition?.type, transition?.out?.type || transition?.type].every((t) => !t || t === "fade" || t === "none")
-    $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent
+    // Projeto Live: com mapeamento ou máscara o vídeo precisa ser desenhado na própria página (o atalho
+    // de composição por baixo ignora a região da junção e o recorte da máscara)
+    $: plMapeada = !!outputId && (mapaAtivo($outputs[outputId]?.mapa) || !!$outputs[outputId]?.mascaraAtiva)
+    $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada
 
     let mediaStyle: MediaStyle = {}
     $: if (data && currentStyle) mediaStyle = getMediaStyle({ ...$media[id], ...data }, currentStyle)
