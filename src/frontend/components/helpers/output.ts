@@ -841,7 +841,10 @@ export function getResolution(initial: Resolution | undefined | null = null, _up
 
     // cropping affects aspect ratio if "outputResolutionAsRatio"
     if (styleRatio?.outputResolutionAsRatio) {
-        const bounds = currentOutput?.bounds ?? DEFAULT_BOUNDS
+        // Projeto Live: com mapeamento (região), a "tela de saída" é a imagem inteira, não a janela
+        const plRegiao = currentOutput?.mapa?.regiao
+        const plTemRegiao = !!currentOutput?.bounds?.width && !!plRegiao && plRegiao.w > 0 && plRegiao.h > 0 && (plRegiao.w < 1 || plRegiao.h < 1)
+        const bounds = plTemRegiao ? { ...currentOutput.bounds, width: currentOutput.bounds.width / plRegiao.w, height: currentOutput.bounds.height / plRegiao.h } : (currentOutput?.bounds ?? DEFAULT_BOUNDS)
         const cropping = currentOutput?.cropping || style?.cropping
         const cropWidth = (Number(cropping?.left) || 0) + (Number(cropping?.right) || 0)
         const cropHeight = (Number(cropping?.top) || 0) + (Number(cropping?.bottom) || 0)

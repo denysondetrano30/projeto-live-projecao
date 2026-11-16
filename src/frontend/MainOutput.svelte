@@ -158,16 +158,16 @@
             <div class="plCanvas" style="width: {vw}px; height: {vh}px; left: {-regiao.x * vw}px; top: {-regiao.y * vh}px; flex-direction: {getStyleResolution(resolution, vw, vh, 'fit').includes('width') ? 'row' : 'column'};">
                 <Output {outputId} style={getStyleResolution(resolution, vw, vh, "fit")} />
                 {#if mapa?.grade}
-                    <svg class="plGrade" viewBox="0 0 {resolution.width} {resolution.height}" preserveAspectRatio="none">
+                    <svg class="plGrade" viewBox="0 0 {vw} {vh}" preserveAspectRatio="none">
                         {#each Array(17) as _, i}
-                            <line x1={(i / 16) * resolution.width} y1="0" x2={(i / 16) * resolution.width} y2={resolution.height} />
+                            <line x1={(i / 16) * vw} y1="0" x2={(i / 16) * vw} y2={vh} />
                         {/each}
                         {#each Array(10) as _, i}
-                            <line x1="0" y1={(i / 9) * resolution.height} x2={resolution.width} y2={(i / 9) * resolution.height} />
+                            <line x1="0" y1={(i / 9) * vh} x2={vw} y2={(i / 9) * vh} />
                         {/each}
-                        <circle cx={resolution.width / 2} cy={resolution.height / 2} r={Math.min(resolution.width, resolution.height) * 0.45} />
-                        <line class="diag" x1="0" y1="0" x2={resolution.width} y2={resolution.height} />
-                        <line class="diag" x1={resolution.width} y1="0" x2="0" y2={resolution.height} />
+                        <circle cx={vw / 2} cy={vh / 2} r={Math.min(vw, vh) * 0.45} />
+                        <line class="diag" x1="0" y1="0" x2={vw} y2={vh} />
+                        <line class="diag" x1={vw} y1="0" x2="0" y2={vh} />
                     </svg>
                 {/if}
             </div>
