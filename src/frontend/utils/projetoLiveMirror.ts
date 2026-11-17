@@ -16,7 +16,7 @@ import { createOutputAudioChannel } from "../audio/routing/audioRoutingInit"
 import { checkFFmpeg, defaultOutput, getFirstActiveOutput, updateOutputRtmpData } from "../components/helpers/output"
 import { clone } from "../components/helpers/array"
 import { ESTILO_JUNCAO } from "../components/drawer/mascaras/mapa"
-import { outputs, styles } from "../stores"
+import { audioRouting, outputs, styles } from "../stores"
 import { newToast } from "./common"
 import { send } from "./request"
 
@@ -124,8 +124,8 @@ function ligarNdi(outputId: string): boolean {
     const output = get(outputs)[outputId]
     if (!output) return false
     if (output.ndi) {
-        // já ligado (por nós ou à mão): só garante o nome, se fomos nós
-        if ((output as any).plNdi && output.ndiData?.name !== NOME_NDI) {
+        // já ligado (por nós ou à mão): garante o nome que o OBS procura
+        if (output.ndiData?.name !== NOME_NDI) {
             outputs.update((a) => {
                 a[outputId].ndiData = { ...(a[outputId].ndiData || {}), name: NOME_NDI }
                 return a
@@ -151,12 +151,16 @@ async function apply() {
     if (!target && !ndi) {
         removeFromAll()
         desligarNdi(null)
+        saidaObs = null
+        atualizarSomDoPc()
         return
     }
     if (!target) removeFromAll()
 
     const recriada = arrumarSaidaTransmissao()
     const outputId = temJuncao() ? SAIDA_TRANSMISSAO : getFirstActiveOutput()?.id
+    saidaObs = outputId || null
+    atualizarSomDoPc()
     if (!outputId) return
     if (recriada) {
         await new Promise((resolve) => setTimeout(resolve, 2500))
@@ -264,3 +268,39 @@ export function setProjetoLiveNdi(on: boolean) {
     ndiWanted = on
     run()
 }
+
+// Som de vídeos do YouTube/internet (17/11): o player embutido toca o som por conta própria e a
+// Projeção não consegue misturá-lo. Só enquanto o telão mostra um desses vídeos, o canal da saída do
+// OBS recebe também o "som do computador" (captura do Windows que o FreeShow já tem). Vai só para o
+// OBS, nunca para o alto-falante; quando o vídeo sai, volta como estava.
+let saidaObs: string | null = null
+let somDoPc: { canal: string; desktopAntes: boolean } | null = null
+
+function tocandoVideoDaInternet(id: string | null) {
+    return !!id && get(outputs)[id]?.out?.background?.type === "player"
+}
+
+function atualizarSomDoPc() {
+    const quer = tocandoVideoDaInternet(saidaObs) ? `channel_${saidaObs}` : null
+    if ((somDoPc?.canal || null) === quer) return
+    const antes = somDoPc
+    audioRouting.update((a) => {
+        if (!a) return a
+        let connections = a.connections || []
+        let desktopAudioEnabled = a.desktopAudioEnabled
+        if (antes) {
+            connections = connections.filter((c) => !(c.from === "desktop_default" && c.to === antes.canal))
+            desktopAudioEnabled = antes.desktopAntes
+        }
+        if (quer) {
+            if (!antes) desktopAudioEnabled = !!a.desktopAudioEnabled
+            connections = [...connections, { from: "desktop_default", to: quer }]
+        }
+        somDoPc = quer ? { canal: quer, desktopAntes: antes ? antes.desktopAntes : !!a.desktopAudioEnabled } : null
+        return { ...a, connections, desktopAudioEnabled: quer ? true : desktopAudioEnabled }
+    })
+}
+
+outputs.subscribe(() => {
+    if (saidaObs || somDoPc) atualizarSomDoPc()
+})

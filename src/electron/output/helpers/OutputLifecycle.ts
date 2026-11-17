@@ -112,7 +112,13 @@ export class OutputLifecycle {
         // invisible/capture outputs render DPI-corrected so capturePage() matches the configured resolution
         let resolvedBounds = output.invisible ? output.bounds : OutputVisibility.resolveOutputBounds(output)
         // shareable pages render at the class's largest size; sendSize stays this output's own
-        const sendSize = { width: output.bounds.width, height: output.bounds.height }
+        // Projeto Live: uma janela visível numa tela com zoom do Windows (ex.: 125%) tem bounds em pontos
+        // (1536x864), mas mostra 1920x1080 pixels de verdade; o NDI manda os pixels de verdade
+        // (nunca maior que a própria tela em pixels)
+        const plTela = !output.invisible && output.ndi ? screen.getDisplayMatching(resolvedBounds) : null
+        const plFator = plTela?.scaleFactor || 1
+        const plEscala = plTela ? Math.min(plFator, (plTela.size.width * plFator) / output.bounds.width, (plTela.size.height * plFator) / output.bounds.height) : 1
+        const sendSize = plEscala > 1 ? { width: Math.round(output.bounds.width * plEscala), height: Math.round(output.bounds.height * plEscala) } : { width: output.bounds.width, height: output.bounds.height }
         const groupSize = shareable && this.isOsrOutput(output) ? RenderGroups.renderSize(id) : null
         if (groupSize && (groupSize.width !== resolvedBounds.width || groupSize.height !== resolvedBounds.height)) resolvedBounds = { ...resolvedBounds, ...groupSize }
         const renderBounds = OutputHelper.Bounds.getRenderBounds(output, resolvedBounds)
