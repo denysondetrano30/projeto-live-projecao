@@ -12,6 +12,8 @@
 //                         "UNKNOWN" (chave esquecida no OBS), "DENIED", "BUSY"
 //   OBS      -> projeção: "MIRROR <porta>" (o OBS tem a fonte "Telão (projeção)": mande o telão em
 //                         FLV para tcp://<OBS>:<porta>) ou "MIRROR off"
+//   OBS      -> projeção: "NDI on" / "NDI off": ligue (ou desligue) o envio do telão por NDI, com o
+//                         nome "Projeto Live - Telão" (é o caminho principal; o MIRROR fica de reserva)
 //   projeção -> OBS:      "TEXT <texto em base64>" (texto do telão, para a legenda; "TEXT -" = sem texto)
 //   os dois lados:        "PING" a cada 2 segundos; 6 segundos sem nada = caiu
 //
@@ -157,6 +159,7 @@ class Link {
         if (this.closed) return
         this.closed = true
         if (mirrorOwner === this.target.id) setMirror(this.target.id, null)
+        setNdi(this.target.id, false)
         if (this.pingTimer) clearInterval(this.pingTimer)
         this.socket?.destroy()
         this.socket = null
@@ -225,6 +228,8 @@ class Link {
         } else if (command === "MIRROR") {
             const port = Number(parts[0])
             setMirror(id, parts[0] !== "off" && port > 0 ? { host: this.target.local ? "127.0.0.1" : this.target.host, port } : null)
+        } else if (command === "NDI") {
+            setNdi(id, parts[0] === "on")
         } else if (command === "UNKNOWN") {
             // O OBS esqueceu este computador: na próxima vez pede permissão de novo.
             delete saved.obs[id]
@@ -304,6 +309,16 @@ export function projetoLiveConnect(id: string) {
     const link = new Link(target)
     links.set(id, link)
     link.open()
+}
+
+// OBS que querem o telão por NDI (basta um para ligar).
+const ndiOwners = new Set<string>()
+function setNdi(id: string, on: boolean) {
+    const before = ndiOwners.size > 0
+    if (on) ndiOwners.add(id)
+    else ndiOwners.delete(id)
+    const after = ndiOwners.size > 0
+    if (before !== after) sendToMain(ToMain.PROJETO_LIVE_NDI, after)
 }
 
 function setMirror(id: string, target: { host: string; port: number } | null) {

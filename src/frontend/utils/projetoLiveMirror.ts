@@ -4,6 +4,10 @@
 // mandar a saída principal (vídeo H.264 + som) para o OBS usando o envio RTMP que o FreeShow já
 // tem: um destino a mais, "tcp://<OBS>:<porta>" em FLV, onde a fonte do OBS fica escutando.
 // Sem fonte no OBS (ou OBS desconectado), o destino sai e o envio para, se não houver outro.
+//
+// NDI (17/11): o OBS novo pede também "NDI on". Aí a mesma saída passa a mandar o telão por NDI
+// com o nome "Projeto Live - Telão" (atraso bem menor que o FLV). O OBS usa o NDI quando ele chega e
+// só pede o FLV ("MIRROR <porta>") se o NDI não aparecer; os dois podem ficar ligados juntos.
 
 import { get } from "svelte/store"
 import { OUTPUT } from "../../types/Channels"
@@ -18,6 +22,7 @@ import { send } from "./request"
 
 const DEST_ID = "projeto-live-obs"
 const MIRROR_BITRATE_KBPS = 12000
+export const NOME_NDI = "Projeto Live - Telão"
 
 // Com junção de projetores, cada projetor mostra só um pedaço; o OBS recebe uma saída escondida que
 // mostra a imagem inteira (sem divisão, fusão nem cantos), com 1920 de largura na proporção da junção.
@@ -61,7 +66,7 @@ function arrumarSaidaTransmissao(): boolean {
 
 // chamado quando a junção é aplicada, mudada ou desfeita
 export function atualizarEspelhoJuncao() {
-    if (!wanted) {
+    if (!wanted && !ndiWanted) {
         arrumarSaidaTransmissao()
         return
     }
@@ -69,6 +74,7 @@ export function atualizarEspelhoJuncao() {
 }
 
 let wanted: ProjetoLiveObsMirror | null = null
+let ndiWanted = false
 let applying = false
 let applyAgain = false
 let ffmpegAsked = false
@@ -88,20 +94,86 @@ function removeFromAll() {
     })
 }
 
+// Saídas onde fomos nós que ligamos o NDI (as que a pessoa ligou à mão não são mexidas).
+function saidasComNossoNdi() {
+    return Object.entries(get(outputs)).filter(([, o]) => o?.ndi && (o as any).plNdi)
+}
+
+function recriarSaida(id: string) {
+    const output = get(outputs)[id]
+    if (output && output.enabled !== false) send(OUTPUT, ["CREATE"], { ...output, id })
+}
+
+function desligarNdi(exceto: string | null) {
+    saidasComNossoNdi().forEach(([id]) => {
+        if (id === exceto) return
+        outputs.update((a) => {
+            if (a[id]) {
+                a[id].ndi = false
+                delete (a[id] as any).plNdi
+            }
+            return a
+        })
+        recriarSaida(id)
+    })
+}
+
+// Liga o NDI na saída do telão; devolve true se a janela precisou ser recriada.
+function ligarNdi(outputId: string): boolean {
+    desligarNdi(outputId)
+    const output = get(outputs)[outputId]
+    if (!output) return false
+    if (output.ndi) {
+        // já ligado (por nós ou à mão): só garante o nome, se fomos nós
+        if ((output as any).plNdi && output.ndiData?.name !== NOME_NDI) {
+            outputs.update((a) => {
+                a[outputId].ndiData = { ...(a[outputId].ndiData || {}), name: NOME_NDI }
+                return a
+            })
+            recriarSaida(outputId)
+            return true
+        }
+        return false
+    }
+    outputs.update((a) => {
+        a[outputId].ndi = true
+        a[outputId].ndiData = { ...(a[outputId].ndiData || {}), name: NOME_NDI }
+        ;(a[outputId] as any).plNdi = true
+        return a
+    })
+    recriarSaida(outputId)
+    return true
+}
+
 async function apply() {
     const target = wanted
-    if (!target) {
+    const ndi = ndiWanted
+    if (!target && !ndi) {
         removeFromAll()
+        desligarNdi(null)
         return
     }
+    if (!target) removeFromAll()
 
     const recriada = arrumarSaidaTransmissao()
     const outputId = temJuncao() ? SAIDA_TRANSMISSAO : getFirstActiveOutput()?.id
     if (!outputId) return
     if (recriada) {
         await new Promise((resolve) => setTimeout(resolve, 2500))
-        if (wanted !== target) return
+        if (wanted !== target || ndiWanted !== ndi) return
     }
+
+    if (ndi) {
+        if (ligarNdi(outputId)) {
+            await new Promise((resolve) => setTimeout(resolve, 2500))
+            if (wanted !== target || ndiWanted !== ndi) return
+        }
+        // som do telão também no NDI
+        createOutputAudioChannel(outputId)
+    } else {
+        desligarNdi(null)
+    }
+    if (!target) return
 
     // O envio usa o FFmpeg; o FreeShow pergunta antes de baixar (uma vez só).
     if (!ffmpegAsked) {
@@ -111,7 +183,7 @@ async function apply() {
             return
         }
     }
-    if (wanted !== target) return
+    if (wanted !== target || ndiWanted !== ndi) return
 
     // O destino do OBS só fica na saída principal.
     Object.entries(get(outputs)).forEach(([id, output]) => {
@@ -137,7 +209,7 @@ async function apply() {
             send(OUTPUT, ["CREATE"], { ...output, id: outputId })
             // espera a janela do telão ser recriada antes de ligar o envio
             await new Promise((resolve) => setTimeout(resolve, 2500))
-            if (wanted !== target) return
+            if (wanted !== target || ndiWanted !== ndi) return
         }
         output = get(outputs)[outputId]
     }
@@ -183,5 +255,12 @@ export function setProjetoLiveMirror(target: ProjetoLiveObsMirror | null) {
     const same = (wanted && target && wanted.host === target.host && wanted.port === target.port) || (!wanted && !target)
     wanted = target
     if (same) return
+    run()
+}
+
+// Chamado quando algum OBS pede (ou nenhum pede mais) o telão por NDI.
+export function setProjetoLiveNdi(on: boolean) {
+    if (ndiWanted === on) return
+    ndiWanted = on
     run()
 }
