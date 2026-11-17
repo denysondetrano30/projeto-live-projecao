@@ -43,6 +43,21 @@
         videoData.paused = $focusMode
 
         dispatch("loaded", true)
+
+        // Projeto Live: numa janela que nunca recebeu clique (a saída escondida da transmissão) o primeiro
+        // play pode ser recusado (tocar com som sem interação); o vídeo ficava parado até alguém pausar e
+        // dar play de novo. Confere e tenta de novo (mudo, se esta janela deve ficar muda).
+        ;[1500, 4000, 8000].forEach((ms) => setTimeout(garantirPlay, ms))
+    }
+
+    function garantirPlay() {
+        if (!player || !loaded || videoData.paused) return
+        try {
+            const estado = player.getPlayerState()
+            if (estado === 1 || estado === 3 || estado === 0) return
+            if (shouldBeMuted) player.mute()
+            player.playVideo()
+        } catch {}
     }
 
     $: if (loaded) updateTime()
