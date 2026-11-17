@@ -44,7 +44,9 @@
 
             videoData.loop = data.loop
             videoData.paused = data.paused
-            videoData.muted = data.muted
+            // Projeto Live: a saída escondida da transmissão não toca o som do YouTube (senão sai
+            // dobrado no alto-falante; para o OBS o som vem pela captura do som do computador)
+            videoData.muted = data.muted || outputId === "pl_transmissao"
         })
     }
 

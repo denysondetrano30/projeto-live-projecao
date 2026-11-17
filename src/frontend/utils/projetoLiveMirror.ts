@@ -13,7 +13,7 @@ import { get } from "svelte/store"
 import { OUTPUT } from "../../types/Channels"
 import type { ProjetoLiveObsMirror } from "../../types/ProjetoLive"
 import { createOutputAudioChannel } from "../audio/routing/audioRoutingInit"
-import { checkFFmpeg, defaultOutput, getFirstActiveOutput, updateOutputRtmpData } from "../components/helpers/output"
+import { checkFFmpeg, defaultOutput, updateOutputRtmpData } from "../components/helpers/output"
 import { clone } from "../components/helpers/array"
 import { ESTILO_JUNCAO } from "../components/drawer/mascaras/mapa"
 import { audioRouting, outputs, styles } from "../stores"
@@ -24,26 +24,40 @@ const DEST_ID = "projeto-live-obs"
 const MIRROR_BITRATE_KBPS = 12000
 export const NOME_NDI = "Projeto Live - Telão"
 
-// Com junção de projetores, cada projetor mostra só um pedaço; o OBS recebe uma saída escondida que
-// mostra a imagem inteira (sem divisão, fusão nem cantos), com 1920 de largura na proporção da junção.
-// No OBS a fonte "Telão" encaixa a imagem no 16:9 com faixas.
+// O OBS sempre recebe uma saída escondida só para a transmissão (17/11, pedido da pessoa), e não a
+// Primária: sempre 1920x1080 (não depende do projetor nem do zoom do Windows), sem máscara, junção
+// ou cantos, e a janela do telão não é recriada quando o OBS conecta. Mostra igual ao telão (mesmo
+// estilo da Primária). Com junção de projetores usa o estilo da junção (imagem inteira, larga) em
+// altura 1080; o OBS recorta o miolo 16:9 (decisão da pessoa: recortada, sem faixas).
 export const SAIDA_TRANSMISSAO = "pl_transmissao"
 
 function temJuncao() {
     return Object.values(get(outputs)).some((o) => o?.mapa?.juncao)
 }
 
+// a saída do telão (Primária): a primeira ligada e ativa que não é a nossa
+function saidaDoTelao() {
+    const lista = Object.entries(get(outputs)).filter(([id, o]) => id !== SAIDA_TRANSMISSAO && o?.enabled && !o?.stageOutput && !(o as any)?.invisible)
+    return lista.find(([, o]) => o.active) || lista[0] || null
+}
+
+function estiloTransmissao() {
+    if (temJuncao()) return ESTILO_JUNCAO
+    return saidaDoTelao()?.[1]?.style || ""
+}
+
 function tamanhoTransmissao() {
+    if (!temJuncao()) return { x: 0, y: 0, width: 1920, height: 1080 }
     const ar = get(styles)[ESTILO_JUNCAO]?.aspectRatio
-    const w = 1920
-    const h = ar?.width && ar?.height ? Math.max(2, Math.round((w * ar.height) / ar.width / 2) * 2) : 1080
+    const h = 1080
+    const w = ar?.width && ar?.height ? Math.max(1920, Math.round((h * ar.width) / ar.height / 2) * 2) : 1920
     return { x: 0, y: 0, width: w, height: h }
 }
 
 // garante (ou tira) a saída escondida; devolve true se ela precisou ser criada/recriada agora
 function arrumarSaidaTransmissao(): boolean {
     const atual = get(outputs)[SAIDA_TRANSMISSAO]
-    if (!temJuncao()) {
+    if (!wanted && !ndiWanted) {
         if (atual) {
             send(OUTPUT, ["REMOVE"], { id: SAIDA_TRANSMISSAO })
             outputs.update((a) => {
@@ -54,10 +68,25 @@ function arrumarSaidaTransmissao(): boolean {
         return false
     }
     const b = tamanhoTransmissao()
-    if (atual && atual.bounds?.width === b.width && atual.bounds?.height === b.height && atual.style === ESTILO_JUNCAO) return false
+    const estilo = estiloTransmissao()
+    if (atual && atual.bounds?.width === b.width && atual.bounds?.height === b.height && (atual.style || "") === estilo && !!atual.ndi === ndiWanted) return false
     outputs.update((a) => {
-        a[SAIDA_TRANSMISSAO] = { ...clone(defaultOutput), ...(a[SAIDA_TRANSMISSAO] || {}), name: "Transmissão (junção)", enabled: true, active: true, invisible: true, style: ESTILO_JUNCAO, bounds: b, rtmp: true } as any
+        a[SAIDA_TRANSMISSAO] = {
+            ...clone(defaultOutput),
+            ...(a[SAIDA_TRANSMISSAO] || {}),
+            name: "Transmissão (OBS)",
+            enabled: true,
+            active: true,
+            invisible: true,
+            style: estilo,
+            bounds: b,
+            rtmp: true,
+            ndi: ndiWanted,
+            ndiData: { ...(a[SAIDA_TRANSMISSAO]?.ndiData || {}), name: NOME_NDI },
+            plNdi: ndiWanted
+        } as any
         delete (a[SAIDA_TRANSMISSAO] as any).mapa
+        delete (a[SAIDA_TRANSMISSAO] as any).mascaraAtiva
         return a
     })
     send(OUTPUT, ["CREATE"], { ...get(outputs)[SAIDA_TRANSMISSAO], id: SAIDA_TRANSMISSAO })
@@ -71,6 +100,27 @@ export function atualizarEspelhoJuncao() {
         return
     }
     run()
+}
+
+// Na versão anterior o envio ia pela própria Primária: tira dela o RTMP sem destino que ficou ligado
+// (a janela volta a ser comum). Uma vez só por sessão.
+let limpouPrimaria = false
+function limparEnvioAntigo() {
+    if (limpouPrimaria) return
+    limpouPrimaria = true
+    Object.entries(get(outputs)).forEach(([id, o]) => {
+        if (id === SAIDA_TRANSMISSAO || !o?.rtmp) return
+        const destinos = o.rtmpData?.destinations || []
+        if (destinos.some((d) => d.enabled && d.url && d.id !== DEST_ID)) return
+        if (destinos.some((d) => d.id === DEST_ID)) updateOutputRtmpData(id, "destinations", destinos.filter((d) => d.id !== DEST_ID))
+        if (o.rtmpData?.streaming) updateOutputRtmpData(id, "streaming", false)
+        outputs.update((a) => {
+            if (a[id]) a[id].rtmp = false
+            return a
+        })
+        const saida = get(outputs)[id]
+        if (saida && saida.enabled !== false) send(OUTPUT, ["CREATE"], { ...saida, id })
+    })
 }
 
 let wanted: ProjetoLiveObsMirror | null = null
@@ -96,7 +146,7 @@ function removeFromAll() {
 
 // Saídas onde fomos nós que ligamos o NDI (as que a pessoa ligou à mão não são mexidas).
 function saidasComNossoNdi() {
-    return Object.entries(get(outputs)).filter(([, o]) => o?.ndi && (o as any).plNdi)
+    return Object.entries(get(outputs)).filter(([, o]) => o?.ndi && ((o as any).plNdi || o.ndiData?.name === NOME_NDI))
 }
 
 function recriarSaida(id: string) {
@@ -158,7 +208,8 @@ async function apply() {
     if (!target) removeFromAll()
 
     const recriada = arrumarSaidaTransmissao()
-    const outputId = temJuncao() ? SAIDA_TRANSMISSAO : getFirstActiveOutput()?.id
+    limparEnvioAntigo()
+    const outputId = get(outputs)[SAIDA_TRANSMISSAO] ? SAIDA_TRANSMISSAO : null
     saidaObs = outputId || null
     atualizarSomDoPc()
     if (!outputId) return
@@ -277,7 +328,9 @@ let saidaObs: string | null = null
 let somDoPc: { canal: string; desktopAntes: boolean } | null = null
 
 function tocandoVideoDaInternet(id: string | null) {
-    return !!id && get(outputs)[id]?.out?.background?.type === "player"
+    if (!id) return false
+    const telao = saidaDoTelao()?.[1]
+    return get(outputs)[id]?.out?.background?.type === "player" || telao?.out?.background?.type === "player"
 }
 
 function atualizarSomDoPc() {
@@ -301,6 +354,13 @@ function atualizarSomDoPc() {
     })
 }
 
+let estiloVisto = ""
 outputs.subscribe(() => {
     if (saidaObs || somDoPc) atualizarSomDoPc()
+    // a Primária trocou de estilo: a saída da transmissão acompanha
+    if (wanted || ndiWanted) {
+        const estilo = estiloTransmissao()
+        if (estiloVisto && estilo !== estiloVisto) setTimeout(() => run())
+        estiloVisto = estilo
+    }
 })
