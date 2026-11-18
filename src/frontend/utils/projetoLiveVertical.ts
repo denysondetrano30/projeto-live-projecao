@@ -24,6 +24,7 @@ import { ToMain } from "../../types/IPC/ToMain"
 import { receiveToMain, sendMain } from "../IPC/main"
 import { media, outputs, styles, templates } from "../stores"
 import { mediaExtensions } from "../values/extensions"
+import { isOutputWindow } from "./common"
 import { send } from "./request"
 
 export const SAIDA_VERTICAL = "pl_transmissao_vertical"
@@ -38,19 +39,22 @@ let quer = false
 
 // O modelo da letra em pé: uma caixa de texto larga no meio da tela, letra grande que encolhe
 // quando o verso é comprido. Só é criado se não existir (a pessoa pode mudar à vontade).
+// Medidas: a Projeção mede toda saída com 1920 de largura; em pé (9:16) a altura fica ~3413.
+const ESTILO_ANTIGO = "top:560px;left:60px;width:960px;height:800px;" // 1ª versão (18/11), medidas erradas
 function garantirModelo() {
-    if (get(templates)[MODELO_VERTICAL]) return
+    const atual = get(templates)[MODELO_VERTICAL]
+    if (atual && atual.items?.[0]?.style !== ESTILO_ANTIGO) return
     const modelo: Template = {
         name: "Letra vertical",
         color: null,
         category: "song",
-        settings: { resolution: { width: LARGURA, height: ALTURA } },
+        settings: { resolution: { width: 1920, height: 3413 } },
         items: [
             {
-                style: "top:560px;left:60px;width:960px;height:800px;",
+                style: "top:1000px;left:110px;width:1700px;height:1400px;",
                 align: "",
                 textFit: "shrinkToFit",
-                lines: [{ align: "", text: [{ value: "Letra vertical", style: "font-size: 90px;font-weight: bold;text-shadow: 3px 3px 8px rgb(0 0 0 / 80%);" }] }]
+                lines: [{ align: "", text: [{ value: "Letra vertical", style: "font-size: 170px;font-weight: bold;text-shadow: 4px 4px 12px rgb(0 0 0 / 80%);" }] }]
             }
         ]
     } as any
@@ -80,7 +84,7 @@ function garantirEstilo() {
     })
 }
 
-function arrumar() {
+function arrumar(forcar = false) {
     const atual = get(outputs)[SAIDA_VERTICAL]
     if (!quer) {
         if (atual) {
@@ -93,7 +97,7 @@ function arrumar() {
         return
     }
     garantirEstilo()
-    if (atual && atual.bounds?.width === LARGURA && atual.bounds?.height === ALTURA && atual.style === ESTILO_VERTICAL && atual.ndi && atual.ndiData?.name === NOME_NDI_VERTICAL) return
+    if (!forcar && atual && atual.bounds?.width === LARGURA && atual.bounds?.height === ALTURA && atual.style === ESTILO_VERTICAL && atual.ndi && atual.ndiData?.name === NOME_NDI_VERTICAL) return
     outputs.update((a) => {
         a[SAIDA_VERTICAL] = {
             ...clone(defaultOutput),
@@ -117,9 +121,14 @@ function arrumar() {
 
 // Chamado quando algum OBS pede (ou nenhum pede mais) o telão vertical.
 export function setProjetoLiveNdiVertical(on: boolean) {
+    // só a janela principal cuida da saída (este arquivo também é carregado pelas janelas das saídas)
+    if (isOutputWindow()) return
+    // OBS acabou de pedir: cria a janela de novo mesmo que a saída já esteja na lista (ela pode ter
+    // ficado guardada sem janela)
+    const forcar = on && !quer
     quer = on
     try {
-        arrumar()
+        arrumar(forcar)
     } catch (err) {
         console.warn("Projeto Live: telão vertical:", err)
     }
@@ -148,7 +157,9 @@ export function definirVersaoVertical(caminho: string, vertical: string) {
 
 // A saída fica guardada nas configurações: se a Projeção abrir e nenhum OBS pedir o vertical, ela sai
 // (para não ficar mandando NDI à toa).
+// (18/11: antes isto rodava também dentro da própria janela vertical, que se apagava depois de 15 s)
 setTimeout(() => {
+    if (isOutputWindow()) return
     if (!quer && get(outputs)[SAIDA_VERTICAL]) setProjetoLiveNdiVertical(false)
 }, 15000)
 
