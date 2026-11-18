@@ -197,6 +197,7 @@ export enum Main {
     AI_LLM_COMPLETE = "AI_LLM_COMPLETE",
     // Projeto Live (OBS)
     PROJETO_LIVE_LIST = "PROJETO_LIVE_LIST",
+    PROJETO_LIVE_NDI_VERTICAL_STATE = "PROJETO_LIVE_NDI_VERTICAL_STATE",
     PROJETO_LIVE_CONNECT = "PROJETO_LIVE_CONNECT",
     PROJETO_LIVE_FORGET = "PROJETO_LIVE_FORGET",
     PROJETO_LIVE_TEXT = "PROJETO_LIVE_TEXT",
@@ -453,6 +454,7 @@ export interface MainReturnPayloads {
     [Main.AI_GET_STATUS]: Promise<{ [key: string]: EngineStatus }>
     [Main.AI_SETUP]: Promise<boolean>
     [Main.PROJETO_LIVE_LIST]: ProjetoLiveObs[]
+    [Main.PROJETO_LIVE_NDI_VERTICAL_STATE]: boolean
     [Main.PROJETO_LIVE_CULTOS_LOAD]: any
     [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: Promise<DriveDownloadResult>
     [Main.PROJETO_LIVE_FILES_EXIST]: boolean[]

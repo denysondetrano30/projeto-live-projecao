@@ -21,7 +21,7 @@ import { clone } from "../components/helpers/array"
 import { defaultOutput } from "../components/helpers/output"
 import { Main } from "../../types/IPC/Main"
 import { ToMain } from "../../types/IPC/ToMain"
-import { receiveToMain, sendMain } from "../IPC/main"
+import { receiveToMain, requestMain, sendMain } from "../IPC/main"
 import { media, outputs, styles, templates } from "../stores"
 import { mediaExtensions } from "../values/extensions"
 import { isOutputWindow } from "./common"
@@ -39,22 +39,24 @@ let quer = false
 
 // O modelo da letra em pé: uma caixa de texto larga no meio da tela, letra grande que encolhe
 // quando o verso é comprido. Só é criado se não existir (a pessoa pode mudar à vontade).
-// Medidas: a Projeção mede toda saída com 1920 de largura; em pé (9:16) a altura fica ~3413.
-const ESTILO_ANTIGO = "top:560px;left:60px;width:960px;height:800px;" // 1ª versão (18/11), medidas erradas
+// Medidas: as posições valem como proporção de uma tela 1920x1080 esticada no tamanho da saída (em pé,
+// os 1080 do alto viram a altura inteira); o tamanho da letra segue a largura (1920 = largura toda).
+// Modelos das versões anteriores (18/11, medidas erradas) são trocados se ninguém mexeu neles.
+const ESTILOS_ANTIGOS = ["top:560px;left:60px;width:960px;height:800px;", "top:1000px;left:110px;width:1700px;height:1400px;"]
 function garantirModelo() {
     const atual = get(templates)[MODELO_VERTICAL]
-    if (atual && atual.items?.[0]?.style !== ESTILO_ANTIGO) return
+    if (atual && !ESTILOS_ANTIGOS.includes(atual.items?.[0]?.style || "")) return
     const modelo: Template = {
         name: "Letra vertical",
         color: null,
         category: "song",
-        settings: { resolution: { width: 1920, height: 3413 } },
+        settings: { resolution: { width: 1920, height: 1080 } },
         items: [
             {
-                style: "top:1000px;left:110px;width:1700px;height:1400px;",
+                style: "top:270px;left:96px;width:1728px;height:540px;",
                 align: "",
                 textFit: "shrinkToFit",
-                lines: [{ align: "", text: [{ value: "Letra vertical", style: "font-size: 170px;font-weight: bold;text-shadow: 4px 4px 12px rgb(0 0 0 / 80%);" }] }]
+                lines: [{ align: "", text: [{ value: "Letra vertical", style: "font-size: 150px;font-weight: bold;text-shadow: 4px 4px 12px rgb(0 0 0 / 80%);" }] }]
             }
         ]
     } as any
@@ -157,11 +159,20 @@ export function definirVersaoVertical(caminho: string, vertical: string) {
 
 // A saída fica guardada nas configurações: se a Projeção abrir e nenhum OBS pedir o vertical, ela sai
 // (para não ficar mandando NDI à toa).
-// (18/11: antes isto rodava também dentro da própria janela vertical, que se apagava depois de 15 s)
-setTimeout(() => {
-    if (isOutputWindow()) return
-    if (!quer && get(outputs)[SAIDA_VERTICAL]) setProjetoLiveNdiVertical(false)
-}, 15000)
+// (18/11: antes isto rodava também dentro da própria janela vertical, que se apagava depois de 15 s;
+// e o aviso do OBS podia chegar antes de a janela principal estar pronta e se perder. Agora a janela
+// principal pergunta o estado ao programa algumas vezes no começo.)
+;[5000, 15000, 30000].forEach((ms) =>
+    setTimeout(async () => {
+        if (isOutputWindow()) return
+        try {
+            const on = !!(await requestMain(Main.PROJETO_LIVE_NDI_VERTICAL_STATE))
+            if (on !== quer || (!on && get(outputs)[SAIDA_VERTICAL])) setProjetoLiveNdiVertical(on)
+        } catch (err) {
+            console.warn("Projeto Live: telão vertical:", err)
+        }
+    }, ms)
+)
 
 // Botão direito na arte > "Versão vertical...": escolhe o arquivo em pé; se já tiver, tira.
 const PICK_ID = "pl_versao_vertical"

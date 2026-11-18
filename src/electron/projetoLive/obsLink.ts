@@ -335,6 +335,11 @@ function setNdiVertical(id: string, on: boolean) {
     if (before !== after) sendToMain(ToMain.PROJETO_LIVE_NDI_VERTICAL, after)
 }
 
+// A janela principal pergunta ao abrir (o aviso pode chegar antes de ela estar pronta e se perder).
+export function projetoLiveNdiVerticalWanted() {
+    return ndiVerticalOwners.size > 0
+}
+
 function setMirror(id: string, target: { host: string; port: number } | null) {
     if (!target && mirrorOwner !== id) return
     mirrorOwner = target ? id : null
