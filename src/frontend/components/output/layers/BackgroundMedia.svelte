@@ -47,6 +47,12 @@
 
     let mediaStyle: MediaStyle = {}
     $: if (data && currentStyle) mediaStyle = getMediaStyle({ ...$media[id], ...data }, currentStyle)
+    // Projeto Live: nas saídas da transmissão vale o enquadramento escolhido na janela "Transmissão" (o fundo
+    // apresentado traz o enquadramento do telão; "preencher" esticava o vídeo 16:9 no vertical, 18/11)
+    $: if (mediaStyle && (outputId === "pl_transmissao" || outputId === "pl_transmissao_vertical")) {
+        const plFit = currentStyle?.fit || (outputId === "pl_transmissao_vertical" ? "blur" : "")
+        if (plFit && mediaStyle.fit !== plFit) mediaStyle = { ...mediaStyle, fit: plFit }
+    }
 </script>
 
 <OutputTransition {transition} inTransition={transition.in} outTransition={transition.out} on:outrostart={() => (fadingOut = true)}>
