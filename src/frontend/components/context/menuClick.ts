@@ -1707,6 +1707,9 @@ const clickActions = {
         const type = getMediaType(getExtension(path))
         setOutput("background", { path, type, loop, muted })
     },
+    pl_transmissao: () => {
+        activePopup.set("projeto_live_transmissao")
+    },
     pl_versao_vertical: (obj: ObjData) => {
         const path = obj.sel?.data[0]?.path || obj.sel?.data[0]?.id
         if (path) alternarVersaoVertical(path)

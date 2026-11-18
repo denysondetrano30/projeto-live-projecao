@@ -68,7 +68,7 @@ function garantirModelo() {
 
 // O estilo da saída vertical: 1080x1920, arte com fundo desfocado, modelo da letra em pé.
 // Criado uma vez; depois a pessoa ajusta em Configurações > Estilos.
-function garantirEstilo() {
+export function garantirEstiloVertical() {
     garantirModelo()
     if (get(styles)[ESTILO_VERTICAL]) return
     const estilo: Styles = {
@@ -98,7 +98,7 @@ function arrumar(forcar = false) {
         }
         return
     }
-    garantirEstilo()
+    garantirEstiloVertical()
     if (!forcar && atual && atual.bounds?.width === LARGURA && atual.bounds?.height === ALTURA && atual.style === ESTILO_VERTICAL && atual.ndi && atual.ndiData?.name === NOME_NDI_VERTICAL) return
     outputs.update((a) => {
         a[SAIDA_VERTICAL] = {

@@ -267,6 +267,9 @@
             const type = getMediaType(getExtension(path))
             if (type !== "video") hide = true
         },
+        pl_transmissao: () => {
+            hide = !$outputs.pl_transmissao && !$outputs.pl_transmissao_vertical
+        },
         pl_versao_vertical: () => {
             const path = $selected.data[0]?.path || $selected.data[0]?.id
             const tem = !!path && !!($media[path] as any)?.plVertical

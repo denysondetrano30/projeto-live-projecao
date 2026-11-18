@@ -6,7 +6,7 @@
     import BmdStream from "../../drawer/live/BMDStream.svelte"
     import NdiStream from "../../drawer/live/NDIStream.svelte"
     import OmtStream from "../../drawer/live/OMTStream.svelte"
-    import { getMediaStyle } from "../../helpers/media"
+    import { getExtension, getMediaStyle, getMediaType } from "../../helpers/media"
     import Player from "../../system/Player.svelte"
     import Camera from "../Camera.svelte"
     import OutputTransition from "../transitions/OutputTransition.svelte"
@@ -39,12 +39,17 @@
     $: plMapeada = !!outputId && (mapaAtivo($outputs[outputId]?.mapa) || !!$outputs[outputId]?.mascaraAtiva || !!$outputs[outputId]?.mapa?.juncao)
     $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada
 
+    // Projeto Live: "vídeos" desligado na janela Transmissão: a saída da live não mostra vídeos
+    $: plSemVideo = !!(currentStyle as any)?.plSemVideos && (data.type === "video" || data.type === "player" || getMediaType(getExtension(id)) === "video")
+
     let mediaStyle: MediaStyle = {}
     $: if (data && currentStyle) mediaStyle = getMediaStyle({ ...$media[id], ...data }, currentStyle)
 </script>
 
 <OutputTransition {transition} inTransition={transition.in} outTransition={transition.out} on:outrostart={() => (fadingOut = true)}>
-    {#if type === "media"}
+    {#if plSemVideo}
+        <!-- vídeo escondido nesta saída -->
+    {:else if type === "media"}
         <!-- on:ended={videoEnded} -->
         <Media {outputId} path={id} {data} {animationStyle} {mirror} {mediaStyle} {fadingOut} {layerable} on:loaded />
     {:else if type === "screen"}

@@ -191,6 +191,7 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     createSlideshow: { label: "context.create_slideshow", icon: "slide" },
     system_open: { label: "main.system_open", icon: "launch" },
     pl_versao_vertical: { label: "Versão vertical...", icon: "media" }, // Projeto Live
+    pl_transmissao: { label: "Transmissão...", icon: "broadcast" }, // Projeto Live: janela da transmissão
     media_type: { label: "clock.type", icon: "media", items: ["type_default", "type_background", "type_foreground"] },
     type_default: { label: "example.default", icon: "autofill" },
     type_background: { label: "preview.background", icon: "type_background" },
@@ -257,7 +258,7 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     output: ["force_output", "SEPARATOR", "align_with_screen", "choose_screen"], // , "SEPARATOR", "edit"
 
     // OUTPUTS
-    output_preview: ["GROUP_edit", "change_style", "edit_style", "SEPARATOR", "recording", "SEPARATOR", "live_prepare", "SEPARATOR", "test_pattern"],
+    output_preview: ["pl_transmissao", "SEPARATOR", "GROUP_edit", "change_style", "edit_style", "SEPARATOR", "recording", "SEPARATOR", "live_prepare", "SEPARATOR", "test_pattern"],
     output_active_button: ["GROUP_edit", "toggle_output", "move_to_front", "SEPARATOR", "hide_from_preview"],
 
     // DRAWER

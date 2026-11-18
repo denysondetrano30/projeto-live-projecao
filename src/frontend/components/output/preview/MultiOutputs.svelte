@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onDestroy } from "svelte"
-    import { activePage, activeRecording, activeStyle, audioChannelsData, dictionary, outputs, rtmpStatus, selected, settingsTab, special, styles, templates, toggleOutputEnabled } from "../../../stores"
+    import { activePage, activePopup, activeRecording, activeStyle, audioChannelsData, dictionary, outputs, rtmpStatus, selected, settingsTab, special, styles, templates, toggleOutputEnabled } from "../../../stores"
     import { translateText } from "../../../utils/language"
     import AudioMeter from "../../drawer/audio/AudioMeter.svelte"
     import { isOutputRecording, stopMediaRecorder } from "../../drawer/live/recorder"
@@ -18,7 +18,8 @@
 
     export let disableTransitions = false
 
-    $: allEnabledOuts = sortObject(sortByName(keysToID($outputs).filter((a) => a.enabled)), "stageOutput")
+    // Projeto Live: as saídas da transmissão (OBS) ficam fora daqui; os ajustes delas ficam na janela "Transmissão"
+    $: allEnabledOuts = sortObject(sortByName(keysToID($outputs).filter((a) => a.enabled && a.id !== "pl_transmissao" && a.id !== "pl_transmissao_vertical")), "stageOutput")
     $: outs = allEnabledOuts.length > 1 ? allEnabledOuts.filter((a) => !a.hideFromPreview) : allEnabledOuts
     $: hiddenOuts = allEnabledOuts.length > 1 ? allEnabledOuts.filter((a) => a.hideFromPreview) : []
 
@@ -243,6 +244,14 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
         </div>
     {/if}
 
+    <!-- Projeto Live: as saídas da transmissão (OBS) ficam escondidas; este botão abre a janela delas -->
+    {#if !fullscreen && ($outputs.pl_transmissao || $outputs.pl_transmissao_vertical)}
+        <button class="plTransmissao" title="Transmissão: o que vai para a live (deitado e em pé)" on:click|stopPropagation={() => activePopup.set("projeto_live_transmissao")}>
+            <Icon id="broadcast" size={0.75} white />
+            Transmissão
+        </button>
+    {/if}
+
     {#each outs as output (output.id)}
         {@const style = $styles[output.style || ""] || {}}
         {@const layers = Array.isArray(style.layers) ? style.layers : clone(defaultLayers)}
@@ -345,6 +354,27 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
 </div>
 
 <style>
+    .plTransmissao {
+        position: absolute;
+        top: 4px;
+        inset-inline-end: 4px;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 7px;
+        font-size: 0.75em;
+        color: var(--text);
+        border: 1px solid var(--primary-lighter);
+        border-radius: 3px;
+        background-color: rgb(0 0 0 / 0.6);
+        cursor: pointer;
+        opacity: 0.75;
+    }
+    .plTransmissao:hover {
+        opacity: 1;
+    }
+
     .hiddenOutputTitles {
         display: flex;
         flex-wrap: wrap;
@@ -353,6 +383,7 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
     }
 
     .multipleOutputs {
+        position: relative;
         display: flex;
         flex-wrap: wrap;
         /* this is changed in electron v31 (chromium) */

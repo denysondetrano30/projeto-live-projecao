@@ -43,6 +43,8 @@ function saidaDoTelao() {
 
 function estiloTransmissao() {
     if (temJuncao()) return ESTILO_JUNCAO
+    // ajustes próprios da transmissão (janela "Transmissão"); sem eles, igual ao telão
+    if (get(styles)["pl_transmissao_estilo"]) return "pl_transmissao_estilo"
     return saidaDoTelao()?.[1]?.style || ""
 }
 
