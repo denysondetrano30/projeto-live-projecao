@@ -1956,6 +1956,15 @@ export function setTemplateStyle(outSlide: OutSlide | null, currentStyle: Styles
     const newItems = mergeWithTemplate(slideItems || [], templateItems, true, true, false, mode, customDynamicValues) || []
     newItems.push(...getSlideItemsFromTemplate(template.settings || {}))
 
+    // Projeto Live: nas saídas da transmissão, vídeo/imagem colocados DENTRO do slide usam o enquadramento
+    // da janela "Transmissão" (a caixa estica para a proporção da saída; em pé o vídeo 16:9 esticava, 18/11)
+    if (outputId === "pl_transmissao" || outputId === "pl_transmissao_vertical") {
+        const plFit = currentStyle?.fit || (outputId === "pl_transmissao_vertical" ? "blur" : "")
+        if (plFit) newItems.forEach((i) => {
+            if (i?.type === "media") (i as any).fit = plFit
+        })
+    }
+
     // console.log("[DEBUG - setTemplateStyle] After merge", {
     //     newItemsCount: newItems.length,
     //     newItemsAuto: newItems?.find((i) => i.auto)

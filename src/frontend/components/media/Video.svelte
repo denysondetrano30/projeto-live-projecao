@@ -223,6 +223,25 @@
     $: mediaStyleString = `width: 100%;height: 100%;object-fit: ${mediaStyle.fit === "blur" ? "contain" : mediaStyle.fit || "contain"};filter: ${mediaStyle.filter || ""};transform: scale(${mediaStyle.flipped ? "-1" : "1"}, ${mediaStyle.flippedY ? "-1" : "1"});mix-blend-mode: ${mediaStyle.blend || "normal"};`
     $: mediaStyleBlurString = `position: absolute;filter: ${mediaStyle.filter || ""} blur(${mediaStyle.fitOptions?.blurAmount ?? 6}px) opacity(${mediaStyle.fitOptions?.blurOpacity || 0.3});object-fit: cover;width: 100%;height: 100%;transform: scale(${mediaStyle.flipped ? "-1" : "1"}, ${mediaStyle.flippedY ? "-1" : "1"});`
 
+    // Projeto Live: na saída em pé da transmissão o vídeo (16:9) saía esticado mesmo com "object-fit"
+    // (18/11, a janela escondida que vai por NDI parece não respeitar o object-fit do vídeo). Ali o tamanho
+    // e a posição do vídeo são calculados aqui, sem deformar: inteiro no meio, e o desfocado cobrindo.
+    let plW = 0
+    let plH = 0
+    let plAspect = 0
+    function plMeta(e: Event) {
+        const v = e.currentTarget as HTMLVideoElement
+        if (v?.videoWidth && v?.videoHeight) plAspect = v.videoWidth / v.videoHeight
+    }
+    $: plCaixa = outputId === "pl_transmissao_vertical" && plAspect > 0 && plW > 0 && plH > 0 && mediaStyle.fit !== "fill"
+    function plBox(cobrir: boolean) {
+        const w = cobrir ? Math.max(plW, plH * plAspect) : Math.min(plW, plH * plAspect)
+        const h = w / plAspect
+        return `position: absolute;width: ${w}px;height: ${h}px;left: ${(plW - w) / 2}px;top: ${(plH - h) / 2}px;object-fit: fill;`
+    }
+    $: plMainStyle = plCaixa ? plBox(mediaStyle.fit === "cover") : ""
+    $: plBlurStyle = plCaixa ? plBox(true) : ""
+
     let blurVideo: HTMLVideoElement | null = null
     $: if (blurVideo && (videoTime < blurVideo.currentTime - 0.1 || videoTime > blurVideo.currentTime + 0.1)) blurVideo.currentTime = videoTime
     $: if (blurVideo) {
@@ -253,14 +272,14 @@
     $: if (softLoopVideo && softLoopVideo.playbackRate !== safeTargetPlaybackRate) softLoopVideo.playbackRate = safeTargetPlaybackRate
 </script>
 
-<div bind:this={container} style="display: flex;width: 100%;height: 100%;place-content: center;{animationStyle}">
+<div bind:this={container} bind:clientWidth={plW} bind:clientHeight={plH} style="display: flex;width: 100%;height: 100%;place-content: center;{plCaixa ? 'position: relative;overflow: hidden;' : ''}{animationStyle}">
     {#if cloneSource}
         <canvas class="media" style="width: 100%;height: 100%;filter: {mediaStyle.filter || ''};transform: scale({mediaStyle.flipped ? '-1' : '1'}, {mediaStyle.flippedY ? '-1' : '1'});" bind:this={cloneCanvas} />
     {:else}
         {#if mediaStyle.fit === "blur" && !perfectFit}
-            <video class="media" style={mediaStyleBlurString} src={encodeFilePath(path)} bind:this={blurVideo} muted loop={videoData.loop} />
+            <video class="media" style="{mediaStyleBlurString}{plBlurStyle}" src={encodeFilePath(path)} bind:this={blurVideo} on:loadedmetadata={plMeta} muted loop={videoData.loop} />
         {/if}
-        <video class="media" style={mediaStyleString} bind:this={video} on:loadedmetadata={loaded} on:playing={playing} on:error bind:currentTime={videoTime} muted src={encodeFilePath(path)} loop={videoData.loop}>
+        <video class="media" style="{mediaStyleString}{plMainStyle}" bind:this={video} on:loadedmetadata={loaded} on:loadedmetadata={plMeta} on:playing={playing} on:error bind:currentTime={videoTime} muted src={encodeFilePath(path)} loop={videoData.loop}>
             {#each tracks as track}
                 <track label={track.name} srclang={track.lang} kind="subtitles" src="data:text/vtt;charset=utf-8,{encodeURI(track.vtt)}" />
             {/each}
