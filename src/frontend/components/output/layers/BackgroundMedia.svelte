@@ -37,7 +37,10 @@
     // Projeto Live: com mapeamento ou máscara o vídeo precisa ser desenhado na própria página (o atalho
     // de composição por baixo ignora a região da junção e o recorte da máscara)
     $: plMapeada = !!outputId && (mapaAtivo($outputs[outputId]?.mapa) || !!$outputs[outputId]?.mascaraAtiva || !!$outputs[outputId]?.mapa?.juncao)
-    $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada
+    // Projeto Live: o atalho também não respeita o enquadramento "fundo desfocado" nem a tela em pé (o
+    // vídeo saía esticado no vertical, 18/11): nesses casos o vídeo é desenhado na própria página
+    $: plSemAtalho = outputId === "pl_transmissao_vertical" || currentStyle?.fit === "blur" || (data as any)?.fit === "blur"
+    $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada && !plSemAtalho
 
     // Projeto Live: "vídeos" desligado na janela Transmissão: a saída da live não mostra vídeos
     $: plSemVideo = !!(currentStyle as any)?.plSemVideos && (data.type === "video" || data.type === "player" || getMediaType(getExtension(id)) === "video")
