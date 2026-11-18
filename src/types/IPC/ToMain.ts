@@ -45,7 +45,8 @@ export enum ToMain {
     PROJETO_LIVE_STATUS = "PROJETO_LIVE_STATUS",
     PROJETO_LIVE_OBS = "PROJETO_LIVE_OBS",
     PROJETO_LIVE_MIRROR = "PROJETO_LIVE_MIRROR",
-    PROJETO_LIVE_NDI = "PROJETO_LIVE_NDI"
+    PROJETO_LIVE_NDI = "PROJETO_LIVE_NDI",
+    PROJETO_LIVE_NDI_VERTICAL = "PROJETO_LIVE_NDI_VERTICAL"
 }
 export interface ToMainSendPayloads {
     [ToMain.ALERT]: string
@@ -75,6 +76,7 @@ export interface ToMainSendPayloads {
     [ToMain.PROJETO_LIVE_OBS]: ProjetoLiveObsControl
     [ToMain.PROJETO_LIVE_MIRROR]: ProjetoLiveObsMirror | null
     [ToMain.PROJETO_LIVE_NDI]: boolean
+    [ToMain.PROJETO_LIVE_NDI_VERTICAL]: boolean
     ///
     [ToMain.IMPORT2]: { channel: string; data: ({ content: Buffer | string | object; name?: string; extension?: string } | string)[] }
     [ToMain.SHOW2]: { error?: string; err?: NodeJS.ErrnoException; id: string }

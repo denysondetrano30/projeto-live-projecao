@@ -14,6 +14,7 @@
     import Media from "./Media.svelte"
     import { mediaLayersEnabled } from "./mediaLayers"
     import { mapaAtivo } from "../../drawer/mascaras/mapa"
+    import { caminhoParaSaida } from "../../../utils/projetoLiveVertical"
 
     export let outputId = ""
 
@@ -24,7 +25,8 @@
     export let animationStyle = ""
     export let mirror = false
 
-    $: id = data.path || data.id || ""
+    // Projeto Live: na saída do telão vertical, a versão vertical da arte (se tiver)
+    $: id = caminhoParaSaida(outputId, data.path || data.id || "", $media)
 
     let type = "media"
     $: type = data.type || "media"

@@ -92,6 +92,7 @@ import {
 import { escapeRegExp, hideDisplay, isOutputWindow, newToast, triggerFunction, wait } from "../../utils/common"
 import { setExampleEffects, setExampleOverlays, setExampleTemplates } from "../../utils/createData"
 import { translateText } from "../../utils/language"
+import { alternarVersaoVertical } from "../../utils/projetoLiveVertical"
 import { confirmCustom } from "../../utils/popup"
 import { openLinkProviderDialog, removeProviderLinks } from "../../utils/providerItemLinks"
 import { send } from "../../utils/request"
@@ -1705,6 +1706,10 @@ const clickActions = {
 
         const type = getMediaType(getExtension(path))
         setOutput("background", { path, type, loop, muted })
+    },
+    pl_versao_vertical: (obj: ObjData) => {
+        const path = obj.sel?.data[0]?.path || obj.sel?.data[0]?.id
+        if (path) alternarVersaoVertical(path)
     },
     favourite: (obj: ObjData) => {
         if (!obj.sel) return

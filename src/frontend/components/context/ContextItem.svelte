@@ -267,6 +267,12 @@
             const type = getMediaType(getExtension(path))
             if (type !== "video") hide = true
         },
+        pl_versao_vertical: () => {
+            const path = $selected.data[0]?.path || $selected.data[0]?.id
+            const tem = !!path && !!($media[path] as any)?.plVertical
+            menu.label = tem ? "Tirar versão vertical" : "Versão vertical..."
+            if ($selected.data.length > 1) disabled = true
+        },
         play_no_filters: () => {
             let path = $selected.data[0]?.path || $selected.data[0]?.id
             if (!path || !$media[path]?.filter) disabled = true
