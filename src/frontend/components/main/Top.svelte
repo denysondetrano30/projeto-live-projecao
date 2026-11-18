@@ -1,6 +1,6 @@
 <script lang="ts">
     import { slide } from "svelte/transition"
-    import { activeEdit, activePage, activeProfile, activeProject, activeShow, cloudUsers, dictionary, drawSettings, drawTool, os, outputDisplay, outputs, paintCache, profiles, saved, settingsTab, shows } from "../../stores"
+    import { activeEdit, activePage, activePopup, labelsDisabled, activeProfile, activeProject, activeShow, cloudUsers, dictionary, drawSettings, drawTool, os, outputDisplay, outputs, paintCache, profiles, saved, settingsTab, shows } from "../../stores"
     import { getCloudUsers } from "../../utils/cloudSync"
     import { translateText } from "../../utils/language"
     import { DEFAULT_DISPLAY_NAME } from "../../utils/SocketHelper"
@@ -10,6 +10,7 @@
     import T from "../helpers/T.svelte"
     import Button from "../inputs/Button.svelte"
     import TopButton from "../inputs/TopButton.svelte"
+    import MaterialButton from "../inputs/MaterialButton.svelte"
 
     export let isWindows = false
 
@@ -111,6 +112,11 @@
         <TopButton id="show" />
         <TopButton id="edit" disabled={editDisabled} />
         <TopButton id="stage" />
+        <!-- Projeto Live: janela "Transmissão" (o que vai para a live no OBS) -->
+        <MaterialButton style="border-radius: 0;border-bottom: 2px solid var(--primary);{$labelsDisabled ? '' : 'padding: 0.3em 1.2em;'}" title="Transmissão: o que vai para a live (deitado e em pé)" isActive={$activePopup === "projeto_live_transmissao"} on:click={() => activePopup.set("projeto_live_transmissao")}>
+            <Icon id="broadcast" size={1.5} white={$activePopup === "projeto_live_transmissao"} />
+            {#if !$labelsDisabled}<span>Transmissão</span>{/if}
+        </MaterialButton>
     </span>
     <span style="width: var(--navigation-width);justify-content: flex-end;">
         <TopButton id="draw" red={$drawTool === "fill" || ($drawTool === "zoom" && $drawSettings.zoom?.size !== 100) || !!($drawTool === "paint" && $paintCache?.length)} hideLabel />
