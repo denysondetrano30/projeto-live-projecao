@@ -12,7 +12,7 @@
 import { get } from "svelte/store"
 import type { Template } from "../../types/Show"
 import { clone } from "../components/helpers/array"
-import { outputs, styles, templates } from "../stores"
+import { outputs, scriptureSettings, styles, templates } from "../stores"
 import { modeloDeFabrica } from "./createData"
 import { MODELO_BIBLIA_VERTICAL, MODELO_LETRA_VERTICAL, modeloBibliaVertical, modeloLetraVertical } from "./projetoLiveModelos"
 import { SAIDA_TRANSMISSAO } from "./projetoLiveMirror"
@@ -43,6 +43,16 @@ export interface ValoresPadrao {
     sombra: number
 }
 
+const MODELOS_ANTIGOS = ["scripture_2", "scripture_3", "scripture_4", "scriptureLT_2"]
+
+// escolher o modelo aqui troca o que vai para a tela (o seletor do painel da Bíblia saiu)
+export function escolherModeloDaBiblia(id: string) {
+    scriptureSettings.update((a) => {
+        a.template = id
+        return a
+    })
+}
+
 export const FONTES = ["", "Outfit", "CMGSans", "Arial", "Verdana", "Georgia", "Impact"]
 const MARGEM = 60
 
@@ -50,7 +60,8 @@ const MARGEM = 60
 
 export function modelosDaBiblia(_atualizar: any = null): { id: string; nome: string }[] {
     return Object.entries(get(templates))
-        .filter(([id, t]: [string, any]) => t?.settings?.mode === "scripture" && !id.startsWith("pl_"))
+        // sem os modelos antigos do FreeShow (decisão dela, 19/11): só "Bíblia", "Bíblia Lower Third" e os que ela criar
+        .filter(([id, t]: [string, any]) => t?.settings?.mode === "scripture" && !id.startsWith("pl_") && !MODELOS_ANTIGOS.includes(id))
         .map(([id, t]: [string, any]) => ({ id, nome: t.name || id }))
         .sort((a, b) => (a.id === "scripture" ? -1 : b.id === "scripture" ? 1 : a.nome.localeCompare(b.nome)))
 }

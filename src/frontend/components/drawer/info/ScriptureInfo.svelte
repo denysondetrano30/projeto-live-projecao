@@ -22,6 +22,7 @@
     import Media from "../../output/layers/Media.svelte"
     import Textbox from "../../slide/Textbox.svelte"
     import Zoomed from "../../slide/Zoomed.svelte"
+    import { layoutClassico } from "../../../utils/projetoLiveLayout"
     import { createScriptureShow, getActiveScripturesContent, getMergedAttribution, getScriptureSlidesNew, textKeys, useOldScriptureSystem } from "../bible/scripture"
 
     export let optionsOpen: boolean
@@ -253,12 +254,15 @@
             {/if}
         {:else}
             <!-- Template -->
+            <!-- Projeto Live (somun tela, 19/11): no layout novo o modelo da Bíblia se escolhe em Editar › Padrões -->
+            {#if $layoutClassico}
             <InputRow style={templateBackground ? "" : "margin-bottom: 10px;"}>
                 <MaterialPopupButton id="scripture_drawer" label="info.template" disabled={!!styleScriptureTemplate} value={templateId} name={template?.name} popupId="select_template" icon="templates" on:change={(e) => update("template", e.detail)} allowEmpty={!isDefault} />
                 {#if (templateId && template) || styleScriptureTemplate}
                     <MaterialButton title="titlebar.edit" icon="edit" on:click={editTemplate} />
                 {/if}
             </InputRow>
+            {/if}
 
             <!-- Template Settings - Quick Edit -->
             {#if templateBackground}

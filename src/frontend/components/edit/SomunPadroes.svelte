@@ -6,15 +6,20 @@
     import { percentageStylePos } from "../helpers/output"
     import Textbox from "../slide/Textbox.svelte"
     import Zoomed from "../slide/Zoomed.svelte"
-    import { FONTES, lerPadrao, modeloDe, modelosDaBiblia, mudarPadrao, musicasUsamPadrao, temPadraoDeFabrica, usarPadraoNasMusicas, voltarAoPadrao } from "../../utils/projetoLivePadroes"
+    import { escolherModeloDaBiblia, FONTES, lerPadrao, modeloDe, modelosDaBiblia, mudarPadrao, musicasUsamPadrao, temPadraoDeFabrica, usarPadraoNasMusicas, voltarAoPadrao } from "../../utils/projetoLivePadroes"
     import type { SaidaPadrao, TipoPadrao, ValoresPadrao } from "../../utils/projetoLivePadroes"
     import { plPadroesAberto } from "../../utils/projetoLiveLayout"
 
     let tipo: TipoPadrao = "biblia"
     let saida: SaidaPadrao = "telao"
-    let bibliaTelao: string = $scriptureSettings?.template || "scripture"
+    $: bibliaTelao = $scriptureSettings?.template || "scripture"
 
-    $: listaBiblia = modelosDaBiblia($templates)
+    $: listaBiblia = comAtual(modelosDaBiblia($templates), bibliaTelao)
+    // se o que está na tela é um modelo que saiu da lista, ele continua aparecendo
+    function comAtual(lista: { id: string; nome: string }[], atual: string) {
+        if (!atual || lista.some((m) => m.id === atual) || !$templates[atual]) return lista
+        return [...lista, { id: atual, nome: $templates[atual].name || atual }]
+    }
     $: id = modeloDe(tipo, saida, bibliaTelao)
     $: v = lerPadrao(id, tipo, $templates) as ValoresPadrao | null
     $: usando = musicasUsamPadrao({ $outputs, $styles })
@@ -83,10 +88,10 @@
         </div>
         {#if tipo === "biblia" && saida === "telao"}
             <label class="modelo">
-                Modelo
-                <select value={bibliaTelao} on:change={(e) => (bibliaTelao = txt(e))}>
+                Modelo na tela
+                <select value={bibliaTelao} on:change={(e) => escolherModeloDaBiblia(txt(e))}>
                     {#each listaBiblia as m}
-                        <option value={m.id}>{m.nome}{m.id === ($scriptureSettings?.template || "scripture") ? " (em uso)" : ""}</option>
+                        <option value={m.id}>{m.nome}</option>
                     {/each}
                 </select>
             </label>

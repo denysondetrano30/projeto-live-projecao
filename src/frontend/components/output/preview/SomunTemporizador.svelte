@@ -18,7 +18,9 @@
     $: lista = sortByName(keysToID($timers), "name", true)
     // qual mostrar: o escolhido aqui, senão o que está tocando, senão o primeiro
     $: tocando = $activeTimers.find((a) => !a.showId && $timers[a.id])?.id || ""
-    $: escolhido = $special.plTimerEscolhido && $timers[$special.plTimerEscolhido] ? $special.plTimerEscolhido : tocando || lista[0]?.id || ""
+    // o que está rodando primeiro; senão o da contagem na tela; senão o último escolhido
+    $: daTela = contagemNaTela($outputs) ? timerDaContagem($overlays) : ""
+    $: escolhido = $special.plTimerEscolhido && $timers[$special.plTimerEscolhido] && ($activeTimers.some((t) => t.id === $special.plTimerEscolhido) || $special.plTimerEscolhido === daTela) ? $special.plTimerEscolhido : tocando || ($timers[daTela] ? daTela : "") || lista[0]?.id || ""
     $: timer = $timers[escolhido]
     $: ativo = $activeTimers.find((a) => a.id === escolhido && !a.showId)
     $: tocandoAgora = !!ativo && ativo.paused !== true
