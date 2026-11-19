@@ -108,9 +108,8 @@
 <svelte:window on:mousedown={fecharAoClicarFora} />
 
 <span class="esquerda">
-    <div class="marca" data-title="somun Telão">
+    <div class="marca" data-title="somun tela">
         <div class="icone"><b>tela</b><i /></div>
-        <span class="nomeApp">Telão</span>
     </div>
 
     <div class="seletor">
@@ -238,11 +237,6 @@
         margin-inline-start: 1px;
         align-self: flex-end;
         margin-bottom: 8px;
-    }
-    .nomeApp {
-        color: #8c8c8c;
-        font-size: 1.05em;
-        font-weight: 400;
     }
 
     button {

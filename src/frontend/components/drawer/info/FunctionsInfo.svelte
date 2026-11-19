@@ -7,7 +7,6 @@
     import Button from "../../inputs/Button.svelte"
     import InteractionsInfo from "../pages/InteractionsInfo.svelte"
     import TimerInfo from "../timers/TimerInfo.svelte"
-    import OBSInfo from "./OBSInfo.svelte"
     import ScenesInfo from "./ScenesInfo.svelte"
 
     $: type = $drawerTabsData.functions?.activeSubTab || ""
@@ -55,8 +54,6 @@
     <ScenesInfo />
 {:else if type === "interactions"}
     <InteractionsInfo />
-{:else if type === "obs"}
-    <OBSInfo />
 {/if}
 
 <style>

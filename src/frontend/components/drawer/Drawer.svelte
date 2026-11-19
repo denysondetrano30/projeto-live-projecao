@@ -253,19 +253,42 @@
     const hiddenInFocusMode = ["templates", "calendar"]
 
     // Projeto Live (somun, 19/11): gaveta com 4 abas — Músicas, Bíblia, Mídia (com Áudio) e "Mais ▾"
-    // (Sobreposições, Modelos, Calendário, Funções). Máscaras e Projetores abrem pelo "⋯" de cima.
-    // As abas continuam todas existindo (atalhos Ctrl+número iguais); só muda o que fica à vista.
-    const plMais = ["overlays", "templates", "calendar", "functions"]
+    // (19/11 tarde: Sobreposições, Temporizadores, Ações e Cenas). Máscaras e Projetores abrem pelo "⋯".
+    // Fora de vista no somun (decisão dela, sem religar; o código continua): Modelos, Calendário,
+    // Variáveis e Interações. Os modelos continuam funcionando por baixo (Bíblia e músicas usam).
+    const plMais: { id: string; aba: string; sub?: string; nome: string; icone: string }[] = [
+        { id: "overlays", aba: "overlays", nome: "Sobreposições", icone: "overlays" },
+        { id: "timer", aba: "functions", sub: "timer", nome: "Temporizadores", icone: "timer" },
+        { id: "actions", aba: "functions", sub: "actions", nome: "Ações", icone: "actions" },
+        { id: "scenes", aba: "functions", sub: "scenes", nome: "Cenas", icone: "scene" }
+    ]
     let plMaisAberto = false
     function plAbrir(id: string) {
         plMaisAberto = false
         const tab = tabs.find((t) => t.id === id)
         if (tab) openDrawerTab(tab)
     }
+    function plAbrirMais(item: { aba: string; sub?: string }) {
+        if (item.sub) {
+            drawerTabsData.update((a) => {
+                if (!a[item.aba]) a[item.aba] = { enabled: true, activeSubTab: item.sub || null }
+                else a[item.aba].activeSubTab = item.sub!
+                return a
+            })
+        }
+        plAbrir(item.aba)
+    }
+    function plMaisVisivel(item: { aba: string; sub?: string }) {
+        if (!plVisivel(item.aba)) return false
+        if (item.sub === "timer") return getAccess("timers").global !== "none"
+        if (item.sub) return getAccess(item.sub).global !== "none"
+        return true
+    }
     function plVisivel(id: string) {
         return $drawerTabsData[id]?.enabled !== false && getAccess(id).global !== "none" && (!$focusMode || !hiddenInFocusMode.includes(id))
     }
-    $: plMaisAtivo = plMais.includes(activeTab) ? tabs.find((t) => t.id === activeTab) : null
+    $: plSubFuncoes = $drawerTabsData.functions?.activeSubTab || ""
+    $: plMaisAtivo = activeTab === "overlays" ? plMais[0] : activeTab === "functions" ? plMais.find((m) => m.sub === plSubFuncoes) || null : null
     $: plExtraAtivo = activeTab === "masks" || activeTab === "projectors" ? tabs.find((t) => t.id === activeTab) : null
 </script>
 
@@ -306,14 +329,13 @@
                 {/if}
                 <span class="plMais" on:mousedown|stopPropagation>
                     <button class="plAba" class:ativa={!!plMaisAtivo} on:click={() => (plMaisAberto = !plMaisAberto)}>
-                        {#if plMaisAtivo}<T id={plMaisAtivo.name} />{:else}Mais{/if} ▾
+                        {#if plMaisAtivo}{plMaisAtivo.nome}{:else}Mais{/if} ▾
                     </button>
                     {#if plMaisAberto}
                         <div class="plLista">
-                            {#each plMais as id}
-                                {@const tab = tabs.find((t) => t.id === id)}
-                                {#if tab && plVisivel(id)}
-                                    <button class:ativa={activeTab === id} on:click={() => plAbrir(id)}><Icon id={tab.icon} size={1} white /> <T id={tab.name} /></button>
+                            {#each plMais as item}
+                                {#if plMaisVisivel(item)}
+                                    <button class:ativa={plMaisAtivo?.id === item.id} on:click={() => plAbrirMais(item)}><Icon id={item.icone} size={1} white /> {item.nome}</button>
                                 {/if}
                             {/each}
                         </div>

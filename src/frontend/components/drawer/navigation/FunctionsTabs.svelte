@@ -1,9 +1,10 @@
 <script lang="ts">
     import { onMount } from "svelte"
-    import { actions, actionTags, activeActionTagFilter, activeVariableTagFilter, drawerTabsData, variables, variableTags, timers, timerTags, activeTimerTagFilter, obsData } from "../../../stores"
+    import { actions, actionTags, activeActionTagFilter, activeVariableTagFilter, drawerTabsData, variables, variableTags, timers, timerTags, activeTimerTagFilter } from "../../../stores"
     import { getAccess } from "../../../utils/profile"
     import { keysToID, sortByName, sortObject } from "../../helpers/array"
     import NavigationSections from "./NavigationSections.svelte"
+    import { layoutClassico } from "../../../utils/projetoLiveLayout"
 
     const actionsAccess = getAccess("actions")
     const variablesAccess = getAccess("variables")
@@ -79,7 +80,8 @@
                       }
                   ]
               ]),
-        ...(variablesAccess.global === "none"
+        // Projeto Live (somun, 19/11): Variáveis e Interações fora de vista no layout novo; OBS Studio saiu de vez
+        ...(variablesAccess.global === "none" || !$layoutClassico
             ? []
             : [
                   [
@@ -95,9 +97,7 @@
 
         ...(scenesAccess.global === "none" ? [] : [[{ id: "scenes", label: "tabs.scenes", icon: "scene" }]]),
 
-        [{ id: "interactions", label: "tabs.interactions", icon: "game" }],
-
-        ...($obsData.enabled ? [[{ id: "obs", label: "OBS Studio", icon: "player" }]] : [])
+        ...(!$layoutClassico ? [] : [[{ id: "interactions", label: "tabs.interactions", icon: "game" }]])
     ]
 </script>
 
