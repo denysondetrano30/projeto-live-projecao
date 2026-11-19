@@ -6,16 +6,20 @@
 // - Saída de segurança: Configurações > Geral > "Layout clássico do FreeShow" volta o tema e a tela
 //   antigos (special.plLayoutClassico). As partes novas da tela olham `layoutClassico`.
 
-import { derived, get } from "svelte/store"
+import { derived, get, writable } from "svelte/store"
 import { defaultThemes } from "../components/settings/tabs/defaultThemes"
 import { clone } from "../components/helpers/array"
-import { activeDrawerTab, activePage, activeProject, drawer, loaded, projects, projectView, special, theme, themes } from "../stores"
+import { activeDrawerTab, activeEdit, activePage, activeProject, drawer, loaded, projects, projectView, special, theme, themes } from "../stores"
 import { openProject } from "../components/show/project"
 import { updateThemeValues } from "./updateSettings"
 
 export const TEMA_SOMUN = "somun"
 
 export const layoutClassico = derived(special, ($special) => !!$special?.plLayoutClassico)
+
+// "Padrões" da aba Editar (somun tela, 19/11): aberto no lugar do editor; fecha ao escolher outra coisa para editar
+export const plPadroesAberto = writable(false)
+activeEdit.subscribe(() => plPadroesAberto.set(false))
 
 function garantirTema() {
     if (get(themes)[TEMA_SOMUN]) return

@@ -17,7 +17,7 @@
     import Timeline from "./components/timeline/Timeline.svelte"
     import { activeEdit, activePage, activeProfile, activeProject, activeShow, activeStage, ai, currentWindow, editMode, focusMode, loaded, os, projectView, resized, showChangeProfileMenu, showsCache, special } from "./stores"
     import { DEFAULT_WIDTH } from "./utils/common"
-    import { layoutClassico } from "./utils/projetoLiveLayout"
+    import { layoutClassico, plPadroesAberto } from "./utils/projetoLiveLayout"
 
     $: page = $activePage
     $: isWindows = !$currentWindow && $os.platform === "win32"
@@ -63,6 +63,8 @@
                 {:else}
                     <Show />
                 {/if}
+            {:else if page === "edit" && $plPadroesAberto && !$layoutClassico}
+                <LazyLoad component={() => import("./components/edit/SomunPadroes.svelte")} show={page === "edit"} />
             {:else if page === "edit"}
                 <LazyLoad component={() => import("./components/edit/Editor.svelte")} show={page === "edit"} />
             {:else if page === "draw"}
@@ -81,6 +83,8 @@
                     {#if $layoutClassico && $activeShow && ($activeShow.type === "show" || $activeShow.type === undefined) && !$focusMode}
                         <ShowTools />
                     {/if}
+                {:else if page === "edit" && $plPadroesAberto && !$layoutClassico}
+                    <!-- Padrões aberto: os ajustes ficam na própria tela -->
                 {:else if page === "edit"}
                     {#if $activeEdit.type === "media" || $activeEdit.type === "camera"}
                         <LazyLoad component={() => import("./components/edit/MediaTools.svelte")} show={$activeEdit.type === "media" || $activeEdit.type === "camera"} />

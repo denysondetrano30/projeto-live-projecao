@@ -560,6 +560,12 @@ function createDefaultTemplates() {
     })
 }
 
+// Projeto Live (somun tela): modelo de fábrica de um id ("Voltar ao padrão do somun" nos Padrões)
+export function modeloDeFabrica(id: string): Template | null {
+    const t = getDefaultTemplates()[id]
+    return t ? JSON.parse(JSON.stringify(t)) : null
+}
+
 function getDefaultTemplates() {
     const a: Record<string, Template> = {}
 
