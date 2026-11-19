@@ -7,6 +7,7 @@ import { setShow } from "../components/helpers/setShow"
 import { activePopup, audioFolders, deletedDefaults, effects, folders, language, mediaFolders, outputs, overlays, projects, scriptures, serverData, shows, templates, variables } from "../stores"
 import { stageShows, templateCategories } from "./../stores"
 import { translateText } from "./language"
+import { MODELO_BIBLIA_VERTICAL, MODELO_LETRA_VERTICAL, modeloBibliaVertical, modeloLetraVertical } from "./projetoLiveModelos"
 import { save } from "./save"
 
 export function createData(paths: MainFilePaths) {
@@ -980,6 +981,10 @@ function getDefaultTemplates() {
         ]
     }
 
+    // Projeto Live (somun tela): modelos da saída vertical (9:16)
+    a[MODELO_LETRA_VERTICAL] = modeloLetraVertical()
+    a[MODELO_BIBLIA_VERTICAL] = modeloBibliaVertical()
+
     return { ...a, ...getDefaultScriptureTemplates() }
 }
 
@@ -1031,16 +1036,16 @@ function getDefaultScriptureTemplates() {
         },
         items: [
             {
-                // textFit: "shrinkToFit",
-                // Projeto Live: sem a caixa escura atrás do texto (fica direto sobre o vídeo de fundo) e sem o nome da tradução
-                style: "top: 30px;left: 30px;width: 1860px;height: 865px;padding: 25px;",
+                // Projeto Live (somun tela, 19/11): copiado do modelo "Bíblia" que a pessoa montou no PC dela
+                // (texto no meio, referência pequena embaixo; sem caixa escura e sem o nome da tradução)
+                style: "top:138.26px;left:227.54px;width:1464.91px;height:720.00px;background-color:;padding:0px;border-radius:0px;",
                 align: "",
                 lines: [
                     {
                         align: "text-align: left;",
                         text: [
-                            { value: "{scripture_number} ", style: "font-size: 40px;color: rgb(255 255 255 / 0.6);text-shadow: 2px 2px 8px rgb(0 0 0 / 0.5);" },
-                            { value: "{scripture_text}", style: "font-size: 80px;text-shadow: 2px 2px 8px rgb(0 0 0 / 0.5);" }
+                            { value: "{scripture_number} ", style: "font-size: 40px;color: rgb(255 255 255 / 0.6);font-family:'CMGSans';" },
+                            { value: "{scripture_text}", style: "font-size: 80px;font-family:'CMGSans';" }
                         ]
                     }
                 ]
@@ -1048,7 +1053,10 @@ function getDefaultScriptureTemplates() {
             {
                 style: "top: 900px;left: 30px;width: 1860px;height: 150px;",
                 align: "",
-                lines: [{ align: "", text: [{ value: "{scripture_reference}", style: "font-size: 55px;color: rgb(255 255 255 / 0.8);text-shadow: 2px 2px 8px rgb(0 0 0 / 0.5);" }] }]
+                lines: [
+                    { align: ";;", text: [{ style: "font-size: 55px;color: rgb(255 255 255 / 0.8);", value: "{scripture_reference}" }] },
+                    { align: ";;", text: [{ style: "font-size: 40px;color: rgb(255 255 255 / 0.7);", value: "" }] }
+                ]
             }
         ]
     }
@@ -1236,28 +1244,21 @@ function getDefaultScriptureTemplates() {
         category: "scripture",
         settings: { mode: "scripture" },
         items: [
+            // Projeto Live (somun tela, 19/11): copiado do modelo "Bíblia Lower Third" que a pessoa montou no PC
+            // dela (texto embaixo à esquerda, referência embaixo à direita, sem caixas coloridas)
             {
-                style: "left:30px;top:765px;width:1860px;height:238px;border-radius:20px;padding:25px;background-color:#FFFFFF;",
-                align: "",
-                lines: [
-                    {
-                        align: "text-align: left;",
-                        text: [
-                            { value: "{scripture_number} ", style: "font-size: 40px;color: rgb(255 255 255 / 0.6);text-shadow:0px 0px 0px #000000;" },
-                            { value: "{scripture_text}", style: "font-size: 80px;color:#000000;text-shadow:0px 0px 0px #000000;" }
-                        ]
-                    }
-                ],
-                auto: true
+                style: "left:30.00px;top:716.18px;width:1860.00px;height:286.82px;border-radius:20px;padding:25px;background-color:;",
+                align: "align-items:center;",
+                lines: [{ align: "text-align: left;", text: [{ value: "{scripture_number} {scripture_text}", style: "text-shadow:0px 0px 0px #000000;font-size:800px;color:#FFFFFF;" }] }],
+                auto: true,
+                textFit: "growToFit"
             },
             {
-                style: "left:1442px;top:960px;width:448px;height:88px;background-color:#ff851b;padding:3px;border-radius:10px;",
-                align: "",
-                lines: [
-                    { align: "", text: [{ value: "{scripture_reference}", style: "text-shadow:0px 0px 0px #000000;font-size:40px;" }] },
-                    { align: "", text: [{ value: "{scripture_name}", style: "text-shadow:0px 0px 0px #000000;font-size:30px;" }] }
-                ],
-                auto: true
+                style: "left:1442.59px;top:959.00px;width:343.95px;height:88.00px;padding:3px;border-radius:10px;background-color:;",
+                align: "align-items:center;",
+                lines: [{ align: ";;;;", text: [{ value: "{scripture_reference}", style: "text-shadow:0px 0px 0px #000000;font-size:600px;" }] }],
+                auto: true,
+                textFit: "growToFit"
             }
         ]
     }

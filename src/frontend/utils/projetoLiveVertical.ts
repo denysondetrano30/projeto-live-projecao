@@ -16,7 +16,6 @@
 import { get } from "svelte/store"
 import { OUTPUT } from "../../types/Channels"
 import type { Styles } from "../../types/Settings"
-import type { Template } from "../../types/Show"
 import { clone } from "../components/helpers/array"
 import { defaultOutput } from "../components/helpers/output"
 import { Main } from "../../types/IPC/Main"
@@ -25,6 +24,7 @@ import { receiveToMain, requestMain, sendMain } from "../IPC/main"
 import { media, outputs, styles, templates } from "../stores"
 import { mediaExtensions } from "../values/extensions"
 import { isOutputWindow } from "./common"
+import { MODELO_BIBLIA_VERTICAL, modeloBibliaVertical, modeloLetraVertical } from "./projetoLiveModelos"
 import { send } from "./request"
 
 export const SAIDA_VERTICAL = "pl_transmissao_vertical"
@@ -41,27 +41,18 @@ let quer = false
 // quando o verso é comprido. Só é criado se não existir (a pessoa pode mudar à vontade).
 // Medidas: as posições valem como proporção de uma tela 1920x1080 esticada no tamanho da saída (em pé,
 // os 1080 do alto viram a altura inteira); o tamanho da letra segue a largura (1920 = largura toda).
-// Modelos das versões anteriores (18/11, medidas erradas) são trocados se ninguém mexeu neles.
-const ESTILOS_ANTIGOS = ["top:560px;left:60px;width:960px;height:800px;", "top:1000px;left:110px;width:1700px;height:1400px;"]
+// Modelos das versões anteriores (18/11, medidas erradas; 19/11 o de fábrica antigo) são trocados se
+// ninguém mexeu neles. O de fábrica agora é o que a pessoa montou no PC dela (projetoLiveModelos.ts).
+// A Bíblia na vertical usa o "Bíblia vertical" (mesmo visual, com os campos da Bíblia).
+const ESTILOS_ANTIGOS = ["top:560px;left:60px;width:960px;height:800px;", "top:1000px;left:110px;width:1700px;height:1400px;", "top:270px;left:96px;width:1728px;height:540px;"]
 function garantirModelo() {
     const atual = get(templates)[MODELO_VERTICAL]
-    if (atual && !ESTILOS_ANTIGOS.includes(atual.items?.[0]?.style || "")) return
-    const modelo: Template = {
-        name: "Letra vertical",
-        color: null,
-        category: "song",
-        settings: { resolution: { width: 1920, height: 1080 } },
-        items: [
-            {
-                style: "top:270px;left:96px;width:1728px;height:540px;",
-                align: "",
-                textFit: "shrinkToFit",
-                lines: [{ align: "", text: [{ value: "Letra vertical", style: "font-size: 150px;font-weight: bold;text-shadow: 4px 4px 12px rgb(0 0 0 / 80%);" }] }]
-            }
-        ]
-    } as any
+    const trocarLetra = !atual || ESTILOS_ANTIGOS.includes(atual.items?.[0]?.style || "")
+    const faltaBiblia = !get(templates)[MODELO_BIBLIA_VERTICAL]
+    if (!trocarLetra && !faltaBiblia) return
     templates.update((a) => {
-        a[MODELO_VERTICAL] = modelo
+        if (trocarLetra) a[MODELO_VERTICAL] = modeloLetraVertical()
+        if (faltaBiblia) a[MODELO_BIBLIA_VERTICAL] = modeloBibliaVertical()
         return a
     })
 }
@@ -70,7 +61,17 @@ function garantirModelo() {
 // Criado uma vez; depois a pessoa ajusta em Configurações > Estilos.
 export function garantirEstiloVertical() {
     garantirModelo()
-    if (get(styles)[ESTILO_VERTICAL]) return
+    const existente = get(styles)[ESTILO_VERTICAL]
+    if (existente) {
+        // estilo criado antes de 19/11: a Bíblia usava o modelo de música (aviso "no scripture values")
+        if (existente.templateScripture === MODELO_VERTICAL) {
+            styles.update((a) => {
+                a[ESTILO_VERTICAL].templateScripture = MODELO_BIBLIA_VERTICAL
+                return a
+            })
+        }
+        return
+    }
     const estilo: Styles = {
         name: "Vertical (OBS)",
         aspectRatio: { width: LARGURA, height: ALTURA },
@@ -78,7 +79,7 @@ export function garantirEstiloVertical() {
         blurAmount: 40,
         blurOpacity: 0.7,
         template: MODELO_VERTICAL,
-        templateScripture: MODELO_VERTICAL
+        templateScripture: MODELO_BIBLIA_VERTICAL
     }
     styles.update((a) => {
         a[ESTILO_VERTICAL] = estilo
