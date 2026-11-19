@@ -399,7 +399,7 @@
     }
     // os mais usados primeiro, com nomes mais claros; o resto na ordem do FreeShow
     const PL_PRIMEIRO = ["timer_end", "timer_start", "video_end", "video_start", "audio_end", "audio_start", "scripture_start", "group_start"]
-    const PL_NOMES: { [id: string]: string } = { timer_end: "Quando o temporizador terminar", timer_start: "Quando o temporizador começar", startup: "Ao abrir a Projeção" }
+    const PL_NOMES: Record<string, string> = { timer_end: "Quando o temporizador terminar", timer_start: "Quando o temporizador começar", startup: "Ao abrir a Projeção" }
     $: plOpcoesQuando = [
         { value: "", label: PL_SEM_GATILHO },
         ...[...customActionActivations]
