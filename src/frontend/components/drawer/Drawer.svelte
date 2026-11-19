@@ -9,6 +9,7 @@
     import { getNormalizedKey, shouldOpenReplace } from "../../utils/shortcuts"
     import { isTypingTarget } from "../../utils/shortcutsHelper"
     import { drawerTabs } from "../../values/tabs"
+    import { layoutClassico } from "../../utils/projetoLiveLayout"
     import Content from "../drawer/Content.svelte"
     import Navigation from "../drawer/Navigation.svelte"
     import { keysToID } from "../helpers/array"
@@ -250,6 +251,22 @@
     }
 
     const hiddenInFocusMode = ["templates", "calendar"]
+
+    // Projeto Live (somun, 19/11): gaveta com 4 abas — Músicas, Bíblia, Mídia (com Áudio) e "Mais ▾"
+    // (Sobreposições, Modelos, Calendário, Funções). Máscaras e Projetores abrem pelo "⋯" de cima.
+    // As abas continuam todas existindo (atalhos Ctrl+número iguais); só muda o que fica à vista.
+    const plMais = ["overlays", "templates", "calendar", "functions"]
+    let plMaisAberto = false
+    function plAbrir(id: string) {
+        plMaisAberto = false
+        const tab = tabs.find((t) => t.id === id)
+        if (tab) openDrawerTab(tab)
+    }
+    function plVisivel(id: string) {
+        return $drawerTabsData[id]?.enabled !== false && getAccess(id).global !== "none" && (!$focusMode || !hiddenInFocusMode.includes(id))
+    }
+    $: plMaisAtivo = plMais.includes(activeTab) ? tabs.find((t) => t.id === activeTab) : null
+    $: plExtraAtivo = activeTab === "masks" || activeTab === "projectors" ? tabs.find((t) => t.id === activeTab) : null
 </script>
 
 <svelte:window on:mouseup={mouseup} on:mousemove={mousemove} on:keydown={keydown} />
@@ -270,6 +287,43 @@
     >
         <!-- role="button"
         tabindex="0" -->
+        {#if !$layoutClassico}
+            <span class="tabs plTabs">
+                {#if plVisivel("shows")}
+                    <button class="plAba" class:ativa={activeTab === "shows"} data-title="Músicas [Ctrl+1]" on:click={() => plAbrir("shows")} on:dblclick={closeDrawer}>Músicas</button>
+                {/if}
+                {#if plVisivel("scripture")}
+                    <button class="plAba" class:ativa={activeTab === "scripture"} data-title="Bíblia" on:click={() => plAbrir("scripture")} on:dblclick={closeDrawer}>Bíblia</button>
+                {/if}
+                {#if plVisivel("media") || plVisivel("audio")}
+                    <button class="plAba" class:ativa={activeTab === "media" || activeTab === "audio"} data-title="Mídia e áudio" on:click={() => plAbrir(activeTab === "audio" ? "audio" : "media")} on:dblclick={closeDrawer}>Mídia</button>
+                    {#if activeTab === "media" || activeTab === "audio"}
+                        <span class="plSub">
+                            <button class:ativa={activeTab === "media"} on:click={() => plAbrir("media")}>Imagens e vídeos</button>
+                            <button class:ativa={activeTab === "audio"} on:click={() => plAbrir("audio")}>Áudio</button>
+                        </span>
+                    {/if}
+                {/if}
+                <span class="plMais" on:mousedown|stopPropagation>
+                    <button class="plAba" class:ativa={!!plMaisAtivo} on:click={() => (plMaisAberto = !plMaisAberto)}>
+                        {#if plMaisAtivo}<T id={plMaisAtivo.name} />{:else}Mais{/if} ▾
+                    </button>
+                    {#if plMaisAberto}
+                        <div class="plLista">
+                            {#each plMais as id}
+                                {@const tab = tabs.find((t) => t.id === id)}
+                                {#if tab && plVisivel(id)}
+                                    <button class:ativa={activeTab === id} on:click={() => plAbrir(id)}><Icon id={tab.icon} size={1} white /> <T id={tab.name} /></button>
+                                {/if}
+                            {/each}
+                        </div>
+                    {/if}
+                </span>
+                {#if plExtraAtivo}
+                    <button class="plAba ativa" data-title="Aberto pelo ⋯ de cima" on:click={() => plAbrir("shows")}><T id={plExtraAtivo.name} /> ×</button>
+                {/if}
+            </span>
+        {:else}
         <span class="tabs">
             {#each tabs as tab, i}
                 {#if $drawerTabsData[tab.id]?.enabled !== false && getAccess(tab.id).global !== "none" && (!$focusMode || !hiddenInFocusMode.includes(tab.id))}
@@ -283,6 +337,7 @@
                 {/if}
             {/each}
         </span>
+        {/if}
 
         <input bind:this={searchElem} class:hidden={!searchActive && !searchValue.length} class="search edit drawer_search" type="text" placeholder={translateText("main.search...", $dictionary)} bind:value={searchValue} on:input={search} on:keydown={searchKeydown} use:selectTextOnFocus />
         {#if !searchActive && !searchValue.length}
@@ -340,6 +395,87 @@
         background-color: var(--primary);
 
         /* box-shadow: 0 -2px 14px rgb(0 0 0 / 0.12); */
+    }
+
+    .top .tabs.plTabs {
+        /* a lista do "Mais" precisa sair da faixa das abas */
+        overflow: visible;
+    }
+    .plTabs {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 8px;
+        flex: 1;
+    }
+    .plTabs button {
+        font-family: inherit;
+        color: var(--text);
+        background: transparent;
+        border: 1px solid transparent;
+        cursor: pointer;
+    }
+    .plAba {
+        height: 30px;
+        padding: 0 14px;
+        border-radius: 7px;
+        font-size: 0.95em;
+    }
+    .plAba:hover {
+        background-color: #232323;
+    }
+    .plAba.ativa {
+        border-color: #3a3a3a !important;
+        background-color: #232323;
+    }
+    .plSub {
+        display: flex;
+        gap: 2px;
+        margin: 0 6px 0 -2px;
+        padding: 2px;
+        border-radius: 7px;
+        border: 1px solid #2a2a2a;
+    }
+    .plSub button {
+        padding: 2px 10px;
+        border-radius: 5px;
+        font-size: 0.82em;
+        color: #a8a8a8;
+    }
+    .plSub button.ativa {
+        background-color: #2a2a2a;
+        color: var(--text);
+    }
+    .plMais {
+        position: relative;
+    }
+    .plLista {
+        position: absolute;
+        top: 34px;
+        inset-inline-start: 0;
+        min-width: 190px;
+        padding: 6px;
+        border-radius: 8px;
+        border: 1px solid #3a3a3a;
+        background-color: #1c1c1c;
+        box-shadow: 0 6px 20px rgb(0 0 0 / 0.5);
+        display: flex;
+        flex-direction: column;
+        z-index: 50;
+    }
+    .plLista button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 8px;
+        border-radius: 5px;
+        text-align: start;
+    }
+    .plLista button:hover {
+        background-color: #2a2a2a;
+    }
+    .plLista button.ativa {
+        border-color: #a8a8a8;
     }
 
     .top {
