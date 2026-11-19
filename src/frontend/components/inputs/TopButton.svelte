@@ -10,6 +10,8 @@
     export let red = false
     export let disabled = false
     export let hideLabel: null | boolean = null
+    // Projeto Live: texto próprio (ex.: "Culto" no lugar de "Mostrar" no layout somun)
+    export let texto = ""
     $: label = hideLabel === null ? !$labelsDisabled : !hideLabel
 
     const keys = { show: 1, edit: 2, stage: 3, draw: 4, settings: 5 }
@@ -45,7 +47,7 @@
 <!-- border-top-left-radius: 12px;border-top-right-radius: 12px; -->
 <MaterialButton style="border-radius: 0;border-bottom: 2px solid var(--primary);{label ? 'padding: 0.3em 1.2em;' : ''}" title={translateText(`menu._title_${id}${$special.numberKeys ? "" : ` [${keys[id]}]`}`, $dictionary)} isActive={$activePage === id} {disabled} on:click={openPage} {red}>
     <Icon {id} size={1.5} white={$activePage === id} />
-    {#if label}<span><T id="menu.{id}" /></span>{/if}
+    {#if label}<span>{#if texto}{texto}{:else}<T id="menu.{id}" />{/if}</span>{/if}
 </MaterialButton>
 
 <style>

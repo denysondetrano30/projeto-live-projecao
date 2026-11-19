@@ -9,7 +9,8 @@
 import { derived, get } from "svelte/store"
 import { defaultThemes } from "../components/settings/tabs/defaultThemes"
 import { clone } from "../components/helpers/array"
-import { loaded, special, theme, themes } from "../stores"
+import { activeDrawerTab, activePage, activeProject, drawer, loaded, projects, projectView, special, theme, themes } from "../stores"
+import { openProject } from "../components/show/project"
 import { updateThemeValues } from "./updateSettings"
 
 export const TEMA_SOMUN = "somun"
@@ -42,6 +43,23 @@ export function definirLayoutClassico(classico: boolean) {
     usarTema(classico ? "default" : TEMA_SOMUN)
 }
 
+// "⋯" > Máscaras / Projetores: abas da gaveta que saíram da lista de abas
+export function abrirGaveta(aba: "masks" | "projectors") {
+    activePage.set("show")
+    activeDrawerTab.set(aba as any)
+    if (get(drawer).height <= 40) drawer.set({ height: 300, stored: get(drawer).height })
+}
+
+// Sem culto aberto: abre o último projeto usado (decisão de 19/11)
+function abrirUltimoProjeto() {
+    if (get(activeProject) && get(projects)[get(activeProject) || ""]) return
+    const lista = Object.entries(get(projects)).filter(([, p]: [string, any]) => p && !p.archived && !p.deleted)
+    if (!lista.length) return
+    lista.sort((a: any, b: any) => (b[1].used || b[1].modified || 0) - (a[1].used || a[1].modified || 0))
+    projectView.set(false)
+    openProject(lista[0][0])
+}
+
 // Primeira vez (depois das configurações carregadas): tema somun, a não ser que o clássico esteja ligado.
 let feito = false
 loaded.subscribe((ok) => {
@@ -50,6 +68,7 @@ loaded.subscribe((ok) => {
     setTimeout(() => {
         const s = get(special) || {}
         if (s.plLayoutClassico) return
+        abrirUltimoProjeto()
         if (!s.plSomunTema) {
             special.update((a) => {
                 a.plSomunTema = true

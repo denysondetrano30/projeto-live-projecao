@@ -11,6 +11,8 @@
     import Button from "../inputs/Button.svelte"
     import TopButton from "../inputs/TopButton.svelte"
     import MaterialButton from "../inputs/MaterialButton.svelte"
+    import SomunTop from "./SomunTop.svelte"
+    import { layoutClassico } from "../../utils/projetoLiveLayout"
 
     export let isWindows = false
 
@@ -93,7 +95,11 @@
     </div>
 {/if}
 
-<div class="top" class:drag={!isWindows}>
+<div class="top" class:drag={!isWindows} class:somun={!$layoutClassico}>
+    {#if !$layoutClassico}
+        <!-- Projeto Live: barra do layout somun Telão -->
+        <SomunTop {editDisabled} {settingsDisabled} {noPhysicalOutputWindows} {openOutputSettings} />
+    {:else}
     <!-- {#if !isWindows}
     <div class="dragZone" />
     {/if} -->
@@ -162,6 +168,7 @@
             <div data-title={translateText("No 'physical' outputs available!")} style="position: absolute;top: 0;inset-inline-end: 0;height: 100%;width: 60px;" role="none" on:click={openOutputSettings} />
         {/if}
     </span>
+    {/if}
 </div>
 
 <style>
@@ -180,6 +187,16 @@
     }
     .top span {
         display: flex;
+    }
+
+    .top.somun {
+        min-height: 48px;
+        height: 48px;
+        background-color: #141414;
+        border-bottom: 1px solid #2a2a2a;
+        box-shadow: none;
+        /* acima dos painéis, para as listas do seletor e do ⋯ não ficarem por baixo */
+        z-index: 300;
     }
 
     .top.drag {

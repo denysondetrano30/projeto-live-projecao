@@ -18,6 +18,7 @@
     import { getTextSnippet, highlightText } from "../quicksearch/searchHighlight"
     import HiddenInput from "./HiddenInput.svelte"
     import MaterialButton from "./MaterialButton.svelte"
+    import { layoutClassico } from "../../utils/projetoLiveLayout"
 
     export let id: string
     export let show: any // ShowList | ShowRef
@@ -219,6 +220,8 @@
     }
 
     $: outline = activeOutput !== null || !!$playingAudio[id]
+    // Projeto Live (somun): no roteiro, o item que está no telão ganha uma bolinha vermelha
+    $: noTelao = isProject && activeOutput !== null && !$layoutClassico
 
     let thumbnailPath: string | null = null
     let duration = 0
@@ -287,6 +290,10 @@
 
                 <HiddenInput value={type === "show_placeholder" ? (editActive ? show.name || "" : showTemplateName) : newName} id={index !== null ? "show_" + id + "#" + index : "show_drawer_" + id} on:edit={rename} bind:edit={editActive} allowEmpty={false} allowEdit={!readOnly && ((type === "show_placeholder" && !!$editingProjectTemplate) || !show.type || show.type === "show")} />
 
+                {#if noTelao}
+                    <i class="plNoTelao" data-title="No telão agora" />
+                {/if}
+
                 {#if isProject}
                     {#if show.layoutInfo?.name}
                         <span class="layout" style="opacity: 0.6;font-style: italic;font-size: 0.9em;">{show.layoutInfo.name}</span>
@@ -347,6 +354,16 @@
 </div>
 
 <style>
+    /* Projeto Live (somun): item que está no telão */
+    .plNoTelao {
+        flex-shrink: 0;
+        width: 8px;
+        height: 8px;
+        margin-inline-start: 6px;
+        border-radius: 50%;
+        background-color: #e5483b;
+    }
+
     .main {
         width: 100%;
 
