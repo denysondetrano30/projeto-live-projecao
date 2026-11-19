@@ -195,6 +195,7 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     // Projeto Live (somun): o que saiu de vista da música (aba Grupos/Metadados/Mídia e barra de arranjos)
     pl_por_no_arranjo: { label: "Pôr esta parte no arranjo", icon: "add" },
     pl_arranjos: { label: "Arranjos…", icon: "layout" },
+    pl_sobreposicao_saidas: { label: "Ajustar por saída…", icon: "display_settings" }, // Projeto Live (somun tela)
     pl_anotacoes: { label: "Anotações…", icon: "notes" },
     pl_metadados: { label: "Metadados…", icon: "info" },
     pl_midia_show: { label: "Mídia da música…", icon: "media" },
@@ -319,8 +320,8 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     media_card: ["GROUP_open", "createSlideshow", "play_no_audio", "play_no_filters", "SEPARATOR", "favourite", "pl_versao_vertical", "SEPARATOR", "media_tag_set", "media_tag_filter", "sort_media_by", "SEPARATOR", "system_open"],
     // "addToFirstSlide",
     drawer_overlays: ["reset_defaults"],
-    overlay_card: ["GROUP_open", "overlay_actions", "display_duration", "export", "SEPARATOR", "lock_to_output", "place_under_slide", "SEPARATOR", "rename", "recolor", "duplicate", "delete"], // "GROUP_rename_color"
-    overlay_card_default: ["GROUP_open", "duplicate", "delete"],
+    overlay_card: ["GROUP_open", "pl_sobreposicao_saidas", "overlay_actions", "display_duration", "export", "SEPARATOR", "lock_to_output", "place_under_slide", "SEPARATOR", "rename", "recolor", "duplicate", "delete"], // "GROUP_rename_color"
+    overlay_card_default: ["GROUP_open", "pl_sobreposicao_saidas", "duplicate", "delete"],
     overlay_card_readonly: ["preview"],
     scene_card: ["GROUP_edit", "scene_actions", "bind_to_scene", "SEPARATOR", "rename", "duplicate", "delete"],
     scene_card_readonly: ["preview"],

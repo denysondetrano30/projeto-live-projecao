@@ -1545,6 +1545,12 @@ const clickActions = {
             removeTemplatesFromShow(get(activeShow)?.id || "", slideRef.id)
         }
     },
+    pl_sobreposicao_saidas: (obj: ObjData) => {
+        const overlayId = obj.sel?.data[0]
+        if (!overlayId || !get(overlays)[overlayId]) return
+        popupData.set({ id: overlayId })
+        activePopup.set("pl_sobreposicao_saidas")
+    },
     overlay_actions: (obj: ObjData) => {
         const overlayId = obj.sel?.data[0]
         const overlay = get(overlays)[overlayId]

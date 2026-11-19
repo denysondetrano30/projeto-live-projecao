@@ -489,6 +489,7 @@ export type Popups =
     | "projeto_live_cultos"
     | "projeto_live_transmissao"
     | "pl_show_extras"
+    | "pl_sobreposicao_saidas"
     | "sync_folders"
     | "node_options"
     | "ai_model_manager"

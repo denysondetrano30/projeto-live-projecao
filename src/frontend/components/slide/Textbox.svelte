@@ -28,6 +28,8 @@
     export let isOutputted = false
     export let ratio = 1
     export let outputId = ""
+    // Projeto Live (somun tela): sobreposição já colocada numa tela 1920x1080 própria (não esticar)
+    export let plSemEsticar = false
     export let filter = ""
     export let backdropFilter = ""
     export let key = false
@@ -133,7 +135,7 @@
     $: if (!outputId) customOutputId = getActiveOutputs($outputs, true, true, true)[0]
 
     function getCustomStyle(currentStyle: string, outputId = "", styleIdOverride = "", _updater: any = null) {
-        if (outputId && !isStage) {
+        if (outputId && !isStage && !plSemEsticar) {
             let outputResolution = getOutputResolution(outputId, $outputs, true, styleIdOverride)
             currentStyle = percentageStylePos(currentStyle, outputResolution)
         }
@@ -813,7 +815,7 @@
 <!-- lyrics view must have "width: 100%;height: 100%;" set -->
 <div
     class="item"
-    style="{style ? getCustomStyle(getItemStyle(item?.style, isCroppedItem(item)), customOutputId, styleIdOverride, { $styles }) : 'width: 100%;height: 100%;'};{paddingCorrection}{foregroundFilters}{animationStyle.item || ''}{cssVariables}{fixedWidth}"
+    style="{style ? getCustomStyle(getItemStyle(item?.style, isCroppedItem(item)), customOutputId, styleIdOverride, { $styles, plSemEsticar }) : 'width: 100%;height: 100%;'};{paddingCorrection}{foregroundFilters}{animationStyle.item || ''}{cssVariables}{fixedWidth}"
     class:white={key && !lines?.length}
     class:key
     class:isStage

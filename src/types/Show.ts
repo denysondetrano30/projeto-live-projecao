@@ -542,6 +542,7 @@ export interface Overlay {
     locked?: boolean
     actions?: any[]
     placeUnderSlide?: boolean
+    plPorSaida?: { [saida: string]: any } // Projeto Live (somun tela): ajuste por saída
     displayDuration?: number
 }
 

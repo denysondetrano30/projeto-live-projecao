@@ -68,6 +68,8 @@
                                         Transmissão
                                     {:else if popupId === "pl_show_extras"}
                                         Música: arranjos, anotações e mais
+                                    {:else if popupId === "pl_sobreposicao_saidas"}
+                                        Sobreposição por saída
                                     {:else if popupId === "audio_effect" && $popupData?.effect}
                                         <T id={EFFECTS_LIST.find((a) => a.id === $popupData.effect)?.label || "popup.audio_effect"} />
                                     {:else}
