@@ -7,6 +7,7 @@
     import MaterialDropdown from "../../inputs/MaterialDropdown.svelte"
     import MaterialPopupButton from "../../inputs/MaterialPopupButton.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
+    import { definirLayoutClassico, layoutClassico } from "../../../utils/projetoLiveLayout"
 
     function updateSpecial(value: any, key: string, allowEmpty = false) {
         special.update((a) => {
@@ -40,6 +41,8 @@
 </script>
 
 <MaterialDropdown label="settings.language" value={$language} options={getLanguageList()} on:change={(e) => setLanguage(e.detail)} flags />
+<!-- Projeto Live: saída de segurança do layout novo (somun Telão) -->
+<MaterialToggleSwitch label="Layout clássico do FreeShow" title="Volta as cores e a tela antigas do FreeShow" checked={$layoutClassico} defaultValue={false} on:change={(e) => definirLayoutClassico(e.detail)} />
 <MaterialToggleSwitch label="settings.use24hClock" checked={$timeFormat === "24"} on:change={(e) => timeFormat.set(e.detail ? "24" : "12")} />
 <MaterialToggleSwitch label="settings.disable_labels" checked={$labelsDisabled} defaultValue={false} on:change={(e) => labelsDisabled.set(e.detail)} />
 <MaterialToggleSwitch label="settings.full_colors" checked={$fullColors} defaultValue={false} on:change={(e) => fullColors.set(e.detail)} />

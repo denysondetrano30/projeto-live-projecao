@@ -1,4 +1,10 @@
 /* custom CMG Sans */
+/* Projeto Live: fonte da identidade somun (Outfit, licença SIL OFL) */
+@font-face {
+    font-family: "Outfit";
+    src: url("./fonts/Outfit-var.ttf") format("truetype");
+    font-weight: 100 900;
+}
 @font-face {
     font-family: "CMGSans";
     src: url("./fonts/CMGSans-Medium.woff2") format("woff2");
@@ -35,6 +41,10 @@
     --text: #f0f0ff;
     --textInvert: #131313;
     --secondary: #f0008c;
+    /* Projeto Live: degradês do FreeShow viram variáveis (o tema somun troca por cinza/branco) */
+    --pl-gradiente: linear-gradient(160deg, #8000f0 0%, #9000f0 10%, #b300f0 30%, #d100db 50%, #f0008c 100%);
+    --pl-gradiente-borda: linear-gradient(160deg, #8000f0 0%, #9000f0 10%, #b300f0 20%, #d100db 35%, var(--secondary) 100%);
+    --pl-gradiente-barra: linear-gradient(90deg, #8000f0 0%, var(--secondary) 100%);
     --secondary-opacity: rgba(240, 0, 140, 0.5);
     --secondary-text: #f0f0ff;
     --transparent: #232530;

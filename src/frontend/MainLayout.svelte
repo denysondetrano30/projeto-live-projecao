@@ -17,6 +17,7 @@
     import Timeline from "./components/timeline/Timeline.svelte"
     import { activeEdit, activePage, activeProfile, activeProject, activeShow, activeStage, ai, currentWindow, editMode, focusMode, loaded, os, projectView, resized, showChangeProfileMenu, showsCache, special } from "./stores"
     import { DEFAULT_WIDTH } from "./utils/common"
+    import "./utils/projetoLiveLayout"
 
     $: page = $activePage
     $: isWindows = !$currentWindow && $os.platform === "win32"

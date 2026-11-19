@@ -1,6 +1,32 @@
 import type { Themes } from "../../../../types/Settings"
 
 export const defaultThemes: { [key: string]: Themes } = {
+    // Projeto Live: identidade somun (a mesma do site do Diretor): preto e cinzas, texto claro, seleção
+    // branca; o vermelho #E5483B fica só para o que está no ar (aplicado nas partes da tela).
+    somun: {
+        name: "somun",
+        default: true,
+        font: {
+            family: '"Outfit", sans-serif',
+            size: "1em"
+        },
+        colors: {
+            primary: "#1C1C1C",
+            "primary-lighter": "#2A2A2A",
+            "primary-darker": "#141414",
+            "primary-darkest": "#101010",
+            text: "#F2F2F2",
+            textInvert: "#141414",
+            "secondary-text": "#141414",
+            secondary: "#E8E8E8",
+            "secondary-opacity": "rgb(232 232 232 / 0.35)",
+            hover: "rgb(255 255 255 / 0.05)",
+            focus: "rgb(255 255 255 / 0.1)",
+            "pl-gradiente": "#F2F2F2",
+            "pl-gradiente-borda": "linear-gradient(#3A3A3A, #3A3A3A)",
+            "pl-gradiente-barra": "#F2F2F2"
+        }
+    },
     default: {
         name: "default",
         default: true,

@@ -90,7 +90,7 @@
 
         /* border-top: 1px solid; */
         border-bottom: 2px solid;
-        border-image: linear-gradient(160deg, #8000f0 0%, #9000f0 10%, #b300f0 30%, #d100db 50%, #f0008c 100%) 1;
+        border-image: var(--pl-gradiente) 1;
     }
 
     .text {

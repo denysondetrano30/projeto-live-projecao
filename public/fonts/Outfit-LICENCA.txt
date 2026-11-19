@@ -1,0 +1,3 @@
+Outfit (public/fonts/Outfit-var.ttf)
+Copyright 2021 The Outfit Project Authors (https://github.com/Outfitio/Outfit-Fonts)
+Licenciada sob a SIL Open Font License, Version 1.1: https://openfontlicense.org
