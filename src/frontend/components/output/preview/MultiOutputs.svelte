@@ -15,8 +15,14 @@
     import MaterialButton from "../../inputs/MaterialButton.svelte"
     import OutputPreviewLabel from "./OutputPreviewLabel.svelte"
     import PreviewOutput from "./PreviewOutput.svelte"
+    import { layoutClassico } from "../../../utils/projetoLiveLayout"
+    import { isOutCleared } from "../../helpers/output"
 
     export let disableTransitions = false
+
+    // Projeto Live (somun): rótulo "Telão" (e quantos projetores juntos) e moldura vermelha quando tem algo no ar
+    $: plNoAr = !isOutCleared(null, $outputs)
+    $: plProjetores = keysToID($outputs).filter((o) => o.enabled && o.mapa?.juncao && o.id !== "pl_transmissao" && o.id !== "pl_transmissao_vertical").length
 
     // Projeto Live: as saídas da transmissão (OBS) ficam fora daqui; os ajustes delas ficam na janela "Transmissão"
     $: allEnabledOuts = sortObject(sortByName(keysToID($outputs).filter((a) => a.enabled && a.id !== "pl_transmissao" && a.id !== "pl_transmissao_vertical")), "stageOutput")
@@ -197,7 +203,11 @@
 <!-- role="button"
 tabindex="0"
 aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"} -->
-<div on:click={toggleFullscreen} on:wheel={handleWheel} class="multipleOutputs" class:multiple={outs.length > 1} class:fullscreen style={fullscreen ? "width: 100%;height: 100%;" : "width: calc(100% - 4px);"} role="none">
+<div on:click={toggleFullscreen} on:wheel={handleWheel} class="multipleOutputs" class:plMoldura={!$layoutClassico && !fullscreen} class:plNoArMoldura={!$layoutClassico && !fullscreen && plNoAr} class:multiple={outs.length > 1} class:fullscreen style={fullscreen ? "width: 100%;height: 100%;" : "width: calc(100% - 4px);"} role="none">
+    <!-- Projeto Live (somun): rótulo do telão -->
+    {#if !$layoutClassico && !fullscreen}
+        <div class="plRotulo"><b>Telão</b>{#if plNoAr}<i class="plNoAr" /> no ar{/if}{#if plProjetores > 1}<span> · {plProjetores} projetores juntos</span>{/if}</div>
+    {/if}
     {#if fullscreen}
         <MaterialButton class="hide" style="z-index: 2;opacity: 1;inset-inline-end: 10px;" title="actions.close" on:click={() => (fullscreen = false)}>
             <Icon id="close" size={1.2} white />
@@ -346,6 +356,42 @@ aria-label={fullscreen ? "Exit fullscreen preview" : "Toggle fullscreen preview"
 </div>
 
 <style>
+    .plRotulo {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px 4px;
+        font-size: 0.8em;
+        color: #a8a8a8;
+        width: 100%;
+    }
+    .plRotulo b {
+        color: var(--text);
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+    }
+    .plRotulo span {
+        color: #8c8c8c;
+    }
+    .plNoAr {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #e5483b;
+        margin-inline-start: 4px;
+    }
+    .multipleOutputs.plMoldura {
+        border-top: none;
+        border: 2px solid #2a2a2a;
+        margin: 0 8px;
+        width: calc(100% - 16px) !important;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .multipleOutputs.plNoArMoldura {
+        border-color: #e5483b;
+    }
     .hiddenOutputTitles {
         display: flex;
         flex-wrap: wrap;

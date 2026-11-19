@@ -192,6 +192,13 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     system_open: { label: "main.system_open", icon: "launch" },
     pl_versao_vertical: { label: "Versão vertical...", icon: "media" }, // Projeto Live
     pl_transmissao: { label: "Transmissão...", icon: "broadcast" }, // Projeto Live: janela da transmissão
+    // Projeto Live (somun): os outros "limpar" saíram de vista e ficam no botão direito da prévia
+    pl_limpar_fundo: { label: "Limpar fundo [F1]", icon: "image" },
+    pl_limpar_sobreposicoes: { label: "Limpar sobreposições [F3]", icon: "overlays" },
+    pl_limpar_audio: { label: "Limpar áudio [F4]", icon: "audio" },
+    pl_limpar_tempo: { label: "Limpar tempo do slide", icon: "timer" },
+    pl_limpar_cena: { label: "Limpar cena", icon: "scene" },
+    pl_restaurar: { label: "Restaurar o que estava no telão", icon: "reset" },
     media_type: { label: "clock.type", icon: "media", items: ["type_default", "type_background", "type_foreground"] },
     type_default: { label: "example.default", icon: "autofill" },
     type_background: { label: "preview.background", icon: "type_background" },
@@ -258,7 +265,7 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     output: ["force_output", "SEPARATOR", "align_with_screen", "choose_screen"], // , "SEPARATOR", "edit"
 
     // OUTPUTS
-    output_preview: ["pl_transmissao", "SEPARATOR", "GROUP_edit", "change_style", "edit_style", "SEPARATOR", "recording", "SEPARATOR", "live_prepare", "SEPARATOR", "test_pattern"],
+    output_preview: ["pl_transmissao", "SEPARATOR", "pl_limpar_fundo", "pl_limpar_sobreposicoes", "pl_limpar_audio", "pl_limpar_tempo", "pl_limpar_cena", "pl_restaurar", "SEPARATOR", "GROUP_edit", "change_style", "edit_style", "SEPARATOR", "recording", "SEPARATOR", "live_prepare", "SEPARATOR", "test_pattern"],
     output_active_button: ["GROUP_edit", "toggle_output", "move_to_front", "SEPARATOR", "hide_from_preview"],
 
     // DRAWER

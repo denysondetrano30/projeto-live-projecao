@@ -21,9 +21,13 @@
         media,
         mediaFolders,
         os,
+        outLocked,
+        outputCache,
         outputs,
         overlayCategories,
         overlays,
+        playingAudio,
+        playingMetronome,
         projects,
         redoHistory,
         scenes,
@@ -46,6 +50,7 @@
     import { closeContextMenu } from "../../utils/shortcuts"
     import { isOutputRecording } from "../drawer/live/recorder"
     import { keysToID } from "../helpers/array"
+    import { isOutCleared } from "../helpers/output"
     import Icon from "../helpers/Icon.svelte"
     import { getExtension, getMediaType } from "../helpers/media"
     import { getLayoutRef, getSlideHighlightIndexes } from "../helpers/show"
@@ -267,6 +272,12 @@
             const type = getMediaType(getExtension(path))
             if (type !== "video") hide = true
         },
+        pl_limpar_fundo: () => (disabled = $outLocked || isOutCleared("background", $outputs)),
+        pl_limpar_sobreposicoes: () => (disabled = $outLocked || (isOutCleared("overlays", $outputs, true) && isOutCleared("effects", $outputs, true))),
+        pl_limpar_audio: () => (disabled = $outLocked || (!Object.keys($playingAudio).length && !$playingMetronome)),
+        pl_limpar_tempo: () => (disabled = $outLocked || isOutCleared("transition", $outputs)),
+        pl_limpar_cena: () => (hide = isOutCleared("scene", $outputs)),
+        pl_restaurar: () => (disabled = $outLocked || !$outputCache || !isOutCleared(null, $outputs)),
         pl_transmissao: () => {
             hide = !$outputs.pl_transmissao && !$outputs.pl_transmissao_vertical
         },

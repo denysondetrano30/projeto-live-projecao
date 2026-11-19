@@ -118,7 +118,8 @@ import { bindSlidesToOutput, checkName, formatToFileName, getLayoutRef, openShow
 import { sendMidi } from "../helpers/showActions"
 import { _show } from "../helpers/shows"
 import { getMenuTagId, openTagManager, toggleSelectionTags, toggleTagFilter } from "../helpers/tags"
-import { clearSlide } from "../output/clear"
+import { clearBackground, clearOverlays, clearScene, clearSlide, clearTimers, restoreOutput } from "../output/clear"
+import { clearAudio } from "../../audio/audioFading"
 import { defaultThemes } from "../settings/tabs/defaultThemes"
 import { activeProject } from "./../../stores"
 import type { ContextMenuItem } from "./contextMenus"
@@ -1707,6 +1708,12 @@ const clickActions = {
         const type = getMediaType(getExtension(path))
         setOutput("background", { path, type, loop, muted })
     },
+    pl_limpar_fundo: () => !get(outLocked) && clearBackground(),
+    pl_limpar_sobreposicoes: () => !get(outLocked) && clearOverlays(),
+    pl_limpar_audio: () => !get(outLocked) && clearAudio("", { clearPlaylist: true, clearMicrophones: true, commonClear: true }),
+    pl_limpar_tempo: () => !get(outLocked) && clearTimers(),
+    pl_limpar_cena: () => !get(outLocked) && clearScene(),
+    pl_restaurar: () => !get(outLocked) && restoreOutput(),
     pl_transmissao: () => {
         activePopup.set("projeto_live_transmissao")
     },

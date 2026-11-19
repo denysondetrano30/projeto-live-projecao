@@ -7,6 +7,10 @@
 
     const PRONTAS = ["OK", "Pronto", "Agora não"]
 
+    // somun Telão: "embutido" = dentro da coluna da direita (página Culto); "oculto" = não desenha
+    // (outro exemplar embutido está mostrando); "flutuante" = no canto, como antes
+    export let modo: "flutuante" | "embutido" | "oculto" = "flutuante"
+
     let writing: string | null = null
     let text = ""
 
@@ -29,8 +33,8 @@
     }
 </script>
 
-{#if $plLiveRecados.length || $plLiveSugestoes.length}
-    <div class="pl-live">
+{#if modo !== "oculto" && ($plLiveRecados.length || $plLiveSugestoes.length)}
+    <div class="pl-live" class:embutido={modo === "embutido"}>
         {#each $plLiveRecados as recado (recado.id)}
             <div class="card">
                 <div class="head"><span class="dot"></span>Diretor</div>
@@ -69,6 +73,13 @@
 {/if}
 
 <style>
+    .pl-live.embutido {
+        position: static;
+        width: auto;
+    }
+    .pl-live.embutido .card {
+        box-shadow: none;
+    }
     .pl-live {
         position: fixed;
         right: 16px;

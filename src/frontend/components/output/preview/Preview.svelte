@@ -23,6 +23,8 @@
     import Show from "../tools/Show.svelte"
     import TimerControls from "../tools/TimerControls.svelte"
     import ClearButtons from "./ClearButtons.svelte"
+    import SomunDireita from "./SomunDireita.svelte"
+    import { layoutClassico } from "../../../utils/projetoLiveLayout"
     import MultiOutputs from "./MultiOutputs.svelte"
     import IcecastStatus from "./IcecastStatus.svelte"
     import SpotifyController from "./SpotifyController.svelte"
@@ -274,7 +276,13 @@
         </div>
     {/if}
 
-    {#if $activePage === "show"}
+    {#if $activePage === "show" && !$layoutClassico}
+        <!-- Projeto Live (somun): 2 botões de limpar, mídia só quando toca, live e recado do diretor -->
+        <SomunDireita {currentOutput} {currentBgOutput} {backgroundOutputId} timer={timer?.timer ? timer : null} />
+
+        <IcecastStatus />
+        <SpotifyController />
+    {:else if $activePage === "show"}
         <div class="section clear-btns" style="margin-top: 2px;">
             <ClearButtons bind:autoChange activeClear={updatedActiveClear} on:update={(e) => (activeClear = e.detail)} />
 
