@@ -3,7 +3,7 @@
     // Só 2 botões de limpar à vista (letra e tudo); os outros limpar ficam no botão direito da
     // prévia. Controles de vídeo/áudio só quando tem mídia tocando. "Indo para a live": as prévias da
     // transmissão (16:9 e 9:16). Embaixo, o recado do diretor (antes ele flutuava no canto).
-    import { activePopup, activeTimers, outLocked, outputs, overlayTimers, playingAudio, playingMetronome } from "../../../stores"
+    import { activePopup, outLocked, outputs, overlayTimers, playingAudio, playingMetronome, timers } from "../../../stores"
     import ProjetoLiveAoVivo from "../../main/ProjetoLiveAoVivo.svelte"
     import { getExtension, getMediaType } from "../../helpers/media"
     import { isOutCleared } from "../../helpers/output"
@@ -11,7 +11,7 @@
     import Audio from "../tools/Audio.svelte"
     import MediaControls from "../tools/MediaControls.svelte"
     import NextTimer from "../tools/NextTimer.svelte"
-    import TimerControls from "../tools/TimerControls.svelte"
+    import SomunTemporizador from "./SomunTemporizador.svelte"
     import PreviewOutput from "./PreviewOutput.svelte"
 
     export let currentOutput: any = null
@@ -28,7 +28,6 @@
     $: fundoTipo = fundo ? fundo.type || getMediaType(getExtension(fundo.path || fundo.id || "")) : ""
     $: temVideo = !!fundo && (fundoTipo === "video" || fundoTipo === "player" || fundoTipo === "camera" || fundoTipo === "screen" || fundoTipo === "ndi")
     $: temAudio = !!Object.keys($playingAudio).length || !!$playingMetronome
-    $: temTempo = !!timer?.timer || !!Object.keys($activeTimers || {}).length
 
     $: temLive = !!$outputs.pl_transmissao || !!$outputs.pl_transmissao_vertical
 
@@ -54,13 +53,15 @@
             <Audio />
         </div>
     {/if}
-    {#if temTempo && !Object.keys($overlayTimers).length}
+    {#if timer?.timer && !Object.keys($overlayTimers).length}
         <div class="bloco">
-            {#if timer?.timer}
-                <NextTimer {currentOutput} {timer} />
-            {:else}
-                <TimerControls />
-            {/if}
+            <NextTimer {currentOutput} {timer} />
+        </div>
+    {/if}
+    <!-- somun tela (19/11): controle do temporizador sempre à vista quando existe temporizador -->
+    {#if Object.keys($timers).length}
+        <div class="bloco">
+            <SomunTemporizador />
         </div>
     {/if}
 

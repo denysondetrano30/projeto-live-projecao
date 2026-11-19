@@ -16,6 +16,7 @@
     import SelectElem from "../../system/SelectElem.svelte"
     import { getCurrentTimerValue, getTimerDynamicValue, playPauseGlobal, resetTimer } from "./timers"
     import { openDrawer } from "../../edit/scripts/edit"
+    import { alternarContagem } from "../../../utils/projetoLiveContagem"
 
     export let searchValue
     export let onlyPlaying: boolean = false
@@ -121,7 +122,7 @@
             {/if}
 
             <SelectElem id="global_timer" data={timer} draggable={!onlyPlaying} selectable={!onlyPlaying}>
-                <div class:outline={!onlyPlaying && isActive} class:project={list.includes(timer.id)} class={onlyPlaying ? "" : `context #global_timer${isReadOnly ? "_readonly" : ""}`} style="display: flex;justify-content: space-between;padding: 3px;">
+                <div class:outline={!onlyPlaying && isActive} class:project={list.includes(timer.id)} class={onlyPlaying ? "" : `context #global_timer${isReadOnly ? "_readonly" : ""}`} style="display: flex;justify-content: space-between;padding: 3px;" role="none" data-title={onlyPlaying ? "" : "Dois cliques: mostrar/esconder no telão"} on:dblclick={() => !onlyPlaying && alternarContagem(timer.id)}>
                     <div style="display: flex;{onlyPlaying ? '' : 'width: 50%;'}">
                         <Button disabled={isReadOnly || timer.type !== "counter"} on:click={() => playPauseGlobal(timer.id, timer)} title={translateText(isPlaying ? "media.pause" : "media.play")}>
                             <Icon id={isPlaying ? "pause" : "play"} white={!isPlaying} />
