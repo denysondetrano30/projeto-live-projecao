@@ -4,7 +4,7 @@
     // prévia. Controles de vídeo/áudio só quando tem mídia tocando. "Indo para a live": as prévias da
     // transmissão (16:9 e 9:16). Embaixo, o recado do diretor (antes ele flutuava no canto).
     import { activePopup, activeTimers, outLocked, outputs, overlays, overlayTimers, playingAudio, playingMetronome, timers } from "../../../stores"
-    import { contagemNaTela, timerDaContagem } from "../../../utils/projetoLiveContagem"
+    import { temporizadorEmUso } from "../../../utils/projetoLiveContagem"
     import ProjetoLiveAoVivo from "../../main/ProjetoLiveAoVivo.svelte"
     import { getExtension, getMediaType } from "../../helpers/media"
     import { isOutCleared } from "../../helpers/output"
@@ -30,9 +30,9 @@
     $: temVideo = !!fundo && (fundoTipo === "video" || fundoTipo === "player" || fundoTipo === "camera" || fundoTipo === "screen" || fundoTipo === "ndi")
     $: temAudio = !!Object.keys($playingAudio).length || !!$playingMetronome
 
-    // somun tela (19/11, pedido dela): a linha do temporizador só aparece quando um está rodando/pausado
-    // ou a contagem está no telão (como antes), não fixa
-    $: temporizadorNoAr = $activeTimers.some((a) => !a.showId && $timers[a.id]) || (contagemNaTela($outputs) && !!$timers[timerDaContagem($overlays)])
+    // somun tela (19/11, pedido dela): a linha do temporizador só aparece quando um está rodando, pausado
+    // no meio, ou aparecendo no telão (também por cena). Terminou (00:00) e saiu do telão: some.
+    $: temporizadorNoAr = temporizadorEmUso($activeTimers, [$outputs, $overlays, $timers])
     $: temLive = !!$outputs.pl_transmissao || !!$outputs.pl_transmissao_vertical
 
     function limparLetra() {

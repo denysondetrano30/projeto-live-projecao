@@ -8,7 +8,7 @@
     import Icon from "../../helpers/Icon.svelte"
     import Timer from "../../slide/views/Timer.svelte"
     import { playPauseGlobal, resetTimer } from "../../drawer/timers/timers"
-    import { ajustarTempo, contagemNaTela, esconderContagem, mostrarContagem, POSICOES, posicaoContagem, timerDaContagem } from "../../../utils/projetoLiveContagem"
+    import { ajustarTempo, esconderContagem, mostrarContagem, POSICOES, posicaoContagem, terminou, timersNaTela } from "../../../utils/projetoLiveContagem"
     import type { PosicaoContagem } from "../../../utils/projetoLiveContagem"
 
     let today = new Date()
@@ -17,15 +17,16 @@
 
     $: lista = sortByName(keysToID($timers), "name", true)
     // qual mostrar: o escolhido aqui, senão o que está tocando, senão o primeiro
-    $: tocando = $activeTimers.find((a) => !a.showId && $timers[a.id])?.id || ""
+    $: tocando = $activeTimers.find((a) => !a.showId && $timers[a.id] && !terminou(a))?.id || ""
     // o que está rodando primeiro; senão o da contagem na tela; senão o último escolhido
-    $: daTela = contagemNaTela($outputs) ? timerDaContagem($overlays) : ""
+    $: naTelaIds = timersNaTela([$outputs, $overlays])
+    $: daTela = naTelaIds.find((id) => $timers[id]) || ""
     $: escolhido = $special.plTimerEscolhido && $timers[$special.plTimerEscolhido] && ($activeTimers.some((t) => t.id === $special.plTimerEscolhido) || $special.plTimerEscolhido === daTela) ? $special.plTimerEscolhido : tocando || ($timers[daTela] ? daTela : "") || lista[0]?.id || ""
     $: timer = $timers[escolhido]
     $: ativo = $activeTimers.find((a) => a.id === escolhido && !a.showId)
     $: tocandoAgora = !!ativo && ativo.paused !== true
     $: ehContador = timer?.type === "counter"
-    $: naTela = contagemNaTela($outputs) && timerDaContagem($overlays) === escolhido
+    $: naTela = naTelaIds.includes(escolhido)
     $: posicao = posicaoContagem($special)
 
     function escolher(e: Event) {
@@ -36,7 +37,7 @@
     let menuAberto = false
     function alternarTela() {
         if ($outLocked) return
-        if (naTela) esconderContagem()
+        if (naTela) esconderContagem(escolhido)
         else mostrarContagem(escolhido)
     }
     function escolherPosicao(p: PosicaoContagem) {
