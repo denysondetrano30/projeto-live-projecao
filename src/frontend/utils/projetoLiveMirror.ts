@@ -356,13 +356,15 @@ function atualizarSomDoPc() {
     })
 }
 
-let estiloVisto = ""
+// null = ainda não olhou; "" = telão sem estilo (19/11: a 1ª troca, de "" para o estilo dos Padrões,
+// era ignorada e a prévia "Indo para a live" ficava com o visual antigo)
+let estiloVisto: string | null = null
 outputs.subscribe(() => {
     if (saidaObs || somDoPc) atualizarSomDoPc()
     // a Primária trocou de estilo: a saída da transmissão acompanha
     if (wanted || ndiWanted) {
         const estilo = estiloTransmissao()
-        if (estiloVisto && estilo !== estiloVisto) setTimeout(() => run())
+        if (estiloVisto !== null && estilo !== estiloVisto) setTimeout(() => run())
         estiloVisto = estilo
     }
 })
