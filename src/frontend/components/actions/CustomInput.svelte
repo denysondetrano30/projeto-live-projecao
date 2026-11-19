@@ -22,6 +22,11 @@
     import RestValues from "./RestValues.svelte"
     import ChooseStyle from "./specific/ChooseStyle.svelte"
     import VariableInputs from "./specific/VariableInputs.svelte"
+    import MaterialFilePicker from "../inputs/MaterialFilePicker.svelte"
+    import { getFileName, removeExtension } from "../helpers/media"
+    import { audioExtensions, mediaExtensions } from "../../values/extensions"
+    import { itensDoCulto, listaDeMidias } from "../../utils/projetoLiveAcoes"
+    import type { OpcaoMidia } from "../../utils/projetoLiveAcoes"
 
     export let inputId: string
     export let value
@@ -148,6 +153,20 @@
     }
 
     $: options = getOptions[actionId]?.() || []
+
+    // Projeto Live (somun tela): listas para "Tocar mídia" e "Iniciar item do projeto pelo nome"
+    let plMidias: OpcaoMidia[] = []
+    if (inputId === "pl_midia") listaDeMidias().then((l) => (plMidias = l))
+    $: plItens = inputId === "strval" && actionId === "name_start_project_item" && $projects ? itensDoCulto() : []
+    // o valor já escolhido aparece mesmo que não esteja na lista agora (outro culto aberto, pasta tirada)
+    function plComAtual(lista: OpcaoMidia[], atual: string | undefined, nome: string | undefined) {
+        if (!atual || lista.some((o) => o.value === atual)) return lista
+        return [{ value: atual, label: nome || getFileName(atual) }, ...lista]
+    }
+    function plEscolherMidia(caminho: string) {
+        if (!caminho) return
+        updateValue("", { path: caminho, name: removeExtension(getFileName(caminho)) })
+    }
 </script>
 
 {#if inputId === "output_style" || value?.outputStyle || value?.styleOutputs}
@@ -234,6 +253,13 @@
     <MaterialNumberInput label="variables.value" value={value?.index || 0} on:change={(e) => updateValue("index", e)} />
 {:else if inputId === "obs_scene"}
     <MaterialDropdown label="Scene" options={obsScenes.map((s) => ({ value: s, label: s }))} value={value?.id} on:change={(e) => updateValue("id", e.detail)} />
+{:else if inputId === "pl_midia"}
+    <!-- Projeto Live (somun tela): "Tocar mídia" — escolher na lista (culto aberto + pastas da aba Mídia) -->
+    <MaterialDropdown label="Mídia" options={plComAtual(plMidias, value?.path, value?.name)} value={value?.path || ""} on:change={(e) => plEscolherMidia(e.detail)} />
+    <MaterialFilePicker label="Ou outro arquivo" value={value?.path || ""} filter={{ name: "Mídia", extensions: [...mediaExtensions, ...audioExtensions] }} on:change={(e) => plEscolherMidia(e.detail)} />
+{:else if inputId === "strval" && actionId === "name_start_project_item"}
+    <!-- Projeto Live (somun tela): escolher o item do culto aberto numa lista em vez de digitar -->
+    <MaterialDropdown label="Item do culto" options={plComAtual(plItens, value?.value, value?.value)} value={value?.value || ""} on:change={(e) => updateValue("value", e.detail)} />
 {:else if inputId === "strval"}
     <!-- run by name -->
     <MaterialTextInput label="inputs.name" value={value?.value || ""} on:change={(e) => updateValue("value", e)} />

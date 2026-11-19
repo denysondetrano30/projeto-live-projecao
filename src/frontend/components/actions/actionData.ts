@@ -44,6 +44,7 @@ export const actionData = {
     start_camera: { SECTION: "tabs.media", common: true, name: "actions.start_camera", icon: "camera", input: "camera" },
     start_screen: { common: true, name: "actions.start_screen", icon: "screen", input: "screen" },
     toggle_playing_media: { name: "actions.toggle_playing_media", icon: "pause" },
+    pl_tocar_midia: { common: true, canAddMultiple: true, name: "Tocar mídia", icon: "media", input: "pl_midia" }, // Projeto Live (somun tela)
 
     // OVERLAYS
     // SECTION: "tabs.overlays",

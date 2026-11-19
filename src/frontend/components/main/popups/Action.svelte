@@ -24,6 +24,7 @@
     import MaterialPopupButton from "../../inputs/MaterialPopupButton.svelte"
     import MaterialTextInput from "../../inputs/MaterialTextInput.svelte"
     import MaterialToggleSwitch from "../../inputs/MaterialToggleSwitch.svelte"
+    import { layoutClassico } from "../../../utils/projetoLiveLayout"
 
     $: id = $popupData.id || ""
     $: mode = $popupData.mode || ""
@@ -388,6 +389,31 @@
     let showCommonActivate = false
 
     $: hasNoName = !action.name
+
+    // Projeto Live (somun tela, 19/11): o gatilho à vista. Primeiro "Quando", depois "O que fazer".
+    // No clássico continua escondido no ícone de ajustes, como no FreeShow.
+    const PL_SEM_GATILHO = "Só quando eu clicar / pela tecla de atalho"
+    function plQuando(texto: string) {
+        const t = texto.replace(/^Ativar\s+/i, "")
+        return t.charAt(0).toUpperCase() + t.slice(1)
+    }
+    // os mais usados primeiro, com nomes mais claros; o resto na ordem do FreeShow
+    const PL_PRIMEIRO = ["timer_end", "timer_start", "video_end", "video_start", "audio_end", "audio_start", "scripture_start", "group_start"]
+    const PL_NOMES: { [id: string]: string } = { timer_end: "Quando o temporizador terminar", timer_start: "Quando o temporizador começar", startup: "Ao abrir a Projeção" }
+    $: plOpcoesQuando = [
+        { value: "", label: PL_SEM_GATILHO },
+        ...[...customActionActivations]
+            .sort((a, b) => (PL_PRIMEIRO.includes(a.id) ? PL_PRIMEIRO.indexOf(a.id) : 99) - (PL_PRIMEIRO.includes(b.id) ? PL_PRIMEIRO.indexOf(b.id) : 99))
+            .map((a) => ({ value: a.id, label: PL_NOMES[a.id] || plQuando(translateText(a.name)) }))
+    ]
+    function plMudarQuando(valor: string) {
+        if (!valor) {
+            updateValue("customActivation", "")
+            updateValue("enabled", true)
+            return
+        }
+        updateValue("customActivation", valor)
+    }
 </script>
 
 <!-- min-height: 50vh; -->
@@ -445,6 +471,40 @@
                     <MaterialFilePicker label="items.icon" style="width: 120px;" value={action.customIcon} filter={{ name: "Image files", extensions: imageExtensions }} on:change={(e) => updateValue("customIcon", e.detail)} noLabel={action.customIcon} showThumbnail allowEmpty />
                 {/if}
             </InputRow>
+
+            {#if !$layoutClassico && !mode}
+                <!-- Projeto Live (somun tela): "Quando" fixo em cima -->
+                <h4 class="plTitulo">Quando</h4>
+                <div class="plQuando">
+                    <MaterialDropdown label="Quando" options={plOpcoesQuando} value={customActivation} on:change={(e) => plMudarQuando(e.detail)} />
+                    {#if ["timer_end", "timer_start", "group_start"].includes(customActivation)}
+                        <MaterialDropdown label={specificActivations[customActivation]?.name} options={getSpecificActivation(customActivation)} value={specificActivation} on:change={(e) => updateValue("specificActivation", `${customActivation}__${e.detail}`)} />
+                    {:else if customActivation === "midi_signal_received"}
+                        <MidiValues value={clone(action.midi || actionMidi)} firstActionId={action.triggers?.[0]} on:change={(e) => updateValue("midi", e)} simple />
+                    {/if}
+                    <MaterialPopupButton
+                        label="Tecla de atalho"
+                        disabled={!action.name}
+                        {id}
+                        name={typeof action.keypressActivate === "string" ? action.keypressActivate.toUpperCase() : ""}
+                        value={action.keypressActivate}
+                        icon="shortcut"
+                        popupId="assign_shortcut"
+                        data={{
+                            ...$popupData,
+                            mode: "action",
+                            revert: $activePopup,
+                            existingShortcuts
+                        }}
+                        on:change={(e) => updateAction("keypressActivate", e?.detail || "")}
+                        allowEmpty
+                    />
+                    {#if customActivation || action.enabled === false}
+                        <MaterialToggleSwitch label="settings.enabled" checked={action.enabled ?? true} defaultValue={true} on:change={(e) => updateValue("enabled", e.detail)} />
+                    {/if}
+                </div>
+                <h4 class="plTitulo">O que fazer</h4>
+            {/if}
         {/if}
 
         {#if !mode && !actionSelector && !actionActivationSelector}
@@ -462,7 +522,7 @@
         {/if}
 
         <!-- if not slide specific trigger action -->
-        {#if showMore && !mode && !actionSelector && !actionActivationSelector}
+        {#if $layoutClassico && showMore && !mode && !actionSelector && !actionActivationSelector}
             <MaterialPopupButton
                 label="midi.activate_keypress"
                 disabled={!action.name}
@@ -518,7 +578,7 @@
         {#if !actionSelector && !actionActivationSelector}
             <!-- {#if action.triggers?.length}<hr />{/if} -->
             {#if !mode && !actionSelector && !actionActivationSelector}
-                {#if !showMore}
+                {#if !showMore && $layoutClassico}
                     <div style="height: 15px;"></div>
                 {/if}
             {:else}
@@ -559,6 +619,24 @@
 </div>
 
 <style>
+    .plTitulo {
+        margin: 18px 0 8px;
+        font-size: 0.8em;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #a8a8a8;
+    }
+    .plQuando {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        border: 1px solid #2a2a2a;
+        border-radius: 8px;
+        background-color: #1c1c1c;
+    }
+
     hr {
         margin: 20px 0;
         height: 2px;

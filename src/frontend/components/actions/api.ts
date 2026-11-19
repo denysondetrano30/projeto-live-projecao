@@ -94,6 +94,7 @@ import {
 import { oscToAPI } from "./apiOSC"
 import { emitData } from "./emitters"
 import { sendRestCommandSync } from "./rest"
+import { tocarMidia } from "../../utils/projetoLiveAcoes"
 
 /// STEPS TO CREATE A CUSTOM API ACTION ///
 
@@ -265,6 +266,7 @@ export const API_ACTIONS = {
     start_camera: (data: API_camera) => startCamera(data),
     start_screen: (data: API_screen) => startScreen(data),
     play_media: (data: API_media) => playMedia(data),
+    pl_tocar_midia: (data: API_media) => tocarMidia(data), // Projeto Live (somun tela): "Tocar mídia"
     toggle_playing_media: () => togglePlayingMedia(null, false, true),
     toggle_media_loop: () => toggleMediaLoop(),
     toggle_media_mute: () => toggleMediaMute(),
