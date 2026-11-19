@@ -17,7 +17,7 @@
     import Timeline from "./components/timeline/Timeline.svelte"
     import { activeEdit, activePage, activeProfile, activeProject, activeShow, activeStage, ai, currentWindow, editMode, focusMode, loaded, os, projectView, resized, showChangeProfileMenu, showsCache, special } from "./stores"
     import { DEFAULT_WIDTH } from "./utils/common"
-    import "./utils/projetoLiveLayout"
+    import { layoutClassico } from "./utils/projetoLiveLayout"
 
     $: page = $activePage
     $: isWindows = !$currentWindow && $os.platform === "win32"
@@ -78,7 +78,7 @@
             <div class="right" class:row={width > DEFAULT_WIDTH * 1.8}>
                 <Preview />
                 {#if page === "show"}
-                    {#if $activeShow && ($activeShow.type === "show" || $activeShow.type === undefined) && !$focusMode}
+                    {#if $layoutClassico && $activeShow && ($activeShow.type === "show" || $activeShow.type === undefined) && !$focusMode}
                         <ShowTools />
                     {/if}
                 {:else if page === "edit"}

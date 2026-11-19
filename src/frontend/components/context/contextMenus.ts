@@ -192,6 +192,12 @@ export const contextMenuItems: { [key: string]: ContextMenuItem } = {
     system_open: { label: "main.system_open", icon: "launch" },
     pl_versao_vertical: { label: "Versão vertical...", icon: "media" }, // Projeto Live
     pl_transmissao: { label: "Transmissão...", icon: "broadcast" }, // Projeto Live: janela da transmissão
+    // Projeto Live (somun): o que saiu de vista da música (aba Grupos/Metadados/Mídia e barra de arranjos)
+    pl_por_no_arranjo: { label: "Pôr esta parte no arranjo", icon: "add" },
+    pl_arranjos: { label: "Arranjos…", icon: "layout" },
+    pl_anotacoes: { label: "Anotações…", icon: "notes" },
+    pl_metadados: { label: "Metadados…", icon: "info" },
+    pl_midia_show: { label: "Mídia da música…", icon: "media" },
     // Projeto Live (somun): os outros "limpar" saíram de vista e ficam no botão direito da prévia
     pl_limpar_fundo: { label: "Limpar fundo [F1]", icon: "image" },
     pl_limpar_sobreposicoes: { label: "Limpar sobreposições [F3]", icon: "overlays" },
@@ -372,7 +378,8 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
     project_camera: ["remove"],
     project_ndi: ["remove"],
     project_folder: ["remove"], // "rename",
-    shows: ["newSlide", "selectAll"],
+    shows: ["newSlide", "selectAll", "SEPARATOR", "pl_arranjos", "pl_anotacoes", "pl_metadados", "pl_midia_show"],
+    pl_parte: ["pl_por_no_arranjo", "SEPARATOR", "pl_arranjos", "pl_anotacoes", "pl_metadados", "pl_midia_show"],
     // TIMER
     // timer: ["GROUP_edit", "play"], // , "reset"
     timers: ["manage_timer_tags", "timer_tag_filter"],
@@ -389,7 +396,7 @@ export const contextMenuLayouts: { [key: string]: string[] } = {
 
     // SHOWS
     // , "copy", "paste"
-    slide: ["GROUP_edit", "slideGroups", "actions", "bind_to", "format", "remove_layers", "slide_transition", "disable", "SEPARATOR", "duplicate", "make_unique", "GROUP_slide_remove"],
+    slide: ["GROUP_edit", "slideGroups", "actions", "bind_to", "format", "remove_layers", "slide_transition", "disable", "SEPARATOR", "duplicate", "make_unique", "GROUP_slide_remove", "SEPARATOR", "pl_arranjos", "pl_anotacoes", "pl_metadados", "pl_midia_show"],
     slideChild: ["GROUP_edit", "slideGroups", "actions", "bind_to", "format", "remove_layers", "slide_transition", "disable", "SEPARATOR", "duplicate", "make_unique", "GROUP_slide_remove"],
     slideFake: ["convert_to_regular"],
     slideFocus: ["editSlideText"],

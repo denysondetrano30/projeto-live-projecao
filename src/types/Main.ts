@@ -488,6 +488,7 @@ export type Popups =
     | "pco_picker"
     | "projeto_live_cultos"
     | "projeto_live_transmissao"
+    | "pl_show_extras"
     | "sync_folders"
     | "node_options"
     | "ai_model_manager"

@@ -21,6 +21,8 @@
     import PowerPointPreview from "./ppt/PowerPointPreview.svelte"
     import Section from "./Section.svelte"
     import ShowNotes from "./ShowNotes.svelte"
+    import SomunPartes from "./SomunPartes.svelte"
+    import { layoutClassico } from "../../utils/projetoLiveLayout"
     import Slides from "./Slides.svelte"
 
     $: show = $activeShow
@@ -118,8 +120,15 @@
                     <FolderShow path={show.id} index={show.index || 0} />
                 {/key}
             {:else if (show.type || "show") === "show"}
-                <Slides showId={$activeShow?.id || ""} />
-                <Layouts />
+                {#if !$layoutClassico}
+                    <!-- Projeto Live (somun): partes da música em cima; arranjos/anotações no ⋯ e no botão direito -->
+                    <SomunPartes showId={$activeShow?.id || ""} />
+                    <Slides showId={$activeShow?.id || ""} />
+                    <p class="plDica">Setas passam o slide · botão direito para o resto</p>
+                {:else}
+                    <Slides showId={$activeShow?.id || ""} />
+                    <Layouts />
+                {/if}
             {:else if show.type === "show_placeholder"}
                 <ProjectShowPlaceholder />
             {:else}
@@ -131,7 +140,7 @@
     </div>
 
     {#if show && (show.type || "show") === "show"}
-        <ShowNotes />
+        {#if $layoutClassico}<ShowNotes />{/if}
 
         <!-- || $showsCache[show.id || ""]?.layouts[$showsCache[show.id || ""]?.settings?.activeLayout || ""]?.timeline?.actions?.length -->
         {#if $special.timelineActive}
@@ -146,6 +155,13 @@
 </div>
 
 <style>
+    .plDica {
+        text-align: center;
+        font-size: 0.78em;
+        color: #8c8c8c;
+        padding: 6px 0 8px;
+    }
+
     .double {
         height: 100%;
 

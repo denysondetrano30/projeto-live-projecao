@@ -51,6 +51,7 @@
     import { isOutputRecording } from "../drawer/live/recorder"
     import { keysToID } from "../helpers/array"
     import { isOutCleared } from "../helpers/output"
+    import { layoutClassico } from "../../utils/projetoLiveLayout"
     import Icon from "../helpers/Icon.svelte"
     import { getExtension, getMediaType } from "../helpers/media"
     import { getLayoutRef, getSlideHighlightIndexes } from "../helpers/show"
@@ -278,6 +279,10 @@
         pl_limpar_tempo: () => (disabled = $outLocked || isOutCleared("transition", $outputs)),
         pl_limpar_cena: () => (hide = isOutCleared("scene", $outputs)),
         pl_restaurar: () => (disabled = $outLocked || !$outputCache || !isOutCleared(null, $outputs)),
+        pl_arranjos: () => (hide = $layoutClassico),
+        pl_anotacoes: () => (hide = $layoutClassico),
+        pl_metadados: () => (hide = $layoutClassico),
+        pl_midia_show: () => (hide = $layoutClassico),
         pl_transmissao: () => {
             hide = !$outputs.pl_transmissao && !$outputs.pl_transmissao_vertical
         },

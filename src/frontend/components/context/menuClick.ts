@@ -120,6 +120,13 @@ import { _show } from "../helpers/shows"
 import { getMenuTagId, openTagManager, toggleSelectionTags, toggleTagFilter } from "../helpers/tags"
 import { clearBackground, clearOverlays, clearScene, clearSlide, clearTimers, restoreOutput } from "../output/clear"
 import { clearAudio } from "../../audio/audioFading"
+import { ondrop } from "../helpers/drop"
+
+// Projeto Live (somun): janela com arranjos/anotações/metadados/mídia da música aberta
+function abrirExtrasDaMusica(aba: string) {
+    popupData.set({ aba })
+    activePopup.set("pl_show_extras")
+}
 import { defaultThemes } from "../settings/tabs/defaultThemes"
 import { activeProject } from "./../../stores"
 import type { ContextMenuItem } from "./contextMenus"
@@ -1714,6 +1721,17 @@ const clickActions = {
     pl_limpar_tempo: () => !get(outLocked) && clearTimers(),
     pl_limpar_cena: () => !get(outLocked) && clearScene(),
     pl_restaurar: () => !get(outLocked) && restoreOutput(),
+    pl_por_no_arranjo: (obj: ObjData) => {
+        const id = obj.contextElem?.id
+        if (!id) return
+        selected.set({ id: "group", data: [{ id }] })
+        ondrop(null, "slide")
+        selected.set({ id: null, data: [] })
+    },
+    pl_arranjos: () => abrirExtrasDaMusica("arranjos"),
+    pl_anotacoes: () => abrirExtrasDaMusica("anotacoes"),
+    pl_metadados: () => abrirExtrasDaMusica("metadados"),
+    pl_midia_show: () => abrirExtrasDaMusica("midia"),
     pl_transmissao: () => {
         activePopup.set("projeto_live_transmissao")
     },
