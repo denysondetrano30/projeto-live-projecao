@@ -300,3 +300,29 @@ export async function plMusicasPending(data: { uid: string; refreshToken: string
         return { ok: false, error: "network", detail: String(err) }
     }
 }
+
+// somun hub (25/11): "sinal de vida" — ao abrir, o somun tela grava em sinais/<conta> quando foi
+// usado e a versão instalada, para o painel de administração (somun-hub) mostrar as igrejas. Só os
+// campos "tela" e "email" (o live e o Diretor gravam os deles).
+export async function plFirebaseSinal(data: { uid: string; refreshToken: string; email: string }) {
+    if (!plFirebaseReady() || !data.uid || !data.refreshToken) return { ok: false }
+    const auth = await accessToken(data.refreshToken)
+    if (!auth.ok) return { ok: false }
+    let numero = ""
+    try {
+        numero = require("fs").readFileSync(require("path").join(require("path").dirname(process.execPath), "..", "somun-versao.txt"), "utf8").trim()
+    } catch {
+        // instalação antiga ou modo de desenvolvimento
+    }
+    const fields = {
+        email: { stringValue: data.email || "" },
+        tela: { mapValue: { fields: { versao: { stringValue: numero }, em: { timestampValue: new Date().toISOString() } } } }
+    }
+    try {
+        const url = `https://firestore.googleapis.com/v1/projects/${PL_FIREBASE.projectId}/databases/(default)/documents/sinais/${encodeURIComponent(data.uid)}?updateMask.fieldPaths=email&updateMask.fieldPaths=tela`
+        const response = await fetch(url, { method: "PATCH", headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` }, body: JSON.stringify({ fields }), signal: AbortSignal.timeout(20000) })
+        return { ok: response.ok }
+    } catch {
+        return { ok: false }
+    }
+}

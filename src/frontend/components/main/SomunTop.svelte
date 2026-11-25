@@ -118,6 +118,12 @@
         })
     }
     onMount(() => {
+        // somun hub: sinal de vida (quando o tela foi usado e a versão), com a conta do Diretor
+        setTimeout(async () => {
+            await plCultosLoad()
+            const conta = $plCultos.account
+            if (conta?.uid && conta.refreshToken) sendMain(Main.PROJETO_LIVE_SINAL, { uid: conta.uid, refreshToken: conta.refreshToken, email: conta.email })
+        }, 10000)
         setTimeout(conferirVersao, 20000)
         conferir = setInterval(conferirVersao, 60000)
     })

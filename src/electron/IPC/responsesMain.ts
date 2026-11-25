@@ -28,7 +28,7 @@ import { _store, appDataPath, config, createStores, getStore, getStoreValue, set
 import { captureSlide, doesMediaExist, getThumbnail, getThumbnailFolderPath, pdfToImage, saveImage } from "../data/thumbnails"
 import { OutputHelper } from "../output/OutputHelper"
 import { pptToPdf } from "../output/ppt/pptToPdf"
-import { plFirebaseCultos, plFirebaseReady, plFirebaseSignIn, plLiveAddEvent, plLiveEvents, plLivePatchEvent, plLiveSetNow, plMusicasPending, plMusicasUpload } from "../projetoLive/firebase"
+import { plFirebaseCultos, plFirebaseReady, plFirebaseSinal, plFirebaseSignIn, plLiveAddEvent, plLiveEvents, plLivePatchEvent, plLiveSetNow, plMusicasPending, plMusicasUpload } from "../projetoLive/firebase"
 import { plMusicasLocal } from "../projetoLive/musicas"
 import { projetoLiveCultosLoad, projetoLiveCultosSave, projetoLiveDriveDownload, projetoLiveFilesExist } from "../projetoLive/cultos"
 import { projetoLiveConnect, projetoLiveForget, projetoLiveList, projetoLiveNdiVerticalWanted, projetoLiveNdiState, projetoLiveSetText } from "../projetoLive/obsLink"
@@ -273,6 +273,7 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_LIST]: () => projetoLiveList(),
     [Main.PROJETO_LIVE_NDI_VERTICAL_STATE]: () => projetoLiveNdiVerticalWanted(),
     [Main.PROJETO_LIVE_NDI_STATE]: () => projetoLiveNdiState(),
+    [Main.PROJETO_LIVE_SINAL]: async (data) => await plFirebaseSinal(data),
     [Main.PROJETO_LIVE_CONNECT]: (data) => projetoLiveConnect(data.id),
     [Main.PROJETO_LIVE_FORGET]: (data) => projetoLiveForget(data.id),
     [Main.PROJETO_LIVE_TEXT]: (data) => projetoLiveSetText(data.text),

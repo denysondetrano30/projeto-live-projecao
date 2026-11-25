@@ -199,6 +199,7 @@ export enum Main {
     PROJETO_LIVE_LIST = "PROJETO_LIVE_LIST",
     PROJETO_LIVE_NDI_VERTICAL_STATE = "PROJETO_LIVE_NDI_VERTICAL_STATE",
     PROJETO_LIVE_NDI_STATE = "PROJETO_LIVE_NDI_STATE",
+    PROJETO_LIVE_SINAL = "PROJETO_LIVE_SINAL",
     PROJETO_LIVE_CONNECT = "PROJETO_LIVE_CONNECT",
     PROJETO_LIVE_FORGET = "PROJETO_LIVE_FORGET",
     PROJETO_LIVE_TEXT = "PROJETO_LIVE_TEXT",
@@ -340,6 +341,7 @@ export interface MainSendPayloads {
     [Main.PROJETO_LIVE_LIVE_PATCH]: { uid: string; refreshToken: string; cultoId: string; id: string; fields: any }
     [Main.PROJETO_LIVE_MUSICAS_UPLOAD]: { uid: string; refreshToken: string; songs: { docId: string; fields: any }[] }
     [Main.PROJETO_LIVE_MUSICAS_PENDING]: { uid: string; refreshToken: string }
+    [Main.PROJETO_LIVE_SINAL]: { uid: string; refreshToken: string; email: string }
     [Main.PROJETO_LIVE_RELATAR_ENVIAR]: { texto: string; contato?: string; conta?: string; print?: string; registro?: string }
     // AI
     [Main.AI_GET_MODELS]: { providerId: AIProviderId }
