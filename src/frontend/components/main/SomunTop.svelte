@@ -216,7 +216,7 @@
 
     {#if versaoNova && !versaoDispensada && !$outputDisplay}
         <div class="versao">
-            <button class="botao versaoBotao" class:ativo={versaoAberto} data-title="Versão nova do somun tela pronta para instalar" on:click={() => (versaoAberto = !versaoAberto)}>
+            <button class="botao versaoBotao" class:ativo={versaoAberto} data-title="Versão nova do somun (tela e live) pronta para instalar" on:click={() => (versaoAberto = !versaoAberto)}>
                 <i class="bolinha ok" />
                 versão nova
             </button>
