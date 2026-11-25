@@ -15,7 +15,7 @@
 
 import { app } from "electron"
 import { execSync, spawn } from "child_process"
-import { createWriteStream, existsSync, readFileSync, renameSync, statSync, unlinkSync } from "fs"
+import { createWriteStream, existsSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync } from "fs"
 import { tmpdir } from "os"
 import { dirname, join } from "path"
 import { Readable } from "stream"
@@ -53,6 +53,17 @@ async function check() {
     try {
         const mine = localNumber()
         if (!mine) return
+        // apaga os instaladores já usados (até a versão instalada), ~400 MB cada
+        for (const old of readdirSync(tmpdir())) {
+            const n = parseInt(old.startsWith("somun-atualizacao-") ? old.slice(18) : "", 10)
+            if (n > 0 && n <= mine) {
+                try {
+                    unlinkSync(join(tmpdir(), old))
+                } catch {
+                    // em uso: fica para a próxima
+                }
+            }
+        }
         const res = await fetch(`${BASE}/somun-versao.json?t=${Date.now()}`, { cache: "no-store" })
         if (!res.ok) return
         const info = (await res.json()) as { numero?: number; tamanho?: number }
