@@ -259,6 +259,7 @@
                 {#if !settingsDisabled}
                     <button class="item" on:click={() => abrirMais(() => activePage.set("settings"))}><Icon id="settings" size={1} white /> <span>Configurações</span></button>
                 {/if}
+                <button class="item" on:click={() => abrirMais(() => activePopup.set("projeto_live_deck"))}><Icon id="qr_code" size={1} white /> <span>Deck no celular</span></button>
                 <button class="item" on:click={() => abrirMais(relatar)}><Icon id="help" size={1} white /> <span>Relatar problema</span></button>
             </div>
         {/if}

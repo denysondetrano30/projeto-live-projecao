@@ -29,6 +29,7 @@ import { spellcheck } from "./utils/spellcheck"
 import { loadingOptions, mainOptions } from "./utils/windowOptions"
 import { startProjetoLiveLink, stopProjetoLiveLink } from "./projetoLive/obsLink"
 import { plUpdaterStart } from "./utils/updater"
+import { plDeckStart } from "./projetoLive/deck"
 
 // ----- STARTUP -----
 
@@ -178,6 +179,9 @@ async function startApp() {
 
     // somun tela: confere versão nova (Releases > somun-tela) e instala ao fechar
     plUpdaterStart()
+
+    // somun tela: deck pelo celular (porta 5520; só entra quem leu o QR com o código)
+    plDeckStart()
 
     // prevent display sleeping
     powerSaveBlockerId = powerSaveBlocker.start("prevent-display-sleep")

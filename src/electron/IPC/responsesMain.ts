@@ -49,6 +49,7 @@ import { correctSpelling } from "../utils/spellcheck"
 import { executeSpotifyCommand, getSpotifyState } from "../utils/spotify"
 import checkForUpdates, { plUpdaterNow, plUpdaterState } from "../utils/updater"
 import { plRelatarEnviar, plRelatarPrint } from "../projetoLive/relatar"
+import { plDeckInfo, plDeckNewCode } from "../projetoLive/deck"
 import { sendToMain } from "./main"
 
 // no need to await Promise returns here
@@ -273,6 +274,8 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_LIST]: () => projetoLiveList(),
     [Main.PROJETO_LIVE_NDI_VERTICAL_STATE]: () => projetoLiveNdiVerticalWanted(),
     [Main.PROJETO_LIVE_NDI_STATE]: () => projetoLiveNdiState(),
+    [Main.PROJETO_LIVE_DECK_INFO]: () => plDeckInfo(),
+    [Main.PROJETO_LIVE_DECK_NEWCODE]: () => plDeckNewCode(),
     [Main.PROJETO_LIVE_SINAL]: async (data) => await plFirebaseSinal(data),
     [Main.PROJETO_LIVE_CONNECT]: (data) => projetoLiveConnect(data.id),
     [Main.PROJETO_LIVE_FORGET]: (data) => projetoLiveForget(data.id),

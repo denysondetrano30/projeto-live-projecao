@@ -489,6 +489,7 @@ export type Popups =
     | "projeto_live_cultos"
     | "projeto_live_transmissao"
     | "projeto_live_relatar"
+    | "projeto_live_deck"
     | "pl_show_extras"
     | "pl_sobreposicao_saidas"
     | "sync_folders"

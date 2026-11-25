@@ -200,6 +200,8 @@ export enum Main {
     PROJETO_LIVE_NDI_VERTICAL_STATE = "PROJETO_LIVE_NDI_VERTICAL_STATE",
     PROJETO_LIVE_NDI_STATE = "PROJETO_LIVE_NDI_STATE",
     PROJETO_LIVE_SINAL = "PROJETO_LIVE_SINAL",
+    PROJETO_LIVE_DECK_INFO = "PROJETO_LIVE_DECK_INFO",
+    PROJETO_LIVE_DECK_NEWCODE = "PROJETO_LIVE_DECK_NEWCODE",
     PROJETO_LIVE_CONNECT = "PROJETO_LIVE_CONNECT",
     PROJETO_LIVE_FORGET = "PROJETO_LIVE_FORGET",
     PROJETO_LIVE_TEXT = "PROJETO_LIVE_TEXT",
@@ -477,6 +479,8 @@ export interface MainReturnPayloads {
     [Main.PROJETO_LIVE_MUSICAS_UPLOAD]: Promise<any>
     [Main.PROJETO_LIVE_MUSICAS_PENDING]: Promise<any>
     [Main.PROJETO_LIVE_UPDATE_STATE]: { pronta: boolean; versao: string }
+    [Main.PROJETO_LIVE_DECK_INFO]: { url: string; conectado: boolean }
+    [Main.PROJETO_LIVE_DECK_NEWCODE]: { url: string; conectado: boolean }
     [Main.PROJETO_LIVE_NDI_STATE]: { ndi: boolean; mirror: { host: string; port: number } | null }
     [Main.PROJETO_LIVE_RELATAR_PRINT]: Promise<string>
     [Main.PROJETO_LIVE_RELATAR_ENVIAR]: Promise<{ ok: boolean; detail?: string }>

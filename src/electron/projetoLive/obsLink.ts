@@ -169,6 +169,10 @@ class Link {
         linkClosed(this.target.id, this, this.connected)
     }
 
+    sendLine(line: string) {
+        if (this.connected) this.send(line)
+    }
+
     sendText() {
         if (!this.connected) return
         this.send("TEXT " + (screenText ? Buffer.from(screenText, "utf8").toString("base64") : "-"))
@@ -181,7 +185,8 @@ class Link {
     private receive(chunk: string) {
         this.lastRecv = Date.now()
         this.buffer += chunk
-        if (this.buffer.length > 4096) return this.close()
+        // 25/11: o estado do deck ("DECKSTATE") pode passar de 4 KB
+        if (this.buffer.length > 65536) return this.close()
         let newline = this.buffer.indexOf("\n")
         while (newline >= 0) {
             const line = this.buffer.slice(0, newline).replace(/\r$/, "")
@@ -233,6 +238,13 @@ class Link {
             setMirror(id, parts[0] !== "off" && port > 0 ? { host: this.target.local ? "127.0.0.1" : this.target.host, port } : null)
         } else if (command === "NDI") {
             setNdi(id, parts[0] === "on")
+        } else if (command === "DECKSTATE") {
+            // Deck pelo celular (25/11): o estado das entradas, artes e som do live.
+            try {
+                deckStateListener?.(id, JSON.parse(Buffer.from(parts[0] || "", "base64").toString("utf8")))
+            } catch {
+                // linha estragada: espera a próxima
+            }
         } else if (command === "NDIV") {
             setNdiVertical(id, parts[0] === "on")
         } else if (command === "UNKNOWN") {
@@ -352,6 +364,27 @@ function setMirror(id: string, target: { host: string; port: number } | null) {
 // perdia; no live só aparecia o vertical e a barra dizia "Telão sem NDI").
 export function projetoLiveNdiState() {
     return { ndi: ndiOwners.size > 0, mirror: mirrorTarget }
+}
+
+// Deck pelo celular (25/11): o servidor do deck (deck.ts) ouve o estado e manda os toques.
+let deckStateListener: ((id: string, state: any) => void) | null = null
+export function projetoLiveDeckListen(listener: (id: string, state: any) => void) {
+    deckStateListener = listener
+}
+// Manda para os live conectados (normalmente um só).
+export function projetoLiveDeckSend(action: any) {
+    const line = "DECK " + Buffer.from(JSON.stringify(action), "utf8").toString("base64")
+    links.forEach((link) => link.sendLine(line))
+}
+export function projetoLiveDeckRefresh() {
+    links.forEach((link) => link.sendLine("DECK?"))
+}
+export function projetoLiveDeckConnected() {
+    let any = false
+    links.forEach((link) => {
+        if (link.connected) any = true
+    })
+    return any
 }
 
 // Texto novo no telão: vai para todos os OBS conectados.
