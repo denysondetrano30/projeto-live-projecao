@@ -14,6 +14,9 @@
     import { openProject } from "../show/project"
     import TopButton from "../inputs/TopButton.svelte"
     import { plPadroesAberto } from "../../utils/projetoLiveLayout"
+    import { onDestroy, onMount } from "svelte"
+    import { Main } from "../../../types/IPC/Main"
+    import { requestMain, sendMain } from "../../IPC/main"
 
     export let editDisabled = false
     export let settingsDisabled = false
@@ -99,10 +102,37 @@
         acao()
     }
 
+    // --- versão nova (decidido com ela 25/11): aviso discreto, só com o telão desligado ---
+    let versaoNova = ""
+    let versaoDispensada = false
+    let versaoAberto = false
+    let conferir: NodeJS.Timeout | null = null
+    function conferirVersao() {
+        requestMain(Main.PROJETO_LIVE_UPDATE_STATE, undefined, (estado) => {
+            versaoNova = estado?.pronta ? estado.versao : ""
+        })
+    }
+    onMount(() => {
+        setTimeout(conferirVersao, 20000)
+        conferir = setInterval(conferirVersao, 60000)
+    })
+    onDestroy(() => {
+        if (conferir) clearInterval(conferir)
+    })
+    function atualizarAgora() {
+        versaoAberto = false
+        sendMain(Main.PROJETO_LIVE_UPDATE_NOW)
+    }
+    function atualizarDepois() {
+        versaoAberto = false
+        versaoDispensada = true
+    }
+
     function fecharAoClicarFora(e: MouseEvent) {
         const alvo = e.target as HTMLElement
         if (!alvo.closest(".seletor")) seletorAberto = false
         if (!alvo.closest(".mais")) maisAberto = false
+        if (!alvo.closest(".versao")) versaoAberto = false
     }
 
     // somun tela: Padrões também pelo ⋯ (o Editar fica cinza sem nada aberto)
@@ -182,6 +212,21 @@
     </button>
     {#if !$outputDisplay && noPhysicalOutputWindows}
         <div class="semTelao" data-title={translateText("No 'physical' outputs available!")} role="none" on:click={openOutputSettings} />
+    {/if}
+
+    {#if versaoNova && !versaoDispensada && !$outputDisplay}
+        <div class="versao">
+            <button class="botao versaoBotao" class:ativo={versaoAberto} data-title="Versão nova do somun tela pronta para instalar" on:click={() => (versaoAberto = !versaoAberto)}>
+                <i class="bolinha ok" />
+                versão nova
+            </button>
+            {#if versaoAberto}
+                <div class="lista direitaLista versaoLista" transition:fade={{ duration: 80 }}>
+                    <button class="item" on:click={atualizarAgora}><span class="duas"><b>Atualizar agora</b><small>fecha e abre de novo, já atualizado</small></span></button>
+                    <button class="item" on:click={atualizarDepois}><span class="duas"><b>Depois</b><small>instala sozinho quando fechar o programa</small></span></button>
+                </div>
+            {/if}
+        </div>
     {/if}
 
     <div class="mais">
@@ -401,6 +446,28 @@
     }
     .tresPontos.vermelho {
         border-color: #e5483b;
+    }
+    .versao {
+        position: relative;
+    }
+    .versaoBotao {
+        color: #a8a8a8;
+    }
+    .versaoLista {
+        min-width: 260px;
+    }
+    .duas {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+    }
+    .duas b {
+        font-weight: 500;
+    }
+    .duas small {
+        color: #8c8c8c;
+        font-size: 0.85em;
     }
     .semTelao {
         position: absolute;

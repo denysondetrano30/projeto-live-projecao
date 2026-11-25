@@ -215,7 +215,9 @@ export enum Main {
     PROJETO_LIVE_LIVE_PATCH = "PROJETO_LIVE_LIVE_PATCH",
     PROJETO_LIVE_MUSICAS_LOCAL = "PROJETO_LIVE_MUSICAS_LOCAL",
     PROJETO_LIVE_MUSICAS_UPLOAD = "PROJETO_LIVE_MUSICAS_UPLOAD",
-    PROJETO_LIVE_MUSICAS_PENDING = "PROJETO_LIVE_MUSICAS_PENDING"
+    PROJETO_LIVE_MUSICAS_PENDING = "PROJETO_LIVE_MUSICAS_PENDING",
+    PROJETO_LIVE_UPDATE_STATE = "PROJETO_LIVE_UPDATE_STATE",
+    PROJETO_LIVE_UPDATE_NOW = "PROJETO_LIVE_UPDATE_NOW"
 }
 
 export interface MainSendPayloads {
@@ -468,6 +470,7 @@ export interface MainReturnPayloads {
     [Main.PROJETO_LIVE_MUSICAS_LOCAL]: any
     [Main.PROJETO_LIVE_MUSICAS_UPLOAD]: Promise<any>
     [Main.PROJETO_LIVE_MUSICAS_PENDING]: Promise<any>
+    [Main.PROJETO_LIVE_UPDATE_STATE]: { pronta: boolean; versao: string }
     [Main.AI_SET_KEY]: Promise<boolean>
     [Main.AI_LLM_COMPLETE]: Promise<{ text: string; error?: string; code?: string; retryAfter?: number }>
 }

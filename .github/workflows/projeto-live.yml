@@ -17,6 +17,8 @@ jobs:
     windows:
         name: "Windows x64"
         runs-on: windows-2022
+        permissions:
+            contents: write
 
         steps:
             - name: Check out Git repository
@@ -30,7 +32,13 @@ jobs:
             - name: Install dependencies
               run: npm ci
 
-            # Sem assinatura digital e sem publicar: só gera o instalador.
+            # somun tela: cada montagem tem um número maior (base do FreeShow + "-somun.<n>"), para a
+            # atualização automática saber que é mais nova.
+            - name: Set version
+              shell: bash
+              run: node scripts/somunVersion.js ${{ github.run_number }}
+
+            # Sem assinatura digital: só gera o instalador (a publicação é o passo "Publish update").
             - name: Build app
               run: npm run release:local
 
@@ -52,6 +60,21 @@ jobs:
                   name: projecao-windows-x64-${{ steps.sha.outputs.short }}
                   path: dist/*.exe
                   if-no-files-found: error
+
+            # Atualização automática (25/11): Releases > "somun-tela" sempre com a última montagem
+            # (instalador + latest.yml + blockmap). Os somun tela instalados conferem ali.
+            - name: Publish update
+              if: github.ref == 'refs/heads/main'
+              shell: bash
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: |
+                  ls dist
+                  gh release delete somun-tela --yes --cleanup-tag || true
+                  gh release create somun-tela dist/*.exe dist/*.exe.blockmap dist/latest.yml \
+                      --title "somun tela (Windows) — atualização automática" \
+                      --notes "Última versão do somun tela para Windows (commit ${GITHUB_SHA::9}). Instale o .exe; depois ele se atualiza sozinho." \
+                      --target "$GITHUB_SHA" --latest=false
 
     mac:
         name: "Mac (chip Apple e Intel)"

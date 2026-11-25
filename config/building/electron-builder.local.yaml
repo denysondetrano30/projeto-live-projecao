@@ -1,5 +1,10 @@
 extends: config/building/electron-builder.yaml
 
+# somun tela: atualização automática pelas Releases > "somun-tela" deste repositório (gera o latest.yml)
+publish:
+    provider: generic
+    url: https://github.com/denysondetrano30/projeto-live-projecao/releases/download/somun-tela
+
 win:
     azureSignOptions: null
 

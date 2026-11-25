@@ -47,7 +47,7 @@ import { closeMidiInPorts, getMidiInputs, getMidiOutputs, receiveMidi, sendMidi 
 import { deleteShows, deleteShowsNotIndexed, getAllShows, getEmptyShows, refreshAllShows } from "../utils/shows"
 import { correctSpelling } from "../utils/spellcheck"
 import { executeSpotifyCommand, getSpotifyState } from "../utils/spotify"
-import checkForUpdates from "../utils/updater"
+import checkForUpdates, { plUpdaterNow, plUpdaterState } from "../utils/updater"
 import { sendToMain } from "./main"
 
 // no need to await Promise returns here
@@ -288,6 +288,8 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_MUSICAS_LOCAL]: () => plMusicasLocal(),
     [Main.PROJETO_LIVE_MUSICAS_UPLOAD]: async (data) => await plMusicasUpload(data),
     [Main.PROJETO_LIVE_MUSICAS_PENDING]: async (data) => await plMusicasPending(data),
+    [Main.PROJETO_LIVE_UPDATE_STATE]: () => plUpdaterState(),
+    [Main.PROJETO_LIVE_UPDATE_NOW]: () => plUpdaterNow(),
     [Main.FFMPEG_DOWNLOAD]: async () => {
         try {
             await downloadFfmpeg((progress) => {

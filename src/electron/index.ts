@@ -28,6 +28,7 @@ import { template } from "./utils/menuTemplate"
 import { spellcheck } from "./utils/spellcheck"
 import { loadingOptions, mainOptions } from "./utils/windowOptions"
 import { startProjetoLiveLink, stopProjetoLiveLink } from "./projetoLive/obsLink"
+import { plUpdaterStart } from "./utils/updater"
 
 // ----- STARTUP -----
 
@@ -174,6 +175,9 @@ async function startApp() {
 
     // Projeto Live: acha o OBS na rede e conecta sozinho aos que já foram pareados
     startProjetoLiveLink()
+
+    // somun tela: confere versão nova (Releases > somun-tela) e instala ao fechar
+    plUpdaterStart()
 
     // prevent display sleeping
     powerSaveBlockerId = powerSaveBlocker.start("prevent-display-sleep")
