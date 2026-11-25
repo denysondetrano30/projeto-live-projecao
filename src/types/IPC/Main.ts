@@ -217,7 +217,9 @@ export enum Main {
     PROJETO_LIVE_MUSICAS_UPLOAD = "PROJETO_LIVE_MUSICAS_UPLOAD",
     PROJETO_LIVE_MUSICAS_PENDING = "PROJETO_LIVE_MUSICAS_PENDING",
     PROJETO_LIVE_UPDATE_STATE = "PROJETO_LIVE_UPDATE_STATE",
-    PROJETO_LIVE_UPDATE_NOW = "PROJETO_LIVE_UPDATE_NOW"
+    PROJETO_LIVE_UPDATE_NOW = "PROJETO_LIVE_UPDATE_NOW",
+    PROJETO_LIVE_RELATAR_PRINT = "PROJETO_LIVE_RELATAR_PRINT",
+    PROJETO_LIVE_RELATAR_ENVIAR = "PROJETO_LIVE_RELATAR_ENVIAR"
 }
 
 export interface MainSendPayloads {
@@ -337,6 +339,7 @@ export interface MainSendPayloads {
     [Main.PROJETO_LIVE_LIVE_PATCH]: { uid: string; refreshToken: string; cultoId: string; id: string; fields: any }
     [Main.PROJETO_LIVE_MUSICAS_UPLOAD]: { uid: string; refreshToken: string; songs: { docId: string; fields: any }[] }
     [Main.PROJETO_LIVE_MUSICAS_PENDING]: { uid: string; refreshToken: string }
+    [Main.PROJETO_LIVE_RELATAR_ENVIAR]: { texto: string; contato?: string; conta?: string; print?: string; registro?: string }
     // AI
     [Main.AI_GET_MODELS]: { providerId: AIProviderId }
     [Main.AI_LISTEN_START]: { engine: string; engineOptions: SttEngineOptions }
@@ -471,6 +474,8 @@ export interface MainReturnPayloads {
     [Main.PROJETO_LIVE_MUSICAS_UPLOAD]: Promise<any>
     [Main.PROJETO_LIVE_MUSICAS_PENDING]: Promise<any>
     [Main.PROJETO_LIVE_UPDATE_STATE]: { pronta: boolean; versao: string }
+    [Main.PROJETO_LIVE_RELATAR_PRINT]: Promise<string>
+    [Main.PROJETO_LIVE_RELATAR_ENVIAR]: Promise<{ ok: boolean; detail?: string }>
     [Main.AI_SET_KEY]: Promise<boolean>
     [Main.AI_LLM_COMPLETE]: Promise<{ text: string; error?: string; code?: string; retryAfter?: number }>
 }

@@ -488,6 +488,7 @@ export type Popups =
     | "pco_picker"
     | "projeto_live_cultos"
     | "projeto_live_transmissao"
+    | "projeto_live_relatar"
     | "pl_show_extras"
     | "pl_sobreposicao_saidas"
     | "sync_folders"

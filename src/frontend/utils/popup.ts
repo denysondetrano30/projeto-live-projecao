@@ -71,6 +71,7 @@ import OutputSetup from "../components/main/popups/OutputSetup.svelte"
 import PcoServicePicker from "../components/main/popups/PcoServicePicker.svelte"
 import ProjetoLiveCultos from "../components/main/popups/ProjetoLiveCultos.svelte"
 import ProjetoLiveTransmissao from "../components/main/popups/ProjetoLiveTransmissao.svelte"
+import ProjetoLiveRelatar from "../components/main/popups/ProjetoLiveRelatar.svelte"
 import ProjetoLiveShowExtras from "../components/main/popups/ProjetoLiveShowExtras.svelte"
 import ProjetoLiveSobreposicaoSaidas from "../components/main/popups/ProjetoLiveSobreposicaoSaidas.svelte"
 import RegexManager from "../components/main/popups/RegexManager.svelte"
@@ -188,6 +189,7 @@ export const popups: { [key in Popups]: ComponentType } = {
     pco_picker: PcoServicePicker,
     projeto_live_cultos: ProjetoLiveCultos,
     projeto_live_transmissao: ProjetoLiveTransmissao,
+    projeto_live_relatar: ProjetoLiveRelatar,
     pl_show_extras: ProjetoLiveShowExtras,
     pl_sobreposicao_saidas: ProjetoLiveSobreposicaoSaidas,
     sync_folders: SyncFolders,

@@ -17,6 +17,11 @@
     import { onDestroy, onMount } from "svelte"
     import { Main } from "../../../types/IPC/Main"
     import { requestMain, sendMain } from "../../IPC/main"
+    import { popupData } from "../../stores"
+    import { plRelatarInstall } from "../../utils/projetoLiveRelatar"
+
+    // registro técnico do "Relatar problema" desde o começo
+    plRelatarInstall()
 
     export let editDisabled = false
     export let settingsDisabled = false
@@ -126,6 +131,14 @@
     function atualizarDepois() {
         versaoAberto = false
         versaoDispensada = true
+    }
+
+    // --- Relatar problema (25/11): tira o print antes de abrir a janela ---
+    function relatar() {
+        requestMain(Main.PROJETO_LIVE_RELATAR_PRINT, undefined, (print) => {
+            popupData.set({ relatarPrint: print || "" })
+            activePopup.set("projeto_live_relatar")
+        })
     }
 
     function fecharAoClicarFora(e: MouseEvent) {
@@ -240,6 +253,7 @@
                 {#if !settingsDisabled}
                     <button class="item" on:click={() => abrirMais(() => activePage.set("settings"))}><Icon id="settings" size={1} white /> <span>Configurações</span></button>
                 {/if}
+                <button class="item" on:click={() => abrirMais(relatar)}><Icon id="help" size={1} white /> <span>Relatar problema</span></button>
             </div>
         {/if}
     </div>

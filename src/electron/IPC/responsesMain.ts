@@ -48,6 +48,7 @@ import { deleteShows, deleteShowsNotIndexed, getAllShows, getEmptyShows, refresh
 import { correctSpelling } from "../utils/spellcheck"
 import { executeSpotifyCommand, getSpotifyState } from "../utils/spotify"
 import checkForUpdates, { plUpdaterNow, plUpdaterState } from "../utils/updater"
+import { plRelatarEnviar, plRelatarPrint } from "../projetoLive/relatar"
 import { sendToMain } from "./main"
 
 // no need to await Promise returns here
@@ -290,6 +291,8 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_MUSICAS_PENDING]: async (data) => await plMusicasPending(data),
     [Main.PROJETO_LIVE_UPDATE_STATE]: () => plUpdaterState(),
     [Main.PROJETO_LIVE_UPDATE_NOW]: () => plUpdaterNow(),
+    [Main.PROJETO_LIVE_RELATAR_PRINT]: async () => await plRelatarPrint(),
+    [Main.PROJETO_LIVE_RELATAR_ENVIAR]: async (data) => await plRelatarEnviar(data),
     [Main.FFMPEG_DOWNLOAD]: async () => {
         try {
             await downloadFfmpeg((progress) => {
