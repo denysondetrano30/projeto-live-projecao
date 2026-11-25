@@ -17,8 +17,10 @@ import { checkFFmpeg, defaultOutput, updateOutputRtmpData } from "../components/
 import { clone } from "../components/helpers/array"
 import { ESTILO_JUNCAO } from "../components/drawer/mascaras/mapa"
 import { audioRouting, outputs, styles } from "../stores"
-import { newToast } from "./common"
+import { isOutputWindow, newToast } from "./common"
 import { send } from "./request"
+import { Main } from "../../types/IPC/Main"
+import { requestMain } from "../IPC/main"
 
 const DEST_ID = "projeto-live-obs"
 const MIRROR_BITRATE_KBPS = 12000
@@ -306,6 +308,24 @@ async function run() {
         applying = false
     }
 }
+
+// 25/11: o pedido do OBS ("NDI on", "MIRROR") pode chegar antes de a janela principal estar pronta
+// e se perder (no live só chegava o vertical). Como no vertical, a janela pergunta o estado ao
+// programa algumas vezes no começo.
+;[5000, 15000, 30000].forEach((ms) =>
+    setTimeout(async () => {
+        if (isOutputWindow()) return
+        try {
+            const estado = await requestMain(Main.PROJETO_LIVE_NDI_STATE)
+            if (!estado) return
+            if (!!estado.ndi !== ndiWanted) setProjetoLiveNdi(!!estado.ndi)
+            const alvo = estado.mirror || null
+            if ((alvo?.host || "") !== (wanted?.host || "") || (alvo?.port || 0) !== (wanted?.port || 0)) setProjetoLiveMirror(alvo)
+        } catch (err) {
+            console.warn("Projeto Live: espelho do telão:", err)
+        }
+    }, ms)
+)
 
 // Chamado quando o OBS pede (ou para de pedir) o espelho do telão.
 export function setProjetoLiveMirror(target: ProjetoLiveObsMirror | null) {

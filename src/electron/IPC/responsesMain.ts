@@ -31,7 +31,7 @@ import { pptToPdf } from "../output/ppt/pptToPdf"
 import { plFirebaseCultos, plFirebaseReady, plFirebaseSignIn, plLiveAddEvent, plLiveEvents, plLivePatchEvent, plLiveSetNow, plMusicasPending, plMusicasUpload } from "../projetoLive/firebase"
 import { plMusicasLocal } from "../projetoLive/musicas"
 import { projetoLiveCultosLoad, projetoLiveCultosSave, projetoLiveDriveDownload, projetoLiveFilesExist } from "../projetoLive/cultos"
-import { projetoLiveConnect, projetoLiveForget, projetoLiveList, projetoLiveNdiVerticalWanted, projetoLiveSetText } from "../projetoLive/obsLink"
+import { projetoLiveConnect, projetoLiveForget, projetoLiveList, projetoLiveNdiVerticalWanted, projetoLiveNdiState, projetoLiveSetText } from "../projetoLive/obsLink"
 import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
 import { closeServers, startServers, updateServerData } from "../servers"
 import { detectEncoders, setRtmpEncoderSetting } from "../streaming/encoderDetection"
@@ -272,6 +272,7 @@ export const mainResponses: MainResponses = {
     },
     [Main.PROJETO_LIVE_LIST]: () => projetoLiveList(),
     [Main.PROJETO_LIVE_NDI_VERTICAL_STATE]: () => projetoLiveNdiVerticalWanted(),
+    [Main.PROJETO_LIVE_NDI_STATE]: () => projetoLiveNdiState(),
     [Main.PROJETO_LIVE_CONNECT]: (data) => projetoLiveConnect(data.id),
     [Main.PROJETO_LIVE_FORGET]: (data) => projetoLiveForget(data.id),
     [Main.PROJETO_LIVE_TEXT]: (data) => projetoLiveSetText(data.text),

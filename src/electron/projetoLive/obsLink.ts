@@ -340,10 +340,18 @@ export function projetoLiveNdiVerticalWanted() {
     return ndiVerticalOwners.size > 0
 }
 
+let mirrorTarget: { host: string; port: number } | null = null
 function setMirror(id: string, target: { host: string; port: number } | null) {
     if (!target && mirrorOwner !== id) return
     mirrorOwner = target ? id : null
+    mirrorTarget = target
     sendToMain(ToMain.PROJETO_LIVE_MIRROR, target)
+}
+
+// O mesmo para o telão deitado (25/11: o "NDI on" chegava antes de a janela estar pronta e se
+// perdia; no live só aparecia o vertical e a barra dizia "Telão sem NDI").
+export function projetoLiveNdiState() {
+    return { ndi: ndiOwners.size > 0, mirror: mirrorTarget }
 }
 
 // Texto novo no telão: vai para todos os OBS conectados.
