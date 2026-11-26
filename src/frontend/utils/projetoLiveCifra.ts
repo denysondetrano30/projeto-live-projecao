@@ -7,6 +7,10 @@
 //    linha de acordes sem letra (introdução, solo) e tom/capotraste/tablatura são deixados de fora;
 // 2. a música é criada só com a letra (o telão e a live nunca recebem acorde como texto);
 // 3. os acordes entram em cada linha (line.chords), que é o que o retorno de palco mostra.
+// 4. recado entre colchetes numa linha só ("[Repete 2x]", "[Só teclado]") vai só para o retorno de
+//    palco: entra como um "acorde" com o texto do recado — no fim da linha de cima (se vier logo
+//    embaixo dela) ou no começo da próxima linha de letra. Nome de parte ("[Refrão]", "[Intro]",
+//    "[Ponte]"...) continua sendo o nome da parte, como sempre.
 
 import { uid } from "uid"
 import type { Chords, Show } from "../../types/Show"
@@ -28,8 +32,26 @@ function isChordLine(line: string) {
     return chords > 0
 }
 
+// Nomes de parte que a cifra usa (Cifra Club e afins). Outro texto entre colchetes é recado.
+const PARTES = /^(intro(du[cç][aã]o)?|refr[aã]o|pr[eé][- ]?refr[aã]o|verso|estrofe|ponte|bridge|chorus|verse|pre[- ]?chorus|coro|final|outro|solo|interl[uú]dio|tag|vamp|parte|primeira parte|segunda parte|terceira parte|quarta parte|ending|instrumental|riff|pass?agem|passagem)(\s*\d+)?$/i
+
+function bracketText(line: string) {
+    const m = line.trim().match(/^\[([^\]]+)\]$/)
+    return m ? m[1].trim() : null
+}
+
 function isHeader(line: string) {
-    return /^\[[^\]]+\]$/.test(line.trim())
+    const t = bracketText(line)
+    return t !== null && PARTES.test(semAcento(t))
+}
+
+function isNote(line: string) {
+    const t = bracketText(line)
+    return t !== null && !PARTES.test(semAcento(t)) && !/^tab/i.test(t)
+}
+
+function semAcento(text: string) {
+    return text.normalize("NFD").replace(/[̀-ͯ]/g, "")
 }
 
 function skip(line: string) {
@@ -57,11 +79,37 @@ export function plCifraParse(cifra: string) {
         .filter((line) => !skip(line))
     const out: string[] = []
     const chords = new Map<string, { pos: number; key: string }[]>()
+    // Recado esperando a próxima linha de letra.
+    let pendingNote = ""
+    const addChord = (text: string, chord: { pos: number; key: string }, first = false) => {
+        const key = plCifraNormalize(text)
+        const list = chords.get(key) || []
+        // Recado no começo de uma linha que já tem acorde no começo: os dois juntos, sem um em cima do outro.
+        if (first && list[0]?.pos === 0) list[0] = { pos: 0, key: chord.key + " · " + list[0].key }
+        else if (first) list.unshift(chord)
+        else list.push(chord)
+        chords.set(key, list)
+    }
+    const pushLyric = (text: string) => {
+        out.push(text)
+        if (pendingNote) {
+            addChord(text, { pos: 0, key: pendingNote }, true)
+            pendingNote = ""
+        }
+    }
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i]
         if (!line.trim()) {
             if (out.length && out[out.length - 1] !== "") out.push("")
+            continue
+        }
+        if (isNote(line)) {
+            const note = bracketText(line)!.replace(/[<>&"]/g, "") // o retorno desenha o acorde como HTML
+            const previous = out.length ? out[out.length - 1] : ""
+            const rightAfter = i > 0 && lines[i - 1].trim() && previous && !bracketText(previous)
+            if (rightAfter) addChord(previous, { pos: previous.length, key: note })
+            else pendingNote = pendingNote ? pendingNote + " · " + note : note
             continue
         }
         if (isHeader(line)) {
@@ -70,7 +118,7 @@ export function plCifraParse(cifra: string) {
             continue
         }
         if (!isChordLine(line)) {
-            out.push(line.trim())
+            pushLyric(line.trim())
             continue
         }
 
@@ -105,9 +153,9 @@ export function plCifraParse(cifra: string) {
             pos = pos >= raw.length ? text.length : map[pos]
             found.push({ pos, key: key.replace(/\*$/, "") })
         }
-        out.push(text)
         const normalized = plCifraNormalize(text)
         if (found.length && !chords.has(normalized)) chords.set(normalized, found)
+        pushLyric(text)
         i = j
     }
 
