@@ -68,8 +68,6 @@
                                         Transmissão
                                     {:else if popupId === "projeto_live_relatar"}
                                         Relatar problema
-                                    {:else if popupId === "projeto_live_deck"}
-                                        Deck no celular
                                     {:else if popupId === "pl_show_extras"}
                                         Música: arranjos, anotações e mais
                                     {:else if popupId === "pl_sobreposicao_saidas"}
