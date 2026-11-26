@@ -523,6 +523,15 @@ export async function plFetch(): Promise<{ ok: boolean; message: string }> {
             await plReceivePayload(payload)
             received++
         }
+        // Versão em uso que ficou com arquivo faltando (ex.: a versão em pé, recebida antes do tela
+        // saber baixá-la, ou arquivo apagado do computador): completa agora. O que já está aqui não
+        // baixa de novo.
+        // (Sem esperar: a janela já mostra o resultado da busca enquanto baixa.)
+        void (async () => {
+            for (const [id, culto] of Object.entries(get(plCultos).cultos)) {
+                if (culto.emUso !== null && culto.versoes[culto.emUso]) await plDownload(id, culto.emUso)
+            }
+        })()
         return { ok: true, message: received ? (received === 1 ? "1 versão nova recebida." : received + " versões novas recebidas.") : "Tudo em dia." }
     } finally {
         fetching = false
