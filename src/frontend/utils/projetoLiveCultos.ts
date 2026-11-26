@@ -23,6 +23,7 @@ import { convertText } from "../converters/txt"
 import { plCifraShow } from "./projetoLiveCifra"
 import { requestMain, sendMain } from "../IPC/main"
 import { activeProject, projects, shows } from "../stores"
+import { definirVersaoVertical } from "./projetoLiveVertical"
 
 export const PL_FORMAT = "projeto-live-culto"
 
@@ -43,6 +44,8 @@ export interface PLItem {
     // Cifra colada (acordes em cima da letra, como no Cifra Club): vira a música com os acordes
     // para o retorno de palco; o telão e a live mostram só a letra.
     cifra?: string
+    // Versão em pé da arte (link do Drive): a transmissão vertical usa esta no lugar da deitada.
+    vertical?: string
 }
 
 // O que o app do Diretor manda (uma versão publicada).
@@ -224,7 +227,43 @@ export async function plDownload(cultoId: string, versao: number) {
         else setFile(cultoId, versao, item.id, { ok: false, error: (result && !result.ok ? result.error : "network") as PLDownloadError })
     }
 
+    // Versões em pé (opcionais): sem elas a transmissão vertical usa a arte deitada.
+    for (const item of entry.payload.itens) {
+        if (!isMedia(item)) continue
+        const key = verticalKey(item.id)
+        const driveId = driveIdFrom(item.vertical)
+        if (!driveId) continue
+        const known = get(plCultos).cultos[cultoId]?.versoes[versao]?.arquivos[key]
+        if (known?.ok && known.path) {
+            const exist = (await requestMain(Main.PROJETO_LIVE_FILES_EXIST, { paths: [known.path] })) || []
+            if (exist[0] !== false) continue
+        }
+        const result = await requestMain(Main.PROJETO_LIVE_DRIVE_DOWNLOAD, { cultoId, driveId }, undefined, 2 * 60 * 60 * 1000)
+        if (result?.ok) setFile(cultoId, versao, key, { ok: true, path: result.path, name: result.name })
+        else setFile(cultoId, versao, key, { ok: false, error: (result && !result.ok ? result.error : "network") as PLDownloadError })
+    }
+    linkVerticals(cultoId, versao)
+
     save()
+}
+
+function verticalKey(itemId: string) {
+    return itemId + "|vertical"
+}
+
+function isPdf(path: string) {
+    return /\.pdf$/i.test(path || "")
+}
+
+// Liga cada arte baixada à versão em pé dela (a mesma ligação do botão direito > "Versão vertical...").
+function linkVerticals(cultoId: string, versao: number) {
+    const entry = get(plCultos).cultos[cultoId]?.versoes[versao]
+    if (!entry) return
+    entry.payload.itens.forEach((item) => {
+        const main = entry.arquivos[item.id]
+        const vertical = entry.arquivos[verticalKey(item.id)]
+        if (main?.ok && main.path && vertical?.ok && vertical.path && !isPdf(main.path)) definirVersaoVertical(main.path, vertical.path)
+    })
 }
 
 function setFile(cultoId: string, versao: number, itemId: string, file: PLArquivo) {
@@ -335,7 +374,9 @@ export function plOpenVersion(cultoId: string, versao: number) {
 
         const file = entry.arquivos[item.id]
         if (file?.ok && file.path) {
-            items.push({ id: file.path, name: title, type: item.tipo === "video" ? "video" : "image", notes, plItemId: item.id } as any)
+            // PDF (ex.: a apresentação da mensagem): entra como PDF, e o operador passa as páginas.
+            const type = isPdf(file.path) ? "pdf" : item.tipo === "video" ? "video" : "image"
+            items.push({ id: file.path, name: title, type, notes, plItemId: item.id } as any)
         } else {
             const why = file?.error ? ERROR_LABEL[file.error] : "ainda não baixou"
             items.push({ id: uid(5), type: "section", name: "FALTA ARQUIVO: " + title, notes: notes + " · " + why, plItemId: item.id } as any)
@@ -343,6 +384,7 @@ export function plOpenVersion(cultoId: string, versao: number) {
     })
 
     if (newShows.length) history({ id: "SHOWS", newData: { data: newShows, projectImport: true } })
+    linkVerticals(cultoId, versao)
 
     const projectId = uid()
     const project = { name: `${culto.nome} · ${shortDate(culto.data)} (v${versao})`, created: Date.now(), parent: "/", shows: items }
@@ -446,6 +488,17 @@ export async function plFetch(): Promise<{ ok: boolean; message: string }> {
         if (result.refreshToken && result.refreshToken !== account.refreshToken) {
             plCultos.update((state) => {
                 if (state.account) state.account.refreshToken = result.refreshToken
+                return state
+            })
+            save()
+        }
+
+        // Culto apagado no Diretor some daqui também (o projeto já montado continua na lista de projetos).
+        const naConta = new Set((result.cultos as any[]).map((doc) => doc?.id).filter(Boolean))
+        const apagados = Object.keys(get(plCultos).cultos).filter((id) => !naConta.has(id))
+        if (apagados.length) {
+            plCultos.update((state) => {
+                apagados.forEach((id) => delete state.cultos[id])
                 return state
             })
             save()

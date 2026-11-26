@@ -74,7 +74,8 @@ const EXTENSIONS: { [type: string]: string } = {
     "image/png": ".png",
     "image/jpeg": ".jpg",
     "image/webp": ".webp",
-    "image/gif": ".gif"
+    "image/gif": ".gif",
+    "application/pdf": ".pdf"
 }
 
 export type DriveDownloadResult = { ok: true; path: string; name: string } | { ok: false; error: "not_shared" | "not_found" | "network" | "disk"; detail?: string }

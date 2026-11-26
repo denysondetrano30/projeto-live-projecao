@@ -2,7 +2,7 @@
     import { onMount } from "svelte"
     import { Main } from "../../../../types/IPC/Main"
     import { requestMain, sendMain } from "../../../IPC/main"
-    import { activePopup, dataPath, dictionary, guideActive, language, popupData, timeFormat } from "../../../stores"
+    import { activePopup, dataPath, dictionary, language, popupData, timeFormat } from "../../../stores"
     import { createData } from "../../../utils/createData"
     import { getLanguageList, setLanguage, translateText } from "../../../utils/language"
     import Icon from "../../helpers/Icon.svelte"
@@ -28,7 +28,7 @@
 
         sendMain(Main.REFRESH_SHOWS)
 
-        guideActive.set(true)
+        // somun: sem o tutorial do FreeShow na primeira abertura (o nosso vem depois).
         activePopup.set(null)
     }
 
