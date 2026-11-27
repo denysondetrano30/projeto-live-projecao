@@ -22,7 +22,7 @@ import { checkName } from "../components/helpers/show"
 import { convertText } from "../converters/txt"
 import { plCifraShow } from "./projetoLiveCifra"
 import { requestMain, sendMain } from "../IPC/main"
-import { activeProject, projects, shows } from "../stores"
+import { activeProject, outputs, projects, shows } from "../stores"
 import { definirVersaoVertical } from "./projetoLiveVertical"
 
 export const PL_FORMAT = "projeto-live-culto"
@@ -187,9 +187,14 @@ export async function plReceivePayload(payload: PLCultoVersao): Promise<{ ok: bo
 
     await plDownload(payload.cultoId, payload.versao)
 
-    // A primeira versão abre sozinha; as próximas esperam o operador trocar.
+    // A primeira versão abre sozinha. Uma versão nova (decidido 27/11) também troca sozinha e a antiga
+    // some — menos se o telão estiver mostrando algo da versão em uso: aí espera o operador trocar.
     const culto = get(plCultos).cultos[payload.cultoId]
     if (culto && culto.emUso === null) plOpenVersion(payload.cultoId, payload.versao)
+    else if (culto && culto.emUso !== null && payload.versao > culto.emUso && !plNoTelao(payload.cultoId)) {
+        plOpenVersion(payload.cultoId, payload.versao)
+        return { ok: true, message: `"${payload.nome}": a v${payload.versao} entrou no lugar da v${culto.emUso === null ? "" : culto.emUso}.` }
+    }
     return { ok: true, message: `Recebido: "${payload.nome}" v${payload.versao}.` }
 }
 
@@ -399,6 +404,49 @@ export function plOpenVersion(cultoId: string, versao: number) {
     })
     save()
     activeProject.set(projectId)
+    plApagarAntigas(cultoId, versao)
+}
+
+// O telão (ou outra saída) está mostrando algo do projeto da versão em uso agora?
+export function plNoTelao(cultoId: string): boolean {
+    const culto = get(plCultos).cultos[cultoId]
+    if (!culto || culto.emUso === null) return false
+    const project = get(projects)[culto.projetos[culto.emUso]]
+    if (!project?.shows?.length) return false
+    const ids = new Set(project.shows.map((s: any) => s.id))
+    return Object.values(get(outputs) || {}).some((o: any) => {
+        if (!o?.enabled || o?.stageOutput) return false
+        const out = o.out || {}
+        return (out.slide?.id && ids.has(out.slide.id)) || (out.background?.path && ids.has(out.background.path)) || (out.background?.id && ids.has(out.background.id))
+    })
+}
+
+// Depois de trocar para uma versão: as versões anteriores somem (projeto, dados e os arquivos baixados
+// que a versão nova não usa mais).
+function plApagarAntigas(cultoId: string, versao: number) {
+    const culto = get(plCultos).cultos[cultoId]
+    if (!culto) return
+    const antigas = Object.keys(culto.versoes).map(Number).filter((n) => n < versao)
+    if (!antigas.length) return
+    const usados = new Set(Object.values(culto.versoes[versao]?.arquivos || {}).map((a) => a.path).filter(Boolean))
+    const apagar: string[] = []
+    antigas.forEach((n) => {
+        const projectId = culto.projetos[n]
+        if (projectId && get(projects)[projectId] && projectId !== culto.projetos[versao]) history({ id: "UPDATE", newData: { id: projectId }, location: { page: "show", id: "project" } })
+        Object.values(culto.versoes[n]?.arquivos || {}).forEach((a) => {
+            if (a.path && !usados.has(a.path)) apagar.push(a.path)
+        })
+    })
+    plCultos.update((state) => {
+        const local = state.cultos[cultoId]
+        antigas.forEach((n) => {
+            delete local.versoes[n]
+            delete local.projetos[n]
+        })
+        return state
+    })
+    save()
+    if (apagar.length) sendMain(Main.PROJETO_LIVE_FILES_DELETE, { paths: [...new Set(apagar)] })
 }
 
 // Abre o projeto da versão em uso (se o operador apagou o projeto, monta de novo).

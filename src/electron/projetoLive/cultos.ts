@@ -132,6 +132,23 @@ export async function projetoLiveDriveDownload(data: { cultoId: string; driveId:
 }
 
 // Os arquivos baixados ainda estão no computador? (alguém pode ter apagado a pasta)
+// Apaga arquivos baixados de versões antigas. Só dentro da pasta dos cultos (nunca outro lugar).
+export function projetoLiveFilesDelete(paths: string[]) {
+    const root = path.resolve(rootFolder()) + path.sep
+    let n = 0
+    ;(paths || []).forEach((filePath) => {
+        try {
+            const full = path.resolve(filePath)
+            if (!full.startsWith(root) || !fs.existsSync(full)) return
+            fs.unlinkSync(full)
+            n++
+        } catch (err) {
+            console.warn("Projeto Live: não deu para apagar", filePath, err)
+        }
+    })
+    return n
+}
+
 export function projetoLiveFilesExist(paths: string[]) {
     return (paths || []).map((filePath) => {
         try {

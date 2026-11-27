@@ -30,7 +30,7 @@ import { OutputHelper } from "../output/OutputHelper"
 import { pptToPdf } from "../output/ppt/pptToPdf"
 import { plFirebaseCultos, plFirebaseReady, plFirebaseSinal, plFirebaseSignIn, plLiveAddEvent, plLiveEvents, plLivePatchEvent, plLiveSetNow, plMusicasPending, plMusicasUpload } from "../projetoLive/firebase"
 import { plMusicasLocal } from "../projetoLive/musicas"
-import { projetoLiveCultosLoad, projetoLiveCultosSave, projetoLiveDriveDownload, projetoLiveFilesExist } from "../projetoLive/cultos"
+import { projetoLiveCultosLoad, projetoLiveCultosSave, projetoLiveDriveDownload, projetoLiveFilesExist, projetoLiveFilesDelete } from "../projetoLive/cultos"
 import { projetoLiveConnect, projetoLiveForget, projetoLiveList, projetoLiveNdiVerticalWanted, projetoLiveNdiState, projetoLiveSetText } from "../projetoLive/obsLink"
 import { getPresentationApplications, presentationControl, startSlideshow } from "../output/ppt/presentation"
 import { closeServers, startServers, updateServerData } from "../servers"
@@ -281,6 +281,7 @@ export const mainResponses: MainResponses = {
     [Main.PROJETO_LIVE_CULTOS_SAVE]: (data) => projetoLiveCultosSave(data.state),
     [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: async (data) => await projetoLiveDriveDownload(data),
     [Main.PROJETO_LIVE_FILES_EXIST]: (data) => projetoLiveFilesExist(data.paths),
+    [Main.PROJETO_LIVE_FILES_DELETE]: (data) => projetoLiveFilesDelete(data.paths),
     [Main.PROJETO_LIVE_FIREBASE_READY]: () => plFirebaseReady(),
     [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: async (data) => await plFirebaseSignIn(data),
     [Main.PROJETO_LIVE_FIREBASE_CULTOS]: async (data) => await plFirebaseCultos(data),

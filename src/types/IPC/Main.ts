@@ -208,6 +208,7 @@ export enum Main {
     PROJETO_LIVE_CULTOS_SAVE = "PROJETO_LIVE_CULTOS_SAVE",
     PROJETO_LIVE_DRIVE_DOWNLOAD = "PROJETO_LIVE_DRIVE_DOWNLOAD",
     PROJETO_LIVE_FILES_EXIST = "PROJETO_LIVE_FILES_EXIST",
+    PROJETO_LIVE_FILES_DELETE = "PROJETO_LIVE_FILES_DELETE",
     PROJETO_LIVE_FIREBASE_READY = "PROJETO_LIVE_FIREBASE_READY",
     PROJETO_LIVE_FIREBASE_SIGNIN = "PROJETO_LIVE_FIREBASE_SIGNIN",
     PROJETO_LIVE_FIREBASE_CULTOS = "PROJETO_LIVE_FIREBASE_CULTOS",
@@ -333,6 +334,7 @@ export interface MainSendPayloads {
     [Main.PROJETO_LIVE_CULTOS_SAVE]: { state: any }
     [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: { cultoId: string; driveId: string }
     [Main.PROJETO_LIVE_FILES_EXIST]: { paths: string[] }
+    [Main.PROJETO_LIVE_FILES_DELETE]: { paths: string[] }
     [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: { email: string; password: string }
     [Main.PROJETO_LIVE_FIREBASE_CULTOS]: { uid: string; refreshToken: string }
     [Main.PROJETO_LIVE_LIVE_NOW]: { uid: string; refreshToken: string; cultoId: string; agora: any }
@@ -466,6 +468,7 @@ export interface MainReturnPayloads {
     [Main.PROJETO_LIVE_CULTOS_LOAD]: any
     [Main.PROJETO_LIVE_DRIVE_DOWNLOAD]: Promise<DriveDownloadResult>
     [Main.PROJETO_LIVE_FILES_EXIST]: boolean[]
+    [Main.PROJETO_LIVE_FILES_DELETE]: number
     [Main.PROJETO_LIVE_FIREBASE_READY]: boolean
     [Main.PROJETO_LIVE_FIREBASE_SIGNIN]: Promise<any>
     [Main.PROJETO_LIVE_FIREBASE_CULTOS]: Promise<any>
