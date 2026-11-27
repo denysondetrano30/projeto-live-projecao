@@ -25,6 +25,8 @@ export interface PLMascara {
     png?: string
     pngAjuste?: "contain" | "cover" | "fill" // padrão: contain (cabe sem esticar)
     camada?: "fundo" | "letra" | "tudo" // até onde corta (padrão: só o fundo; a letra fica por cima)
+    cor?: string // cor de fora das formas (padrão: preto)
+    opacidade?: number // 0 a 100 (padrão: 100)
 }
 
 export interface PLMapa {

@@ -2,7 +2,7 @@
     // Projeto Live (somun Telão, 19/11): barra de cima do layout novo.
     // Esquerda: ícone "tela." + "Telão" e o seletor do culto (Cultos do Diretor + projetos).
     // Meio: Culto (o antigo Mostrar), Editar, Palco. Direita: Transmissão (bolinha do NDI), Telão
-    // ligado/desligado (o mesmo ligar/desligar saída de antes) e o "⋯" (Desenhar, Máscaras,
+    // ligado/desligado (o mesmo ligar/desligar saída de antes) e o "⋯" (Desenhar,
     // Projetores, Configurações). O layout clássico usa a barra antiga (Top.svelte).
     import { fade } from "svelte/transition"
     import { activePage, activePopup, activeProject, dictionary, drawSettings, drawTool, outputDisplay, outputs, paintCache, projects, projectView } from "../../stores"
@@ -249,12 +249,11 @@
     {/if}
 
     <div class="mais">
-        <button class="botao tresPontos" class:vermelho={desenhoAtivo} class:ativo={maisAberto} data-title="Mais: desenhar, máscaras, projetores e configurações" on:click={() => (maisAberto = !maisAberto)}>⋯</button>
+        <button class="botao tresPontos" class:vermelho={desenhoAtivo} class:ativo={maisAberto} data-title="Mais: desenhar, projetores e configurações" on:click={() => (maisAberto = !maisAberto)}>⋯</button>
         {#if maisAberto}
             <div class="lista direitaLista" transition:fade={{ duration: 80 }}>
                 <button class="item" on:click={() => abrirMais(abrirPadroes)}><Icon id="edit" size={1} white /> <span>Padrões (Bíblia e músicas)</span></button>
                 <button class="item" on:click={() => abrirMais(() => activePage.set("draw"))}><Icon id="draw" size={1} white /> <span>Desenhar</span></button>
-                <button class="item" on:click={() => abrirMais(() => abrirGaveta("masks"))}><Icon id="pl_mascara" size={1} white /> <span>Máscaras</span></button>
                 <button class="item" on:click={() => abrirMais(() => abrirGaveta("projectors"))}><Icon id="pl_projetor" size={1} white /> <span>Projetores</span></button>
                 {#if !settingsDisabled}
                     <button class="item" on:click={() => abrirMais(() => activePage.set("settings"))}><Icon id="settings" size={1} white /> <span>Configurações</span></button>

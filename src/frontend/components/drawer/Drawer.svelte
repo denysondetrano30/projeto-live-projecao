@@ -252,8 +252,8 @@
 
     const hiddenInFocusMode = ["templates", "calendar"]
 
-    // Projeto Live (somun, 19/11): gaveta com 4 abas — Músicas, Bíblia, Mídia (com Áudio) e "Mais ▾"
-    // (19/11 tarde: Sobreposições, Temporizadores, Ações e Cenas). Máscaras e Projetores abrem pelo "⋯".
+    // Projeto Live (somun): abas na própria barra, sem menu suspenso (27/11, pedido dela): Músicas, Bíblia,
+    // Mídia (com Áudio), Sobreposições, Temporizadores, Ações, Cenas e Máscaras. Projetores abre pelo "⋯".
     // Fora de vista no somun (decisão dela, sem religar; o código continua): Modelos, Calendário,
     // Variáveis e Interações. Os modelos continuam funcionando por baixo (Bíblia e músicas usam).
     const plMais: { id: string; aba: string; sub?: string; nome: string; icone: string }[] = [
@@ -262,9 +262,7 @@
         { id: "actions", aba: "functions", sub: "actions", nome: "Ações", icone: "actions" },
         { id: "scenes", aba: "functions", sub: "scenes", nome: "Cenas", icone: "scene" }
     ]
-    let plMaisAberto = false
     function plAbrir(id: string) {
-        plMaisAberto = false
         const tab = tabs.find((t) => t.id === id)
         if (tab) openDrawerTab(tab)
     }
@@ -289,7 +287,7 @@
     }
     $: plSubFuncoes = $drawerTabsData.functions?.activeSubTab || ""
     $: plMaisAtivo = activeTab === "overlays" ? plMais[0] : activeTab === "functions" ? plMais.find((m) => m.sub === plSubFuncoes) || null : null
-    $: plExtraAtivo = activeTab === "masks" || activeTab === "projectors" ? tabs.find((t) => t.id === activeTab) : null
+    $: plExtraAtivo = activeTab === "projectors" ? tabs.find((t) => t.id === activeTab) : null
 </script>
 
 <svelte:window on:mouseup={mouseup} on:mousemove={mousemove} on:keydown={keydown} />
@@ -327,20 +325,14 @@
                         </span>
                     {/if}
                 {/if}
-                <span class="plMais" on:mousedown|stopPropagation>
-                    <button class="plAba" class:ativa={!!plMaisAtivo} on:click={() => (plMaisAberto = !plMaisAberto)}>
-                        {#if plMaisAtivo}{plMaisAtivo.nome}{:else}Mais{/if} ▾
-                    </button>
-                    {#if plMaisAberto}
-                        <div class="plLista">
-                            {#each plMais as item}
-                                {#if plMaisVisivel(item)}
-                                    <button class:ativa={plMaisAtivo?.id === item.id} on:click={() => plAbrirMais(item)}><Icon id={item.icone} size={1} white /> {item.nome}</button>
-                                {/if}
-                            {/each}
-                        </div>
+                {#each plMais as item}
+                    {#if plMaisVisivel(item)}
+                        <button class="plAba" class:ativa={plMaisAtivo?.id === item.id} data-title={item.nome} on:click={() => plAbrirMais(item)} on:dblclick={closeDrawer}>{item.nome}</button>
                     {/if}
-                </span>
+                {/each}
+                {#if plVisivel("masks")}
+                    <button class="plAba" class:ativa={activeTab === "masks"} data-title="Máscaras" on:click={() => plAbrir("masks")} on:dblclick={closeDrawer}>Máscaras</button>
+                {/if}
                 {#if plExtraAtivo}
                     <button class="plAba ativa" data-title="Aberto pelo ⋯ de cima" on:click={() => plAbrir("shows")}><T id={plExtraAtivo.name} /> ×</button>
                 {/if}
@@ -420,8 +412,7 @@
     }
 
     .top .tabs.plTabs {
-        /* a lista do "Mais" precisa sair da faixa das abas */
-        overflow: visible;
+        overflow: hidden;
     }
     .plTabs {
         display: flex;
@@ -468,36 +459,25 @@
         background-color: #2a2a2a;
         color: var(--text);
     }
-    .plMais {
-        position: relative;
+    .plAba {
+        white-space: nowrap;
+        flex-shrink: 0;
     }
-    .plLista {
-        position: absolute;
-        top: 34px;
-        inset-inline-start: 0;
-        min-width: 190px;
-        padding: 6px;
-        border-radius: 8px;
-        border: 1px solid #3a3a3a;
-        background-color: #1c1c1c;
-        box-shadow: 0 6px 20px rgb(0 0 0 / 0.5);
-        display: flex;
-        flex-direction: column;
-        z-index: 50;
+    /* Tela pequena: as abas encolhem em vez de voltar para dentro de um menu. */
+    @media (max-width: 1280px) {
+        .plAba {
+            padding: 0 9px;
+            font-size: 0.85em;
+        }
     }
-    .plLista button {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 7px 8px;
-        border-radius: 5px;
-        text-align: start;
-    }
-    .plLista button:hover {
-        background-color: #2a2a2a;
-    }
-    .plLista button.ativa {
-        border-color: #a8a8a8;
+    @media (max-width: 1050px) {
+        .plAba {
+            padding: 0 6px;
+            font-size: 0.78em;
+        }
+        .plSub button {
+            padding: 2px 6px;
+        }
     }
 
     .top {

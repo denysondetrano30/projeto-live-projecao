@@ -101,6 +101,12 @@
                 <option value="letra">Recorta fundo e letra</option>
                 <option value="tudo">Recorta tudo (até sobreposições)</option>
             </select>
+            <span class="corFora" title="Cor de fora das formas (onde hoje fica preto)">
+                <span class="rotulo">Fora</span>
+                <input type="color" value={m.cor || "#000000"} on:input={(e) => m && mudarMascara(oid, m.id, (k) => (k.cor = e.currentTarget.value))} aria-label="Cor de fora das formas" />
+                <input type="range" min="0" max="100" value={m.opacidade ?? 100} on:input={(e) => m && mudarMascara(oid, m.id, (k) => (k.opacidade = Number(e.currentTarget.value)))} aria-label="Opacidade de fora das formas" />
+                <span class="valor">{m.opacidade ?? 100}%</span>
+            </span>
             <span class="espaco" />
             {#if emUso}
                 <button class="emuso" on:click={() => ativarMascara(oid, "")}>● No telão · parar</button>
@@ -153,6 +159,33 @@
     }
     .espaco {
         flex: 1;
+    }
+    .corFora {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .corFora .rotulo {
+        color: #a8a8a8;
+        font-size: 0.9em;
+    }
+    .corFora input[type="color"] {
+        width: 34px;
+        height: 28px;
+        padding: 2px;
+        cursor: pointer;
+    }
+    .corFora input[type="range"] {
+        width: 110px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        accent-color: #f2f2f2;
+    }
+    .corFora .valor {
+        min-width: 38px;
+        text-align: end;
+        font-size: 0.9em;
     }
     button,
     select,

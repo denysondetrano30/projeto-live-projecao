@@ -1,5 +1,6 @@
 <script lang="ts">
-    // Projeto Live: máscara da saída (painéis de LED). Fora das formas fica preto; dentro aparece o que
+    // Projeto Live: máscara da saída (painéis de LED). Fora das formas fica a cor escolhida (padrão: preto,
+    // com a opacidade escolhida); dentro aparece o que
     // estiver na saída. As formas usam frações (0 a 1) da tela; o PNG vai por cima do jeito que é
     // (preto onde esconde, transparente onde mostra).
     import type { PLMascara } from "../../../../types/Output"
@@ -16,6 +17,9 @@
     $: formas = mascara?.formas || []
     $: buracos = formas.filter((f) => f.tipo !== "img")
     $: imagens = formas.filter((f) => f.tipo === "img" && f.src)
+    // Cor de fora das formas (27/11): sem nada guardado, preto 100%, como era antes.
+    $: cor = mascara?.cor || "#000000"
+    $: opacidade = Math.max(0, Math.min(100, mascara?.opacidade ?? 100)) / 100
 </script>
 
 {#if mascara && (formas.length || mascara.png)}
@@ -35,7 +39,7 @@
                     </mask>
                 </defs>
                 {#if buracos.length}
-                    <rect x="0" y="0" {width} {height} fill="black" mask="url(#{maskId})" />
+                    <rect x="0" y="0" {width} {height} fill={cor} fill-opacity={opacidade} mask="url(#{maskId})" />
                 {/if}
                 {#each imagens as f}
                     <image href={encodeFilePath(f.src || "")} x={f.x * width} y={f.y * height} width={f.w * width} height={f.h * height} preserveAspectRatio="xMidYMid meet" />
