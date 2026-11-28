@@ -10,6 +10,7 @@
     import CalendarInfo from "./CalendarInfo.svelte"
     import FunctionsInfo from "./FunctionsInfo.svelte"
     import MascarasInfo from "./MascarasInfo.svelte"
+    import SomunPainelFundo from "../../main/SomunPainelFundo.svelte"
     import ProjetoresInfo from "./ProjetoresInfo.svelte"
     import MediaInfo from "./MediaInfo.svelte"
     import ScriptureInfo from "./ScriptureInfo.svelte"
@@ -40,6 +41,8 @@
         <CalendarInfo {optionsOpen} />
     {:else if !$forceClock && id === "functions"}
         <FunctionsInfo />
+    {:else if !$forceClock && id === "fundos"}
+        <SomunPainelFundo vazio />
     {:else if !$forceClock && id === "masks"}
         <MascarasInfo />
     {:else if !$forceClock && id === "projectors"}

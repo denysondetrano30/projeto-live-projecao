@@ -45,8 +45,11 @@
     $: plSemAtalho = outputId === "pl_transmissao_vertical" || currentStyle?.fit === "blur" || (data as any)?.fit === "blur"
     // Projeto Live (28/11): fundo do somun e ajustes do painel "Fundo" (tingir/grão/intensidade são desenhados
     // na própria página, então o atalho de composição fica de fora quando há ajuste)
-    $: plAjustado = temAjusteDeVideo(id, $media)
-    $: plAjustes = ajustesDe(id, $media)
+    // só no que entrou como fundo (aba "Fundos"); o vídeo "para assistir" da Mídia sai igual ao arquivo.
+    // Os ajustes ficam guardados no caminho original (o painel não sabe da versão vertical)
+    $: plChave = (data as any)?.plFundo || type === "somun" ? data.path || data.id || "" : ""
+    $: plAjustado = !!plChave && temAjusteDeVideo(plChave, $media)
+    $: plAjustes = ajustesDe(plChave, plChave ? $media : {})
     $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada && !plSemAtalho && !plAjustado
 
     // Projeto Live: "vídeos" desligado na janela Transmissão: a saída da live não mostra vídeos

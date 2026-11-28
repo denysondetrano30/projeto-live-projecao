@@ -31,7 +31,6 @@
     import Folder from "./Folder.svelte"
     import Media from "./MediaCard.svelte"
     import MediaGrid from "./MediaGrid.svelte"
-    import SomunFundos from "./SomunFundos.svelte"
     import { loadFromPixabay } from "./pixabay"
     import { loadFromUnsplash } from "./unsplash"
 
@@ -154,11 +153,7 @@
         if (prevActive === "online" && active !== "online") setView("all")
         if (active !== "online") prevTab = ""
 
-        if (active === "somun") {
-            // Projeto Live: fundos do somun não são arquivos
-            prevActive = active
-            return
-        } else if (active === "online") {
+        if (active === "online") {
             if (onlineTab !== prevTab) setView("image")
             prevTab = onlineTab
 
@@ -574,8 +569,6 @@
     <div class="grid" class:list={$mediaOptions.mode === "list"} style="height: 100%;">
         {#if isProviderSection && activeProviderId}
             <ContentLibraryBrowser providerId={activeProviderId} columns={$mediaOptions.columns} {searchValue} />
-        {:else if active === "somun"}
-            <SomunFundos />
         {:else if active === "online" && (onlineTab === "youtube" || onlineTab === "vimeo")}
             <div class="gridgap context #player">
                 <PlayerVideos active={onlineTab} {searchValue} />
@@ -687,7 +680,7 @@
     {/if}
 
     <MaterialZoom hidden columns={$mediaOptions.columns} defaultValue={5} on:change={(e) => mediaOptions.set({ ...$mediaOptions, columns: e.detail })} />
-{:else if active === "inputs" || active === "somun"}
+{:else if active === "inputs"}
     <!-- nothing -->
 
     <MaterialZoom hidden columns={$mediaOptions.columns} defaultValue={5} on:change={(e) => mediaOptions.set({ ...$mediaOptions, columns: e.detail })} />

@@ -15,6 +15,8 @@ export const drawerTabs = {
     functions: { name: "tabs.functions", icon: "functions", title: "" },
 
     // Projeto Live: máscaras dos painéis de LED
+    // somun tela (28/11): fundos (repetem atrás da letra)
+    fundos: { name: "tabs.fundos", icon: "image", title: "" },
     masks: { name: "tabs.masks", icon: "pl_mascara", title: "" },
     projectors: { name: "tabs.projectors", icon: "pl_projetor", title: "" }
 }

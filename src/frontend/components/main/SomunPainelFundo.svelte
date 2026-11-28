@@ -7,6 +7,9 @@
     import { clearBackground } from "../output/clear"
     import { idDoTelao } from "../../utils/projetoLivePadroes"
 
+    // na aba "Fundos" (lado direito) mostra um aviso quando não há fundo no ar
+    export let vazio = false
+
     $: fundo = fundoNoTelao($outputs)
     $: a = fundo ? ajustesDe(fundo.id, $media) : null
     $: ehSomun = fundo?.tipo === "somun"
@@ -61,6 +64,11 @@
 
         <button class="voltar" on:click={() => fundo && voltarAjustes(fundo.id)}>Voltar ao original</button>
     </div>
+{:else if vazio}
+    <div class="painel">
+        <div class="topo"><h4>Fundo</h4></div>
+        <p class="aviso">Nenhum fundo no telão. Escolha um ao lado: aqui aparecem cor, velocidade e o resto.</p>
+    </div>
 {/if}
 
 <style>
@@ -72,7 +80,6 @@
         flex: 1;
         min-height: 0;
         justify-content: flex-start;
-        border-top: 1px solid #2a2a2a;
         overflow-y: auto;
         font-size: 0.9em;
     }
@@ -145,6 +152,11 @@
         border-radius: 5px;
         background: #232323;
         cursor: pointer;
+    }
+    .aviso {
+        margin: 0;
+        color: #8c8c8c;
+        line-height: 1.4;
     }
     .apagado {
         opacity: 0.45;

@@ -325,6 +325,9 @@
                         </span>
                     {/if}
                 {/if}
+                {#if plVisivel("fundos")}
+                    <button class="plAba" class:ativa={activeTab === "fundos"} data-title="Fundos: repetem atrás da letra" on:click={() => plAbrir("fundos")} on:dblclick={closeDrawer}>Fundos</button>
+                {/if}
                 {#each plMais as item}
                     {#if plMaisVisivel(item)}
                         <button class="plAba" class:ativa={plMaisAtivo?.id === item.id} data-title={item.nome} on:click={() => plAbrirMais(item)} on:dblclick={closeDrawer}>{item.nome}</button>
@@ -386,9 +389,11 @@
     </div>
 
     <div class="content">
-        <Resizeable id="leftPanelDrawer">
-            <Navigation id={$activeDrawerTab} />
-        </Resizeable>
+        {#if $activeDrawerTab !== "fundos"}
+            <Resizeable id="leftPanelDrawer">
+                <Navigation id={$activeDrawerTab} />
+            </Resizeable>
+        {/if}
         <Content id={$activeDrawerTab} bind:searchValue bind:firstMatch />
         <Resizeable id="rightPanelDrawer" let:width side="right">
             <div class="right" class:row={width > DEFAULT_WIDTH * 1.8}>

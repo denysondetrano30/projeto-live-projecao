@@ -18,7 +18,6 @@
     import { activeEdit, activePage, activeProfile, activeProject, activeShow, activeStage, ai, currentWindow, editMode, focusMode, loaded, os, projectView, resized, showChangeProfileMenu, showsCache, special } from "./stores"
     import { DEFAULT_WIDTH } from "./utils/common"
     import { layoutClassico, plEditorCompleto } from "./utils/projetoLiveLayout"
-    import SomunPainelFundo from "./components/main/SomunPainelFundo.svelte"
 
     $: page = $activePage
     $: isWindows = !$currentWindow && $os.platform === "win32"
@@ -81,9 +80,6 @@
                 {#if page === "show"}
                     {#if $layoutClassico && $activeShow && ($activeShow.type === "show" || $activeShow.type === undefined) && !$focusMode}
                         <ShowTools />
-                    {:else if !$layoutClassico && !$focusMode}
-                        <!-- somun tela (28/11): painel "Fundo" embaixo do TELÃO (só com fundo no ar) -->
-                        <SomunPainelFundo />
                     {/if}
                 {:else if page === "edit" && !$layoutClassico && !$plEditorCompleto && ($activeEdit.type || "show") === "show" && $editMode === "default"}
                     <!-- Editor único (somun tela): a aparência fica na própria tela -->

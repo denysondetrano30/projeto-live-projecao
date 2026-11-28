@@ -6,6 +6,7 @@
     import { addProjectItem } from "../../../converters/project"
     import { activeShow, customMessageCredits, media, mediaOptions, mediaTags, outLocked, outputs, photoApiCredits, styles } from "../../../stores"
     import { translateText } from "../../../utils/language"
+    import { layoutClassico } from "../../../utils/projetoLiveLayout"
     import { getKey } from "../../../values/keys"
     import Icon from "../../helpers/Icon.svelte"
     import { getMediaLayerType, getMediaStyle, getMediaType, loadThumbnail } from "../../helpers/media"
@@ -129,7 +130,15 @@
         let loop = contentProvider || videoType === "foreground" ? false : true
         let muted = videoType === "background" ? true : false
 
-        const ignoreLayer = videoType === "foreground"
+        // somun tela (28/11, decisão dela): na Mídia é "para assistir": toca uma vez, por cima da letra, e some
+        // no fim (o fundo que estava no ar volta sozinho). Fundo em loop é pela aba "Fundos".
+        const plAssistir = !$layoutClassico && !contentProvider && (type === "video" || type === "image")
+        if (plAssistir) {
+            loop = false
+            muted = false
+        }
+
+        const ignoreLayer = plAssistir || videoType === "foreground"
         if (ignoreLayer) clearSlide(true)
 
         // get style per output

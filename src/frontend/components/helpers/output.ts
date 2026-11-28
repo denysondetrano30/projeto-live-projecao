@@ -229,6 +229,8 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
             // if current playing background is "foreground", clear it
             outs.forEach((outId) => {
                 const currentBackground = get(outputs)[outId]?.out?.background || {}
+                // somun tela (28/11): fundo da aba "Fundos" fica atrás da letra; a letra nunca fecha
+                if (currentBackground.plFundo || currentBackground.type === "somun") return
                 const shouldClearLayer = currentBackground.ignoreLayer === true
                 // if a player video is played from a slide, it's treated as "background" instead of "foreground"
                 const isPlayerForeground = currentBackground.type === "player" && currentBackground.ignoreLayer !== false
@@ -312,6 +314,21 @@ export function setOutput(type: string, data: any, toggle = false, outputId = ""
 
                 if (sameSlideOutput && previousSlide.line === outData.line) {
                     a[id].out!.refresh = Number(a[id].out!.refresh || 0) + 1
+                }
+            }
+
+            // somun tela (28/11): vídeo/imagem "para assistir" (da Mídia) por cima de um fundo guarda o fundo,
+            // e quando ele some (acabou, entrou a letra ou foi tirado) o fundo volta sozinho
+            if (type === "background") {
+                const atual: any = a[id].out?.background || null
+                if (outData === null && atual?.plVolta) outData = clone(atual.plVolta)
+                else if (outData && outData.ignoreLayer && !outData.plFundo) {
+                    const fundo = atual?.plFundo ? atual : atual?.plVolta || null
+                    if (fundo) {
+                        const guardado = clone(fundo)
+                        delete guardado.plVolta
+                        outData = { ...outData, plVolta: guardado }
+                    }
                 }
             }
 

@@ -14,6 +14,7 @@
     import Templates from "./pages/Templates.svelte"
     import Variables from "./pages/Variables.svelte"
     import Timers from "./timers/Timers.svelte"
+    import SomunFundos from "./media/SomunFundos.svelte"
     import MascarasEditor from "./mascaras/MascarasEditor.svelte"
     import ProjetoresEditor from "./mascaras/ProjetoresEditor.svelte"
 
@@ -66,6 +67,8 @@
         <Scripture {active} bind:searchValue />
     {:else if id === "calendar"}
         <Calendar {active} {searchValue} />
+    {:else if id === "fundos"}
+        <SomunFundos />
     {:else if id === "masks"}
         <MascarasEditor />
     {:else if id === "projectors"}

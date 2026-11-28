@@ -1,5 +1,8 @@
 import { getDocument, GlobalWorkerOptions } from "pdfjs-dist"
 import { get } from "svelte/store"
+import { layoutClassico } from "../../utils/projetoLiveLayout"
+import { ehMeuFundo } from "../../utils/projetoLiveFundos"
+import { porFundo } from "../../utils/projetoLiveFundosAcoes"
 import { STAGE } from "../../../types/Channels"
 import type { History } from "../../../types/History"
 import type { DropData, Selected, Variable } from "../../../types/Main"
@@ -164,6 +167,9 @@ export async function startProjectItemByName(name: string) {
         if (slide?.id === item.id && slide?.index === firstEnabledIndex && slide?.layout === get(showsCache)[item.id].settings.activeLayout) return
 
         setOutput("slide", { id: item.id, layout: get(showsCache)[item.id].settings.activeLayout, index: firstEnabledIndex })
+    } else if ((item.type === "image" || item.type === "video") && !get(layoutClassico) && ehMeuFundo(item.id)) {
+        // somun tela (28/11): o que está na aba "Fundos" entra como fundo
+        porFundo(item.id, item.name || "")
     } else if (item.type === "image" || item.type === "video") {
         let outputStyle = get(styles)[currentOutput.style || ""]
         const mediaData = get(media)[item.id] || {}

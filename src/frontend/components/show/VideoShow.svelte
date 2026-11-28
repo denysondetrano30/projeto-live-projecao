@@ -7,6 +7,9 @@
     import { requestMain, sendMain } from "../../IPC/main"
     import { activeProject, activeRename, audioChannelsData, focusMode, media, outLocked, outputs, playingVideos, projects, videoMarkers } from "../../stores"
     import { translateText } from "../../utils/language"
+    import { layoutClassico } from "../../utils/projetoLiveLayout"
+    import { ehMeuFundo } from "../../utils/projetoLiveFundos"
+    import { porFundo } from "../../utils/projetoLiveFundosAcoes"
     import Icon from "../helpers/Icon.svelte"
     import T from "../helpers/T.svelte"
     import { addVideoMarker, enableSubtitle, encodeFilePath, getExtension, getFileName, getMediaLayerType, removeExtension } from "../helpers/media"
@@ -187,6 +190,12 @@
     }
     function playVideo(startAt = 0) {
         if ($outLocked) return
+
+        // somun tela (28/11): vídeo/imagem que está na aba "Fundos" entra como fundo (repete, atrás da letra)
+        if (!$layoutClassico && ehMeuFundo(mediaPath)) {
+            porFundo(mediaPath, removeExtension(getFileName(mediaPath)))
+            return
+        }
 
         let loop = shouldLoop
         let muted = shouldBeMuted

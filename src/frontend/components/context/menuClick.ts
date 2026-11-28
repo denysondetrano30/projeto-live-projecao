@@ -93,6 +93,7 @@ import { escapeRegExp, hideDisplay, isOutputWindow, newToast, triggerFunction, w
 import { setExampleEffects, setExampleOverlays, setExampleTemplates } from "../../utils/createData"
 import { translateText } from "../../utils/language"
 import { alternarVersaoVertical } from "../../utils/projetoLiveVertical"
+import { layoutClassico } from "../../utils/projetoLiveLayout"
 import { confirmCustom } from "../../utils/popup"
 import { openLinkProviderDialog, removeProviderLinks } from "../../utils/providerItemLinks"
 import { send } from "../../utils/request"
@@ -1703,7 +1704,8 @@ const clickActions = {
         const mediaStyle: MediaStyle = getMediaStyle(get(media)[path], currentStyle)
 
         const type = getMediaType(getExtension(path))
-        setOutput("background", { path, ...mediaStyle, type, loop: true, muted: true })
+        // somun tela (28/11): "tocar sem som" em loop = fundo (atrás da letra, a letra não fecha)
+        setOutput("background", { path, ...mediaStyle, type, loop: true, muted: true, ...(get(layoutClassico) ? {} : { plFundo: true, ignoreLayer: false }) })
     },
     play_no_filters: (obj: ObjData) => {
         if (get(outLocked)) return

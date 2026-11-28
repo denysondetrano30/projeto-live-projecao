@@ -6,7 +6,7 @@
 // cada fundo lembra os últimos ajustes (guardados em media[<fundo>].plFundo, que já vai para as saídas).
 
 import { get } from "svelte/store"
-import { media, outputs } from "../stores"
+import { media, outputs, special } from "../stores"
 import { idDoTelao } from "./projetoLivePadroes"
 
 export const PREFIXO = "somun:"
@@ -88,12 +88,47 @@ export function voltarAjustes(id: string) {
     })
 }
 
-// o fundo que está no ar no telão (id/caminho, nome e tipo)
+// 28/11 (decisão dela): o que entra pela aba "Fundos" é fundo (repete, mudo, atrás da letra, a letra nunca
+// fecha); o que entra pela "Mídia" é para assistir (toca uma vez e some). O fundo vai marcado com plFundo.
+export function ehFundoNoAr(bg: any) {
+    return !!bg && (bg.plFundo === true || bg.type === "somun" || ehFundoSomun(bg.id))
+}
+
+// a lista "Seus fundos" (vídeos e imagens que ela pôs na aba Fundos), guardada em special.plFundos
+export type MeuFundo = { path: string; name: string }
+export function meusFundos(s: any = get(special)): MeuFundo[] {
+    return Array.isArray(s?.plFundos) ? s.plFundos : []
+}
+export function ehMeuFundo(path: string, s: any = get(special)) {
+    return !!path && meusFundos(s).some((f) => f.path === path)
+}
+export function adicionarMeusFundos(caminhos: string[]) {
+    const novos = caminhos.filter(Boolean)
+    if (!novos.length) return
+    special.update((a) => {
+        const lista: MeuFundo[] = Array.isArray(a.plFundos) ? [...a.plFundos] : []
+        novos.forEach((path) => {
+            if (lista.some((f) => f.path === path)) return
+            const name = String(path).split(/[\\/]/).pop()?.replace(/\.[^.]+$/, "") || path
+            lista.push({ path, name })
+        })
+        a.plFundos = lista
+        return a
+    })
+}
+export function tirarMeuFundo(path: string) {
+    special.update((a) => {
+        a.plFundos = (Array.isArray(a.plFundos) ? a.plFundos : []).filter((f: MeuFundo) => f.path !== path)
+        return a
+    })
+}
+
+// o fundo que está no ar no telão (id/caminho, nome e tipo); só o que entrou como fundo
 export function fundoNoTelao(todas: any = get(outputs)): { id: string; nome: string; tipo: string } | null {
     const o = todas?.[idDoTelao()]
     const bg = o?.out?.background
     const id = bg?.path || bg?.id || ""
-    if (!id) return null
+    if (!id || !ehFundoNoAr(bg)) return null
     const tipo = bg.type || ""
     // câmera, tela, NDI e afins não têm esses controles
     if (tipo && !["media", "video", "image", "somun"].includes(tipo)) return null

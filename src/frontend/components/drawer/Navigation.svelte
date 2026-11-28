@@ -11,7 +11,7 @@
     import MascarasTabs from "./navigation/MascarasTabs.svelte"
     import ProjetoresTabs from "./navigation/ProjetoresTabs.svelte"
 
-    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers" | "masks" | "projectors"
+    export let id: "shows" | "media" | "overlays" | "audio" | "effects" | "scripture" | "calendar" | "functions" | "templates" | "timers" | "masks" | "projectors" | "fundos"
 </script>
 
 <div class="main">
