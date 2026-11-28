@@ -71,13 +71,16 @@
         } else {
             itens = clone(t.items || [])
             const vv = verso || EXEMPLO_VERSO
-            const numero = (vv.texto.match(/^\d+/) || [""])[0]
+            // igual ao telão (scripture.ts): com a referência no modelo, um versículo só vai sem número;
+            // sem ela, o número é o do versículo (o fim da referência, "Gênesis 1:2" → 2)
+            const temRef = /\{scripture1?_(reference|verse)/.test(JSON.stringify(t.items || []))
+            const numero = temRef || $scriptureSettings?.verseNumbers === false ? "" : (vv.texto.match(/^\d+/) || [""])[0] || (vv.referencia.match(/(\d+)\D*$/) || [""])[1] || "16"
             let primeiroTexto = true
             itens.forEach((it: any) => {
                 ;(it.lines || []).forEach((l: any) =>
                     (l.text || []).forEach((x: any) => {
                         let val = String(x.value || "")
-                        if (tp === "biblia") val = val.replace("{scripture_text}", vv.texto.replace(/^\d+\s*/, "")).replace("{scripture_number}", numero || "16").replace("{scripture_reference}", vv.referencia).replace(/\{scripture_[a-z_]+\}/g, "")
+                        if (tp === "biblia") val = val.replace("{scripture_text}", vv.texto.replace(/^\d+\s*/, "")).replace("{scripture_number}", numero).replace("{scripture_reference}", vv.referencia).replace(/\{scripture_[a-z_]+\}/g, "")
                         else if (primeiroTexto && (it.type || "text") === "text") val = EXEMPLO_LETRA
                         x.value = val
                     })
@@ -228,9 +231,10 @@
             </div>
             <div class="previa" class:em-pe={saida === "vertical"} bind:this={quadro}>
                 {#key modeloId + saida}
-                    <Zoomed resolution={TELA[saida]} background="#3a3a3a" style="width: 100%;height: 100%;" hideOverflow>
+                    <Zoomed resolution={TELA[saida]} background="#3a3a3a" style="width: 100%;height: 100%;" hideOverflow let:ratio>
                         {#each previa as item}
-                            <Textbox {item} ref={{ type: "template", id: modeloId }} dynamicValues={false} isTemplatePreview />
+                            <!-- ratio: sem ele o "encolher se não couber" mede a miniatura e encolhe a letra (28/11) -->
+                            <Textbox {item} {ratio} ref={{ type: "template", id: modeloId }} dynamicValues={false} isTemplatePreview />
                         {/each}
                     </Zoomed>
                 {/key}
