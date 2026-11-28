@@ -1905,6 +1905,17 @@ export function getStyleTemplate(outSlide: OutSlide | null, currentStyle: Styles
     const translationKey = translations > 1 ? `_${translations}` : ""
 
     let templateId = isScripture ? currentStyle[`templateScripture${translationKey}`] || currentStyle.templateScripture : currentStyle.template
+
+    // Projeto Live (somun tela, 28/11): exceção do Editor único ("só neste slide" vale mais que "só nesta
+    // música"), só onde vale o modelo das músicas (telão) ou da letra vertical. Ver utils/projetoLiveEditor.ts.
+    if (!isScripture && outSlide?.id && outSlide.id !== "temp" && (templateId === "pl_musica_telao" || templateId === "pl_letra_vertical")) {
+        const o = templateId === "pl_letra_vertical" ? "v" : "h"
+        const todos = get(templates)
+        const slideId = _show(outSlide.id).layouts([outSlide.layout]).ref()[0]?.[outSlide.index ?? -1]?.id
+        const excecao = (slideId && todos[`pl_ex_${outSlide.id}_${slideId}_${o}`]) || todos[`pl_ex_${outSlide.id}_${o}`]
+        if (excecao) return excecao
+    }
+
     let template = get(templates)[templateId || ""] || {}
 
     // use custom first slide template on first slide

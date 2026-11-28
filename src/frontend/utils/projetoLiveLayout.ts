@@ -9,7 +9,7 @@
 import { derived, get, writable } from "svelte/store"
 import { defaultThemes } from "../components/settings/tabs/defaultThemes"
 import { clone } from "../components/helpers/array"
-import { activeDrawerTab, activeEdit, activePage, activeProject, drawer, loaded, projects, projectView, special, theme, themes } from "../stores"
+import { activeDrawerTab, activePage, activeProject, drawer, loaded, projects, projectView, special, theme, themes } from "../stores"
 import { openProject } from "../components/show/project"
 import { updateThemeValues } from "./updateSettings"
 
@@ -17,9 +17,9 @@ export const TEMA_SOMUN = "somun"
 
 export const layoutClassico = derived(special, ($special) => !!$special?.plLayoutClassico)
 
-// "Padrões" da aba Editar (somun tela, 19/11): aberto no lugar do editor; fecha ao escolher outra coisa para editar
-export const plPadroesAberto = writable(false)
-activeEdit.subscribe(() => plPadroesAberto.set(false))
+// Editor único (somun tela, 28/11): o Editor junta o antigo "Padrões". "Editor completo" abre o editor
+// antigo do FreeShow (todas as opções) para este slide, até clicar em "Voltar ao Editor".
+export const plEditorCompleto = writable(false)
 
 function garantirTema() {
     if (get(themes)[TEMA_SOMUN]) return

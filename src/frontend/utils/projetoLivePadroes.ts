@@ -156,17 +156,17 @@ export function usarPadraoNasMusicas(ligar: boolean) {
 
 // ---------------------------------------------------------------- CSS
 
-function css(style: string, prop: string): string {
+export function css(style: string, prop: string): string {
     const m = new RegExp(`(?:^|;)\\s*${prop.replace(/[-]/g, "\\-")}\\s*:\\s*([^;]*)`, "i").exec(style || "")
     return m ? m[1].trim() : ""
 }
-function trocar(style: string, prop: string, valor: string): string {
+export function trocar(style: string, prop: string, valor: string): string {
     const re = new RegExp(`(^|;)\\s*${prop.replace(/[-]/g, "\\-")}\\s*:[^;]*;?`, "gi")
     let limpo = (style || "").replace(re, "$1")
     if (limpo && !limpo.trim().endsWith(";")) limpo += ";"
     return valor === "" ? limpo : `${limpo}${prop}:${valor};`
 }
-function px(style: string, prop: string, padrao: number) {
+export function px(style: string, prop: string, padrao: number) {
     const v = parseFloat(css(style, prop))
     return isNaN(v) ? padrao : v
 }

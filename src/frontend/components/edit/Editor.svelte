@@ -22,6 +22,18 @@
     import ItemAddMenu from "./ItemAddMenu.svelte"
     import { getSlideChords } from "./scripts/chords"
     import { getSlideText } from "./scripts/textStyle"
+    import SomunEditor from "./SomunEditor.svelte"
+    import { layoutClassico, plEditorCompleto } from "../../utils/projetoLiveLayout"
+    import { voltarPara } from "../../utils/projetoLiveEditor"
+
+    // somun tela (28/11): Editor único no lugar do editor do slide e do antigo "Padrões"
+    $: unico = !$layoutClassico && !$plEditorCompleto
+    function voltarAoEditor() {
+        const antes = $voltarPara
+        voltarPara.set(null)
+        plEditorCompleto.set(false)
+        if (antes) activeEdit.set(antes)
+    }
 
     $: currentShowId = $activeShow?.id || $activeEdit.showId || ""
     $: currentShow = $showsCache[currentShowId]
@@ -73,6 +85,9 @@
 
             <ItemAddMenu />
         {:else if $activeEdit.type === "template"}
+            {#if $voltarPara && !$layoutClassico}
+                <button class="plVoltar" on:click={voltarAoEditor}>← Voltar ao Editor</button>
+            {/if}
             <TemplateEditor />
 
             <ItemAddMenu />
@@ -121,7 +136,12 @@
             <div class="content">
                 {#if $editMode === "text_edit" && !$focusMode}
                     <TextEditor currentShow={$showsCache[$activeShow?.id || ""]} />
+                {:else if $editMode === "default" && unico}
+                    <SomunEditor />
                 {:else}
+                    {#if $plEditorCompleto && !$layoutClassico}
+                        <button class="plVoltar" on:click={voltarAoEditor}>← Voltar ao Editor</button>
+                    {/if}
                     <SlideEditor />
 
                     {#if $editMode === "default" && !$slideNotesActive && !$special.slideTimelineActive && !$focusMode}
@@ -129,6 +149,9 @@
                     {/if}
                 {/if}
             </div>
+        {:else if !$layoutClassico}
+            <!-- nada aberto: o Editor mostra a aparência da Bíblia e das músicas com um exemplo -->
+            <SomunEditor />
         {:else}
             <Splash />
         {/if}
@@ -149,6 +172,19 @@
         min-height: 0;
         display: flex;
         flex-direction: column;
+    }
+
+    .plVoltar {
+        align-self: flex-start;
+        margin: 6px 10px;
+        padding: 5px 12px;
+        border-radius: 7px;
+        border: 1px solid #3a3a3a;
+        background: #1c1c1c;
+        color: var(--text);
+        font-family: inherit;
+        cursor: pointer;
+        z-index: 5;
     }
 
     .darken {

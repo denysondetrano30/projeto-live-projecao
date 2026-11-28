@@ -13,7 +13,6 @@
     import { toggleOutputs } from "../helpers/output"
     import { openProject } from "../show/project"
     import TopButton from "../inputs/TopButton.svelte"
-    import { plPadroesAberto } from "../../utils/projetoLiveLayout"
     import { onDestroy, onMount } from "svelte"
     import { Main } from "../../../types/IPC/Main"
     import { requestMain, sendMain } from "../../IPC/main"
@@ -154,10 +153,10 @@
         if (!alvo.closest(".versao")) versaoAberto = false
     }
 
-    // somun tela: Padrões também pelo ⋯ (o Editar fica cinza sem nada aberto)
+    // somun tela (28/11): a aparência da Bíblia e das músicas mora no Editor; pelo ⋯ abre mesmo sem nada
+    // aberto (o Editar fica cinza nesse caso)
     function abrirPadroes() {
         activePage.set("edit")
-        setTimeout(() => plPadroesAberto.set(true), 50)
     }
 </script>
 
@@ -202,10 +201,6 @@
 <span class="meio">
     <TopButton id="show" texto="Culto" />
     <TopButton id="edit" disabled={editDisabled} />
-    {#if $activePage === "edit"}
-        <!-- somun tela (19/11): Padrões da Bíblia e das músicas -->
-        <button class="plPadroes" class:ativo={$plPadroesAberto} data-title="Padrão da Bíblia e das músicas (fonte, tamanho, posição, fundo…)" on:click={() => plPadroesAberto.update((a) => !a)}>Padrões</button>
-    {/if}
     <TopButton id="stage" />
 </span>
 
@@ -252,7 +247,7 @@
         <button class="botao tresPontos" class:vermelho={desenhoAtivo} class:ativo={maisAberto} data-title="Mais: desenhar, projetores e configurações" on:click={() => (maisAberto = !maisAberto)}>⋯</button>
         {#if maisAberto}
             <div class="lista direitaLista" transition:fade={{ duration: 80 }}>
-                <button class="item" on:click={() => abrirMais(abrirPadroes)}><Icon id="edit" size={1} white /> <span>Padrões (Bíblia e músicas)</span></button>
+                <button class="item" on:click={() => abrirMais(abrirPadroes)}><Icon id="edit" size={1} white /> <span>Aparência da Bíblia e das músicas</span></button>
                 <button class="item" on:click={() => abrirMais(() => activePage.set("draw"))}><Icon id="draw" size={1} white /> <span>Desenhar</span></button>
                 <button class="item" on:click={() => abrirMais(() => abrirGaveta("projectors"))}><Icon id="pl_projetor" size={1} white /> <span>Projetores</span></button>
                 {#if !settingsDisabled}
@@ -265,22 +260,6 @@
 </span>
 
 <style>
-    .plPadroes {
-        align-self: center;
-        margin-inline-start: 6px;
-        padding: 4px 12px;
-        border-radius: 7px;
-        border: 1px solid #3a3a3a;
-        background: transparent;
-        font-family: inherit;
-        color: var(--text);
-        cursor: pointer;
-    }
-    .plPadroes.ativo {
-        background-color: #e8e8e8;
-        border-color: #e8e8e8;
-        color: #141414;
-    }
     span {
         display: flex;
         align-items: center;
