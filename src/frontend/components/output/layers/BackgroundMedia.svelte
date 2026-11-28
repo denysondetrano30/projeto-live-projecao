@@ -15,6 +15,9 @@
     import { mediaLayersEnabled } from "./mediaLayers"
     import { mapaAtivo } from "../../drawer/mascaras/mapa"
     import { caminhoParaSaida } from "../../../utils/projetoLiveVertical"
+    import { ajustesDe, temAjusteDeVideo } from "../../../utils/projetoLiveFundos"
+    import SomunEfeitos from "./SomunEfeitos.svelte"
+    import SomunFundo from "./SomunFundo.svelte"
 
     export let outputId = ""
 
@@ -40,7 +43,11 @@
     // Projeto Live: o atalho também não respeita o enquadramento "fundo desfocado" nem a tela em pé (o
     // vídeo saía esticado no vertical, 18/11): nesses casos o vídeo é desenhado na própria página
     $: plSemAtalho = outputId === "pl_transmissao_vertical" || currentStyle?.fit === "blur" || (data as any)?.fit === "blur"
-    $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada && !plSemAtalho
+    // Projeto Live (28/11): fundo do somun e ajustes do painel "Fundo" (tingir/grão/intensidade são desenhados
+    // na própria página, então o atalho de composição fica de fora quando há ajuste)
+    $: plAjustado = temAjusteDeVideo(id, $media)
+    $: plAjustes = ajustesDe(id, $media)
+    $: layerable = $mediaLayersEnabled && !mirror && !!outputId && fadeOnly && !animationStyle && !$outputs[outputId]?.transparent && !plMapeada && !plSemAtalho && !plAjustado
 
     // Projeto Live: "vídeos" desligado na janela Transmissão: a saída da live não mostra vídeos
     $: plSemVideo = !!(currentStyle as any)?.plSemVideos && (data.type === "video" || data.type === "player" || getMediaType(getExtension(id)) === "video")
@@ -53,14 +60,22 @@
         const plFit = currentStyle?.fit || (outputId === "pl_transmissao_vertical" ? "blur" : "")
         if (plFit && mediaStyle.fit !== plFit) mediaStyle = { ...mediaStyle, fit: plFit }
     }
+    // a velocidade do painel "Fundo" multiplica a do próprio vídeo
+    $: plVelocidade = (plAjustes.velocidade ?? 100) / 100
+    $: plMediaStyle = plVelocidade === 1 ? mediaStyle : { ...mediaStyle, speed: String(Math.max(0.1, (Number(mediaStyle.speed) || 1) * plVelocidade)) }
 </script>
 
 <OutputTransition {transition} inTransition={transition.in} outTransition={transition.out} on:outrostart={() => (fadingOut = true)}>
     {#if plSemVideo}
         <!-- vídeo escondido nesta saída -->
+    {:else if type === "somun"}
+        <SomunFundo {id} on:loaded />
     {:else if type === "media"}
         <!-- on:ended={videoEnded} -->
-        <Media {outputId} path={id} {data} {animationStyle} {mirror} {mediaStyle} {fadingOut} {layerable} on:loaded />
+        <!-- sempre dentro do SomunEfeitos: o primeiro ajuste no painel não recomeça o vídeo -->
+        <SomunEfeitos ajustes={plAjustes}>
+            <Media {outputId} path={id} {data} {animationStyle} {mirror} mediaStyle={plMediaStyle} {fadingOut} {layerable} on:loaded />
+        </SomunEfeitos>
     {:else if type === "screen"}
         <Window {id} class="media" style="width: 100%;height: 100%;" on:loaded />
     {:else if type === "ndi"}
